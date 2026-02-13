@@ -279,7 +279,7 @@
                 </p>
             </div>
         </div>
-        <a href="/product.html" class="btn-back-custom">
+        <a href="/Warehouse-Management/product.html" class="btn-back-custom">
             <i class="fa-solid fa-arrow-left"></i> Quay lại
         </a>
     </div>
@@ -451,7 +451,7 @@
         const userLoggedIn = localStorage.getItem('userLoggedIn');
         if (userLoggedIn !== 'true') { window.location.replace('/index.html?auth=required'); return; }
         
-        fetch('/Side-Bar.html')
+        fetch('/Warehouse-Management/Side-Bar.html')
             .then(res => res.text())
             .then(data => {
                 const container = document.getElementById('sidebar-container');

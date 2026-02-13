@@ -869,7 +869,7 @@ tr:hover td { background-color: #f8fbff; }
             
             <div class="header-actions">
 
-                <button onclick="window.location.href='/hiding web/add-products.html'" class="btn-primary">
+                <button onclick="window.location.href='/Warehouse-Management/add-products.html'" class="btn-primary">
                     <i class="fa-solid fa-circle-plus"></i> Sản phẩm
                 </button>
             </div>
@@ -1327,7 +1327,7 @@ tr:hover td { background-color: #f8fbff; }
         if (popup && popup.style.display === 'block' && !e.target.closest('#quickCategoryPopup') && !e.target.closest('.cat-text')) popup.style.display = 'none';
     };
     function loadSidebar() {
-        fetch('/Side-Bar.html').then(res=>res.text()).then(data=>{
+        fetch('/Warehouse-Management/Side-Bar.html').then(res=>res.text()).then(data=>{
             const c=document.querySelector('.sidebar'); if(c) {
                 c.innerHTML=data; 
                 c.querySelectorAll('script').forEach(s=>{

@@ -471,14 +471,14 @@
     // 1. KHỞI TẠO
     // ============================================
     (async function init() {
-        if (!localStorage.getItem('userLoggedIn')) return window.location.replace('/index.html');
+        if (!localStorage.getItem('userLoggedIn')) return window.location.replace('/Warehouse-Management/index.html');
         loadSidebar();
         listenToProducts();
         initCustomPicker();
     })();
 
     function loadSidebar() {
-        fetch('/Side-Bar.html').then(res => res.text()).then(data => {
+        fetch('/Warehouse-Management/Side-Bar.html').then(res => res.text()).then(data => {
             document.querySelector('.sidebar').innerHTML = data;
             const container = document.querySelector('.sidebar');
             container.querySelectorAll('script').forEach(old => {

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="/sidebar.css"> 
+    <link rel="stylesheet" href="/Warehouse-Management/sidebar.css"> 
     <style>
         .user-avatar {
             width: 40px; height: 40px; border-radius: 50%; 
@@ -37,7 +37,7 @@
         </div>
         <div class="report-menu">
           
-            <a href="/inventory.html" class="report-link"><i class="fa-solid fa-boxes-stacked"></i> Hàng tồn kho</a>
+            <a href="/Warehouse-Management/inventory.html" class="report-link"><i class="fa-solid fa-boxes-stacked"></i> Hàng tồn kho</a>
           
             
         </div>
@@ -46,30 +46,30 @@
     <hr>
     
     <!-- Sản phẩm (Giữ nguyên) -->
-    <div class="nav-item" onclick="window.location.href='/product.html'">
+    <div class="nav-item" onclick="window.location.href='/Warehouse-Management/product.html'">
         <div class="nav-icon-wrapper"><i class="fa-solid fa-box-archive" ></i></div> <span>Sản phẩm</span>
     </div>
 
     <!-- 4 MỤC KHO HÀNG (CÓ ID ĐỂ JS ĐIỀU KHIỂN) -->
-    <div class="nav-item" id="nav-import" data-href="/import-stock.html" data-name="Nhập kho">
+    <div class="nav-item" id="nav-import" data-href="/Warehouse-Managementimport-stock.html" data-name="Nhập kho">
         <div class="nav-icon-wrapper"><i class="fa-solid fa-box-archive"></i></div> <span>Nhập kho</span>
     </div>
-    <div class="nav-item" id="nav-export" data-href="/export-stock.html" data-name="Xuất kho">
+    <div class="nav-item" id="nav-export" data-href="/Warehouse-Management/export-stock.html" data-name="Xuất kho">
         <div class="nav-icon-wrapper"><i class="fa-solid fa-box-archive"></i></div> <span>Xuất kho</span>
     </div>
-    <div class="nav-item" id="nav-audit" data-href="/audit-stock.html" data-name="Kiểm kê kho">
+    <div class="nav-item" id="nav-audit" data-href="/Warehouse-Management/audit-stock.html" data-name="Kiểm kê kho">
         <div class="nav-icon-wrapper"><i class="fa-solid fa-arrows-rotate"></i></div> <span>Kiểm kê kho</span>
     </div>
-    <div class="nav-item" id="nav-transfer" data-href="/transfer-stock.html" data-name="Chuyển kho">
+    <div class="nav-item" id="nav-transfer" data-href="/Warehouse-Management/transfer-stock.html" data-name="Chuyển kho">
         <div class="nav-icon-wrapper"><i class="fa-solid fa-right-left"></i></div> <span>Chuyển kho</span>
     </div>
 
     <hr>
     
-    <a href="/history.html" style="text-decoration: none;">
+    <a href="/Warehouse-Management/history.html" style="text-decoration: none;">
         <div class="nav-item"><div class="nav-icon-wrapper"><i class="fa-solid fa-history"></i></div> <span>Lịch sử</span></div>
     </a>
-    <a href="/expense.html" style="text-decoration: none;">
+    <a href="/Warehouse-Management/expense.html" style="text-decoration: none;">
         <div class="nav-item"><div class="nav-icon-wrapper"><i class="fa-solid fa-money-bill-wave"></i></div> <span>Chi phí</span></div>
     </a>
 
@@ -81,15 +81,15 @@
             <span>Liên hệ</span> <i class="fa fa-chevron-down arrow"></i>
         </div>
         <div class="sub-menu">
-            <a href="/client.html" class="sub-item"><i class="fa-solid fa-user-tag" style="padding-right: 5px;"></i> Khách hàng</a>
-            <a href="/supplier.html" class="sub-item"><i class="fa-solid fa-truck-field" style="padding-right: 5px;"></i> Nhà cung cấp</a>
-            <a href="/personnel.html" class="sub-item"><i class="fa-solid fa-user-tie" style="padding-right: 5px;"></i> Nhân viên</a>
+            <a href="/Warehouse-Management/client.html" class="sub-item"><i class="fa-solid fa-user-tag" style="padding-right: 5px;"></i> Khách hàng</a>
+            <a href="/Warehouse-Management/supplier.html" class="sub-item"><i class="fa-solid fa-truck-field" style="padding-right: 5px;"></i> Nhà cung cấp</a>
+            <a href="/Warehouse-Management/personnel.html" class="sub-item"><i class="fa-solid fa-user-tie" style="padding-right: 5px;"></i> Nhân viên</a>
         </div>
     </div>
 
     <div class="sidebar-footer">
         <div class="user-popover" id="userPopover">
-            <a href="/setting.html" class="popover-item"><i class="fa-solid fa-gear"></i> Cài đặt</a>
+            <a href="/Warehouse-Management/setting.html" class="popover-item"><i class="fa-solid fa-gear"></i> Cài đặt</a>
             <div class="popover-divider"></div>
             <button id="btnLogout" class="popover-item logout-red"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</button>
         </div>
@@ -101,7 +101,7 @@
                 <span class="user-email" id="u-email"></span>
             </div>
                     <div class="user-options">
-                        <a href="/store.html" class="logout-btn">
+                        <a href="/Warehouse-Management/store.html" class="logout-btn">
                             <i class="fa-solid fa-right-from-bracket"></i>
                         </a>
                     </div>

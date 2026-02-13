@@ -1224,7 +1224,7 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-app
                         <div id="clientList"></div>
                         <div style="padding: 10px; border-top: 1px solid #eee;">
                             <div class="btn-add-new-client">
-                                <a href="/client.html" style="text-decoration: none; color: inherit;">
+                                <a href="/Warehouse-Management/client.html" style="text-decoration: none; color: inherit;">
                                     <i class="fa-solid fa-circle-plus"></i>
                                     <span>Khách hàng mới</span>
                                 </a>
@@ -1499,7 +1499,7 @@ function stringToColor(str) {
     })();
 
     function loadSidebar() {
-        fetch('/Side-Bar.html')
+        fetch('/Warehouse-Management/Side-Bar.html')
             .then(res => res.text())
             .then(data => {
                 const container = document.querySelector('.sidebar');
@@ -2041,7 +2041,7 @@ function updateDisplayStr() {
         `;
         dropdownContent.innerHTML = html;
     };
-
+ 
     // ============================================
     // HÀM XỬ LÝ TÌM KIẾM TRONG MENU
     // ============================================
