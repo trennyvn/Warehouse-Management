@@ -1020,11 +1020,16 @@ tr:hover td { background-color: #f8fbff; }
         addDoc, serverTimestamp, orderBy, getDoc 
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";   
 
-    // --- 1. BIẾN TOÀN CỤC ---
-    let cachedProducts = []; 
-    let cachedCategories = []; 
-    const currentStoreId = localStorage.getItem('current_store_id');
-    const userEmail = localStorage.getItem('userEmail');
+// ✅ CÁCH VIẾT ĐÚNG (Tại file store-core.js)
+
+// Khai báo ở ngoài cùng, không nằm trong hàm hay dấu ngoặc nào cả
+let cachedProducts = []; 
+let cachedCategories = []; 
+const currentStoreId = localStorage.getItem('current_store_id');
+const userEmail = localStorage.getItem('userEmail');
+
+// Export cũng phải ở ngoài cùng
+export { currentStoreId, userEmail, cachedProducts };
     
     // Bộ lọc
     let currentSortType = 'stock-asc';
@@ -1397,6 +1402,7 @@ tr:hover td { background-color: #f8fbff; }
 </body>
 
 </html>
+
 
 
 
