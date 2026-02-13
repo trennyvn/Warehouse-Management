@@ -3,11 +3,15 @@ import { db } from "/Warehouse-Management/firebase-config.js";
 // Thêm collection và getDocs vào đây
 // Ví dụ cách ghi log để khớp với Index ở Hình 1
 import { 
-    addDoc, 
     collection, 
+    addDoc, 
+    getDoc, 
+    doc, 
+    query, 
+    where, 
     serverTimestamp, 
-    doc,        // <--- THÊM CÁI NÀY
-    getDoc      // <--- THÊM CÁI NÀY
+    orderBy, 
+    onSnapshot 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 
@@ -84,6 +88,7 @@ const StoreDB = {
 
 // Chạy kiểm tra khi trang load
 checkAccess();
+
 
 
 
