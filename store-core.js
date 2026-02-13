@@ -4,6 +4,16 @@ import { db } from "/Warehouse-Management/firebase-config.js";
 // Ví dụ cách ghi log để khớp với Index ở Hình 1
 import { addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+
+// ✅ 1. KHAI BÁO Ở CẤP CAO NHẤT (Không nằm trong bất kỳ dấu ngoặc nào)
+let cachedProducts = [];  
+let cachedCategories = [];  
+const currentStoreId = localStorage.getItem('current_store_id');
+const userEmail = localStorage.getItem('userEmail');
+
+// ✅ 2. EXPORT CŨNG Ở CẤP CAO NHẤT
+export { currentStoreId, userEmail, cachedProducts };
+
 async function saveLog(action) {
     const logRef = collection(db, "warehouse_stores", currentStoreId, "inventory_logs");
     await addDoc(logRef, {
@@ -71,6 +81,4 @@ checkAccess();
 
 
 
-// Xuất hàm này ra để dùng ở trang store.html
 
-export { currentStoreId, StoreDB, getAllStores };
