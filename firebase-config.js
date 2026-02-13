@@ -16,4 +16,12 @@ const firebaseConfig = {
 // Kiểm tra danh sách app đang chạy. Nếu có rồi thì lấy lại (getApp), chưa có mới tạo mới (initializeApp)
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 
+// --- THÊM CÁC DÒNG NÀY VÀO CUỐI FILE ---.
+const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+export const db = getFirestore(app);
+
+// --- THÊM CÁC DÒNG NÀY VÀO CUỐI FILE ---
+export const currentStoreId = localStorage.getItem('current_store_id');
+export const userEmail = localStorage.getItem('userEmail');
+export const userName = localStorage.getItem('userName');
 export const db = getFirestore(app);
