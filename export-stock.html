@@ -1374,6 +1374,60 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-app
 
 
 
+
+
+
+<!-- ###################################################################### -->
+<!-- SCRIPT ĐÃ FIX LỖI RELOAD & DROPDOWN -->
+<!-- ###################################################################### -->
+<script>
+    // 1. TẢI SIDEBAR & PROFILE (Chạy độc lập để hiển thị nhanh)
+    (function() {
+        const userLoggedIn = localStorage.getItem('userLoggedIn');
+        if (userLoggedIn !== 'true') { window.location.replace('/index.html?auth=required'); return; }
+        
+        fetch('/Warehouse-Management/Side-Bar.html')
+            .then(res => res.text())
+            .then(data => {
+                const container = document.getElementById('sidebar-container');
+                if (container) {
+                    container.innerHTML = data;
+                    // Cập nhật Profile sau khi Sidebar đã hiện
+                    setTimeout(() => {
+                        const name = localStorage.getItem('userName');
+                        const pic = localStorage.getItem('userPicture');
+                        const email = localStorage.getItem('userEmail');
+                        
+                        const nameEl = document.getElementById('set-name');
+                        if (nameEl) nameEl.textContent = name || "Người dùng";
+                        
+                        const emailEl = document.getElementById('set-email');
+                        if (emailEl) emailEl.textContent = email || "...";
+
+                        const avatarEl = document.getElementById('set-avatar');
+                        if (avatarEl) {
+                            if (pic && pic !== "null") {
+                                avatarEl.style.backgroundImage = `url('${pic}')`;
+                                avatarEl.textContent = ""; 
+                            } else if (name) avatarEl.textContent = name.charAt(0).toUpperCase();
+                        }
+                    }, 100); // Đợi 1 xíu để HTML render xong hẳn
+                    
+                    // Kích hoạt lại script trong sidebar
+                    container.querySelectorAll("script").forEach(oldScript => {
+                        const newScript = document.createElement("script");
+                        Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+                        newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+                        oldScript.parentNode.replaceChild(newScript, oldScript);
+                    });
+                }
+            })
+            .catch(err => console.error("Lỗi Sidebar:", err));
+    })();
+</script>
+
+    
+    
 <script type="module">
     // ============================================================
     // 1. IMPORT FIREBASE & CẤU HÌNH
@@ -1385,7 +1439,7 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-app
     arrayUnion, setDoc // THÊM 2 CÁI NÀY
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     // --- BIẾN TOÀN CỤC ---
-window.loadSidebar = loadSidebar;
+
 
 
 // Chèn CSS động cho Avatar
@@ -1499,32 +1553,6 @@ function stringToColor(str) {
         }, 500);
     })();
 
-    async function loadSidebar() {
-        console.log("Đang thử tải sidebar...");
-        try {
-            // Thử dùng đường dẫn tương đối trực tiếp
-            const response = await fetch('../Side-Bar.html');
-            
-            console.log("URL đang fetch:", response.url); // Xem link thật sự nó đang tìm
-            
-            if (!response.ok) {
-                throw new Error(`Lỗi HTTP! Trạng thái: ${response.status}`);
-            }
-    
-            const data = await response.text();
-            const container = document.querySelector('.sidebar');
-            
-            if (container) {
-                container.innerHTML = data;
-                console.log("Sidebar đã được chèn!");
-            } else {
-                console.error("Không tìm thấy thẻ <div class='sidebar'> trong trang này!");
-            }
-        } catch (error) {
-            console.error("Lỗi Fetch:", error);
-        }
-    }
-     
 
         // HÀM XỬ LÝ BẬT TẮT MENU DANH MỤC (Thêm mới)
     window.toggleCatDropdown = function(e) {
@@ -2680,6 +2708,7 @@ window.executeExport = async function() {
 </body>
 
 </html>
+
 
 
 
