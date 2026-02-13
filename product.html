@@ -962,7 +962,55 @@ tr:hover td { background-color: #f8fbff; }
 <!-- SCRIPT FINAL: BẢO MẬT CAO + KHÓA SỬA SỐ LƯỢNG -->
 <!-- ================================================================ -->
 
-<script src="../store-core.js"></script> 
+
+<!-- ###################################################################### -->
+<!-- SCRIPT ĐÃ FIX LỖI RELOAD & DROPDOWN -->
+<!-- ###################################################################### -->
+<script>
+    // 1. TẢI SIDEBAR & PROFILE (Chạy độc lập để hiển thị nhanh)
+    (function() {
+        const userLoggedIn = localStorage.getItem('userLoggedIn');
+        if (userLoggedIn !== 'true') { window.location.replace('/index.html?auth=required'); return; }
+        
+        fetch('/Warehouse-Management/Side-Bar.html')
+            .then(res => res.text())
+            .then(data => {
+                const container = document.getElementById('sidebar-container');
+                if (container) {
+                    container.innerHTML = data;
+                    // Cập nhật Profile sau khi Sidebar đã hiện
+                    setTimeout(() => {
+                        const name = localStorage.getItem('userName');
+                        const pic = localStorage.getItem('userPicture');
+                        const email = localStorage.getItem('userEmail');
+                        
+                        const nameEl = document.getElementById('set-name');
+                        if (nameEl) nameEl.textContent = name || "Người dùng";
+                        
+                        const emailEl = document.getElementById('set-email');
+                        if (emailEl) emailEl.textContent = email || "...";
+
+                        const avatarEl = document.getElementById('set-avatar');
+                        if (avatarEl) {
+                            if (pic && pic !== "null") {
+                                avatarEl.style.backgroundImage = `url('${pic}')`;
+                                avatarEl.textContent = ""; 
+                            } else if (name) avatarEl.textContent = name.charAt(0).toUpperCase();
+                        }
+                    }, 100); // Đợi 1 xíu để HTML render xong hẳn
+                    
+                    // Kích hoạt lại script trong sidebar
+                    container.querySelectorAll("script").forEach(oldScript => {
+                        const newScript = document.createElement("script");
+                        Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+                        newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+                        oldScript.parentNode.replaceChild(newScript, oldScript);
+                    });
+                }
+            })
+            .catch(err => console.error("Lỗi Sidebar:", err));
+    })();
+</script>
 
 <script type="module">
     import { db } from "../firebase-config.js";
@@ -1326,18 +1374,8 @@ tr:hover td { background-color: #f8fbff; }
         const popup = document.getElementById('quickCategoryPopup');
         if (popup && popup.style.display === 'block' && !e.target.closest('#quickCategoryPopup') && !e.target.closest('.cat-text')) popup.style.display = 'none';
     };
-    function loadSidebar() {
-        fetch('/Warehouse-Management/Side-Bar.html').then(res=>res.text()).then(data=>{
-            const c=document.querySelector('.sidebar'); if(c) {
-                c.innerHTML=data; 
-                c.querySelectorAll('script').forEach(s=>{
-                    const n=document.createElement('script'); 
-                    Array.from(s.attributes).forEach(a=>n.setAttribute(a.name,a.value));
-                    n.textContent=s.textContent; s.replaceWith(n);
-                });
-            }
-        });
-    }
+
+    
     window.toggleDropdown = () => document.getElementById('categoryContent').classList.toggle('show');
     window.selectCategory = (c) => { currentCategory=c; document.getElementById('selectedCategoryText').innerText=c; window.applyFiltersAndSort(); };
     window.toggleSortDropdown = () => document.getElementById('sortContent').classList.toggle('show');
@@ -1371,4 +1409,5 @@ tr:hover td { background-color: #f8fbff; }
 </script>
 
 </body>
+
 </html>
