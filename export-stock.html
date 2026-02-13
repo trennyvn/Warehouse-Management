@@ -5,7 +5,7 @@
     <title>Xuất kho - Quản lý kho</title> <!-- Đổi tiêu đề -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/sidebar.css"> 
+    <link rel="stylesheet" href="sidebar.css">
     <base href="/Warehouse-Management/">
    
     
@@ -1503,7 +1503,7 @@ function stringToColor(str) {
         console.log("Đang thử tải sidebar...");
         try {
             // Thử dùng đường dẫn tương đối trực tiếp
-            const response = await fetch('/Warehouse-Management/Side-Bar.html');
+            const response = await fetch('../Side-Bar.html');
             
             console.log("URL đang fetch:", response.url); // Xem link thật sự nó đang tìm
             
@@ -2680,6 +2680,7 @@ window.executeExport = async function() {
 </body>
 
 </html>
+
 
 
 
