@@ -365,7 +365,7 @@
 
 <body>
     <div class="table-view">
-        <div class="sidebar"></div>
+        <div class="sidebar" id="sidebar-container"></div>
 
         <div class="main-content">
             <!-- HEADER: Chỉ còn Title và Date Picker -->
@@ -456,6 +456,58 @@
         </div>
     </div>
 
+
+    
+<!-- ###################################################################### -->
+<!-- SCRIPT ĐÃ FIX LỖI RELOAD & DROPDOWN -->
+<!-- ###################################################################### -->
+<script>
+    // 1. TẢI SIDEBAR & PROFILE (Chạy độc lập để hiển thị nhanh)
+    (function() {
+        const userLoggedIn = localStorage.getItem('userLoggedIn');
+        if (userLoggedIn !== 'true') { window.location.replace('/index.html?auth=required'); return; }
+        
+        fetch('/Warehouse-Management/Side-Bar.html')
+            .then(res => res.text())
+            .then(data => {
+                const container = document.getElementById('sidebar-container');
+                if (container) {
+                    container.innerHTML = data;
+                    // Cập nhật Profile sau khi Sidebar đã hiện
+                    setTimeout(() => {
+                        const name = localStorage.getItem('userName');
+                        const pic = localStorage.getItem('userPicture');
+                        const email = localStorage.getItem('userEmail');
+                        
+                        const nameEl = document.getElementById('set-name');
+                        if (nameEl) nameEl.textContent = name || "Người dùng";
+                        
+                        const emailEl = document.getElementById('set-email');
+                        if (emailEl) emailEl.textContent = email || "...";
+
+                        const avatarEl = document.getElementById('set-avatar');
+                        if (avatarEl) {
+                            if (pic && pic !== "null") {
+                                avatarEl.style.backgroundImage = `url('${pic}')`;
+                                avatarEl.textContent = ""; 
+                            } else if (name) avatarEl.textContent = name.charAt(0).toUpperCase();
+                        }
+                    }, 100); // Đợi 1 xíu để HTML render xong hẳn
+                    
+                    // Kích hoạt lại script trong sidebar
+                    container.querySelectorAll("script").forEach(oldScript => {
+                        const newScript = document.createElement("script");
+                        Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+                        newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+                        oldScript.parentNode.replaceChild(newScript, oldScript);
+                    });
+                }
+            })
+            .catch(err => console.error("Lỗi Sidebar:", err));
+    })();
+</script>
+
+    
 <script type="module">
     import { db } from "../firebase-config.js";
     import { collection, addDoc, updateDoc, query, where, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -477,19 +529,6 @@
         initCustomPicker();
     })();
 
-    function loadSidebar() {
-        fetch('/Warehouse-Management/Side-Bar.html').then(res => res.text()).then(data => {
-            document.querySelector('.sidebar').innerHTML = data;
-            const container = document.querySelector('.sidebar');
-            container.querySelectorAll('script').forEach(old => {
-                const n = document.createElement('script');
-                Array.from(old.attributes).forEach(a => n.setAttribute(a.name, a.value));
-                n.textContent = old.textContent;
-                old.replaceWith(n);
-            });
-            window.toggleMenu = (id) => document.getElementById(id)?.classList.toggle('active');
-        });
-    }
 
     // ============================================
     // 2. LOGIC SẢN PHẨM & HIỂN THỊ
@@ -1045,4 +1084,5 @@ window.confirmAudit = async function(docId, sku, oldStock) {
     
 </script>
 </body>
+
 </html>
