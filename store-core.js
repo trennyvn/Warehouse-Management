@@ -1,5 +1,5 @@
 /* === FILE: store-core.js (Đã cập nhật) === */
-import { db } from "./firebase-config.js";
+import { db } from "/Warehouse-Management/firebase-config.js";
 // Thêm collection và getDocs vào đây
 // Ví dụ cách ghi log để khớp với Index ở Hình 1
 import { addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -72,4 +72,5 @@ checkAccess();
 
 
 // Xuất hàm này ra để dùng ở trang store.html
+
 export { currentStoreId, StoreDB, getAllStores };
