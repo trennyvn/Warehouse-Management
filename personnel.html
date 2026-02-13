@@ -1,0 +1,1419 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản Lý Nhân Sự - Warehouse Management Pro</title>
+    
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+ 
+    <!-- CSS Nội bộ -->
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --text-blue: #2b82fb;
+            --bg-gray: #f8fafc;
+            --card-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+
+        /* --- CUSTOM SCROLLBAR DESIGN --- */
+
+        /* --- CUSTOM SCROLLBAR (NO ARROWS) --- */
+
+        /* 1. Tổng thể thanh cuộn */
+        ::-webkit-scrollbar {
+            width: 6px;  /* Độ mỏng thanh dọc */
+            height: 6px; /* Độ mỏng thanh ngang */
+        }
+
+        /* 2. BỎ NÚT TRÊN VÀ DƯỚI (Mũi tên) */
+        ::-webkit-scrollbar-button {
+            display: none;
+            width: 0;
+            height: 0;
+        }
+
+        /* 3. Phần nền (Track) - Để trong suốt cho tinh tế */
+        ::-webkit-scrollbar-track {
+            background: transparent; 
+        }
+
+        /* 4. Nút kéo (Thumb) - Gradient bo tròn */
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #818cf8, #4f46e5); /* Gradient Indigo cực đẹp */
+            border-radius: 100px; /* Bo tròn tuyệt đối */
+            border: 1px solid rgba(255, 255, 255, 0.2); /* Viền mờ cho sang trọng */
+        }
+
+        /* 5. Hiệu ứng khi di chuột vào hoặc kéo */
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #4f46e5, #3730a3);
+        }
+
+        /* Tùy chỉnh cho Firefox (Firefox không có nút mũi tên mặc định) */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: #4f46e5 transparent;
+        }
+
+        * {
+            font-family: 'Baloo 2', cursive;
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            width: 100vw;
+            display: flex;
+            overflow: hidden;
+            user-select: none;
+            position: relative;
+            background: #eef2f7; 
+        }
+
+        /* Hiệu ứng nền */
+        body::after {
+            content: "";
+            position: fixed;
+            width: 150vmax;
+            height: 150vmax;
+            top: -25%;
+            left: -25%;
+            z-index: -1;
+            background-image: 
+                radial-gradient(circle at 20% 30%, #d0bcff 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, #a1c4fd 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, #c2e9fb 0%, transparent 50%);
+            filter: blur(80px);
+            animation: waveMovement 15s linear infinite;
+        }
+
+        @keyframes waveMovement {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .table-view {
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+            padding: 20px;
+            gap: 10px;
+        }
+
+        .main-container {
+            flex-grow: 1;
+            width: 100%;
+        }
+
+        .main-content {
+            position: relative;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 40px);
+            overflow: hidden;
+            background: #fff;
+            border-radius: 15px;
+            border: 1px solid #ffffff;
+            box-shadow: -5px 5px 1px #b5b5ec, inset 0px 0px 2px #b5b5ec;
+        }
+
+        /* Header */
+        .top-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            height: 80px;
+            border-bottom: 2px solid #f1f5f9;
+            background: rgba(255, 255, 255, 0.7);
+        }
+
+        .page-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 24px;
+            font-weight: 800;
+            color: #334155;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* Nút tham gia */
+        .btn-join {
+            border: none;
+            padding: 10px 24px;
+            border-radius: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+            background: var(--primary-color);
+            color: white;   
+            font-size: 15px;
+            box-shadow: 0 4px 1px 1px rgba(79, 70, 229, 0.3);
+        }
+        .btn-join:hover {box-shadow: 0 0px 1px 1px rgba(79, 70, 229, 0.3); transform:translateY(4px); outline: 1px solid #fff; outline-offset: -2px;}
+        .btn-join.disabled {
+            background: #cbd5e1 !important;
+            color: #94a3b8 !important;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Toggle Group */
+        .toggle-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: white;
+            padding: 8px 15px;
+            border-radius: 12px;
+            border: 2px solid #f1f5f9;
+            transition: 0.3s;
+        }
+        .toggle-group:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        /* Switch Toggle Design */
+        /* Container của Toggle */
+        .switch-master {
+            position: relative;
+            display: inline-block;
+            width: 34px; /* Thu hẹp chiều ngang */
+            height: 14px; /* Làm mỏng thanh trượt */
+            cursor: pointer;
+        }
+
+        .switch-master input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        /* Thanh trượt (Track) */
+        .slider-master {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #e2e8f0; /* Màu nền khi tắt */
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 20px;
+        }
+
+        /* Nút tròn (Thumb) */
+        .slider-master:before {
+            position: absolute;
+            content: "";
+            height: 20px; /* Nút tròn to hơn thanh trượt một chút */
+            width: 20px;
+            left: -2px;
+            bottom: -3px; /* Căn chỉnh để nút nằm giữa thanh mỏng */
+            background-color: white;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15); /* Đổ bóng nhẹ cho nút */
+        }
+
+        /* Khi đang bật */
+        input:checked + .slider-master {
+            background-color: #4f46e5; /* Màu Indigo hiện đại */
+            opacity: 0.5; /* Làm mờ thanh track khi bật để nổi bật nút */
+        }
+
+        /* Nút tròn di chuyển khi bật */
+        input:checked + .slider-master:before {
+            transform: translateX(20px);
+            background-color: #4f46e5; /* Nút cũng đổi màu */
+            opacity: 1; /* Nút giữ màu đậm */
+        }
+
+        /* Layout 2 Cột */
+        .panel-container {
+            display: flex;
+            gap: 20px;
+            padding: 25px;
+            flex-grow: 1;
+            overflow: hidden;
+        }
+        .table-section { flex: 6.5; height: 100%; overflow-y: auto; }
+        .detail-section { flex: 3.5; height: 100%; overflow-y: auto; background: #f8fafc;    }
+
+        .custom-card {
+            background: white;
+            border-radius: 18px;
+            border: 2px solid #f1f5f9;
+            height: 100%;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Table Design */
+        .custom-table { width: 100%; border-collapse: collapse; }
+        .custom-table th {
+            text-align: left; padding: 15px; background: #f8fafc;
+            color: #64748b; font-weight: 700; text-transform: uppercase;
+            font-size: 13px; position: sticky; top: 0; z-index: 10;
+        }
+        .custom-table td {
+            padding: 15px 15px; border-bottom: 1px solid #f8fafc;
+            vertical-align: middle;
+        }
+        .custom-table tr:hover { background-color: #f1f5f9; cursor: pointer; }
+        .custom-table tr.selected { background-color: #eff6ff; border-left: 4px solid var(--text-blue); }
+
+        .avatar-circle {
+            width: 42px; height: 42px; border-radius: 50%; object-fit: cover;
+            background: #e2e8f0; border: 2px solid #fff; box-shadow: -0px 4px 1px 1px rgba(0,0,0,0.1); transition: 0.2s ease-in-out;
+        }
+        .avatar-circle:hover {box-shadow: -0px 0px 1px 1px rgba(0,0,0,0.1); transform: translateY(4px);}
+
+        .txt-name { color: var(--text-blue); font-weight: 800; font-size: 16px; }
+        .txt-email { color: #64748b; font-weight: 700; font-size: 15px; }
+
+        /* Badges */
+        /* Badge Roles - Thiết kế lại cho chuyên nghiệp */
+        .badge-role {
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        .badge-default { 
+            background: #f1f5f9; 
+            color: #64748b; 
+            border: 1px solid #e2e8f0; 
+        }
+
+        .badge-manager { 
+            background: #ecfdf5; 
+            color: #059669; 
+            border: 1px solid #a7f3d0;
+            box-shadow: 0 2px 4px rgba(16, 185, 129, 0.1);
+        }
+
+        .badge-owner { 
+            background: #fff1f2; 
+            color: #e11d48; 
+            border: 1px solid #fecdd3;
+        }
+
+
+
+        /* --- TRANG TRÍ DETAIL SECTION CAO CẤP --- */
+
+        /* Header gọn gàng nhưng có khoảng cách hợp lý */
+        .detail-header {
+            background: white;
+            padding: 20px 25px; 
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        /* Làm tròn logo/avatar trong phần chi tiết */
+        .detail-avatar-large {
+            width: 60px !important;
+            height: 60px !important;
+            border-radius: 50% !important; /* Tạo hình tròn hoàn hảo */
+            object-fit: cover; /* Giữ tỉ lệ ảnh không bị móp */
+            border: 2px solid #fff; /* Viền trắng cho nổi bật */
+            box-shadow: 0px 3px 1px 2px #eeeeee; /* Đổ bóng nhẹ */
+            margin-bottom: 0 !important;
+            object-fit: cover;
+            transition: transform 0.2s ease-in-out;
+        }
+        .detail-avatar-large:hover {
+            transform: translateY(3px);
+            box-shadow: 0px 0px 0px 1px #eeeeee; /* Đổ bóng nhẹ */
+            
+        }
+
+        .header-info-text h2 {
+            font-size: 18px !important;
+            margin-bottom: 0px !important;
+            color: #1e293b;
+        }
+
+
+    
+        /* Buttons Action */
+        .btn-remove-staff {
+            background: #fff1f1; color: #ef4444; border: 1px solid #fee2e2;
+            padding: 5px 12px; border-radius: 6px; font-weight: 800; font-size: 11px;
+            cursor: pointer; transition: 0.2s;
+        }
+        .btn-remove-staff:hover { background: #ef4444; color: white; }
+
+        .btn-leave {
+            background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0;
+            padding: 5px 12px; border-radius: 6px; font-weight: 800; font-size: 11px; cursor: pointer;
+        }
+
+   
+
+        /* Container 8 mục - Tinh chỉnh gap để vừa 700px */
+        .permission-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px; /* Giảm nhẹ gap từ 14px xuống 10px để hiện đủ 8 mục */
+            padding: 10px 20px;
+            height: auto;
+            overflow: hidden !important;
+        }
+
+        /* Thẻ Card mỏng hơn một chút */
+        .perm-card {
+            background: white;
+            border-radius: 14px;
+            padding: 12px 20px; /* Giảm nhẹ padding */
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border: 1.5px solid #f1f5f9;
+            transition: all 0.3s ease;
+        }
+
+
+
+
+        .perm-card:hover {
+            border-color: #dee2e6;
+            transform: translateX(5px); /* Hiệu ứng đẩy nhẹ khi hover */
+        }
+
+        .perm-card.active {
+            background: #f8faff;
+            border-color: #e0e7ff;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.05);
+        }
+
+        .perm-card:hover:not(.disabled-card) {
+            border-color: #cbd5e1;
+            background: #fdfdfd;
+        }
+
+        /* Icon box nhỏ lại một chút để thanh thoát */
+        .icon-box {
+            width: 35px;
+            height: 35px;
+            min-width: 35px; /* Không cho icon bị bóp méo */
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 15px;
+            background: linear-gradient(135deg, var(--s), var(--e));
+        }
+
+
+        /* Phần nội dung chữ nằm giữa */
+  
+        .perm-info {
+            flex-grow: 1;
+        }
+
+        .perm-label {
+            font-size: 14.5px;
+            font-weight: 700;
+            color: #334155;
+        }
+
+        .perm-desc {
+            font-size: 11px;
+            color: #94a3b8;
+        }
+
+        /* Nút gạt Slim nhưng dài hơn một chút cho sang */
+        .switch-master {
+            width: 36px;
+            height: 20px;
+        }
+     
+        .switch-master input { opacity: 0; width: 0; height: 0; }
+        .slider-master {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #e2e8f0; transition: .3s; border-radius: 20px;
+        }
+        .slider-master:before {
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            position: absolute; content: ""; 
+            background-color: white; transition: .3s; border-radius: 50%;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        input:checked + .slider-master { background-color: #4f46e5; }
+        input:checked + .slider-master:before { transform: translateX(15px); }
+
+        .disabled-card { opacity: 0.6; cursor: not-allowed; }
+
+        .perm-card.disabled-card {
+            opacity: 0.5;
+            background: #f1f5f9;
+            cursor: not-allowed;
+            filter: grayscale(0.8);
+        }
+
+        /* Empty State */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            padding: 40px;
+            color: #94a3b8;
+            text-align: center;
+        }
+
+        /* Modal Request */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); z-index: 1000; display: none;
+            align-items: center; justify-content: center; backdrop-filter: blur(4px);
+        }
+        .modal-box {
+            background: white; padding: 25px; border-radius: 20px;
+            width: 440px; box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+        }
+        .req-card-item {
+            display: flex; align-items: center; gap: 15px; padding: 15px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .req-info { display: flex; flex-direction: column; flex-grow: 1; }
+        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
+        .btn-approve { background: var(--success-color); color: white; border: none; padding: 7px 20px; border-radius: 8px; font-weight: 800; cursor: pointer; }
+        .btn-reject { background: #94a3b8; color: white; border: none; padding: 7px 20px; border-radius: 8px; font-weight: 800; cursor: pointer; }
+
+
+/* --- TOAST NOTIFICATION (Thông báo nổi) --- */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.toast {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+    min-width: 300px;
+    animation: slideIn 0.3s ease forwards;
+    border-left: 5px solid;
+    font-weight: 600;
+    font-size: 14px;
+    color: #334155;
+}
+
+.toast.success { border-color: #10b981; }
+.toast.success i { color: #10b981; margin-right: 10px; font-size: 18px; }
+
+.toast.error { border-color: #ef4444; }
+.toast.error i { color: #ef4444; margin-right: 10px; font-size: 18px; }
+
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes fadeOut {
+    to { opacity: 0; transform: translateY(-10px); }
+}
+
+
+    </style>
+</head>
+<body>
+
+    <div class="table-view">
+        <div class="sidebar"></div>
+
+        <div class="main-container">
+            <main class="main-content">
+                <!-- Header -->
+                <header class="top-header">
+                    <div class="page-title">
+                        <i class="fa-solid fa-users-gear" style="color: var(--primary-color);"></i>
+                        <span>Quản lý Nhân sự</span>
+                    </div>
+
+                    <div class="header-actions">
+                        <!-- Nút tham gia (dành cho người ngoài) -->
+                        <button id="btn-join-store" class="btn-join" onclick="handleSendRequest()"></button>
+
+                        <!-- Toggle Cho phép tham gia (Admin/Manager) -->
+                        <div class="toggle-group" id="admin-toggle-group">
+                            <span style="font-weight: 800; color: #64748b; font-size: 15px;">
+                                <i class="fa-solid fa-door-open" style="margin-right: 5px;"></i>Cho phép tham gia
+                            </span>
+                            <label class="switch-master">
+                                <input type="checkbox" id="master-allow-toggle" disabled>
+                                <span class="slider-master"></span>
+                            </label>
+                        </div>
+
+                        <!-- Chuông thông báo -->
+                        <button class="btn-notification" onclick="window.openRequestModal()" style="background: white; border: 2px solid #f1f5f9; padding: 10px; border-radius: 12px; cursor: pointer; position: relative; transition: 0.2s;">
+                            <i class="fa-solid fa-bell" style="color: #64748b; font-size: 18px;"></i>
+                            <span id="notification-badge" style="position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; font-size: 10px; width: 18px; height: 18px; border-radius: 50%; display: none; align-items: center; justify-content: center; font-weight: 900; border: 2px solid white;">0</span>
+                        </button>
+                    </div>
+                </header>
+
+                <!-- Nội dung 2 panel -->
+                <div class="panel-container">
+                    <!-- BÊN TRÁI: TABLE -->
+                    <div class="table-section">
+                        <div class="custom-card" style="padding: 0;">
+                            <table class="custom-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nhân viên</th>
+                                        <th>Email</th>
+                                        <th>Vai trò</th>
+                                        <th style="text-align: center;">Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="member-table-body">
+                                    <!-- JS render -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- BÊN PHẢI: DETAIL/PERMS -->
+                    <div class="detail-section">
+                        <div class="custom-card" id="detail-card-content" style="padding: 0; background: #fdfdfd;">
+                            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #94a3b8; gap: 15px;">
+                                <div style="width: 80px; height: 80px; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fa-solid fa-user-gear" style="font-size: 35px; color: #cbd5e1;"></i>
+                                </div>
+                                <p style="font-weight: 600;">Chọn nhân viên để phân quyền</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- PHẦN MODAL (Đặt ngoài cùng để không bị lỗi)  -->
+    <!-- ============================================ -->
+
+    <!-- 1. MODAL DANH SÁCH YÊU CẦU (Nút chuông mở cái này) -->
+    <div class="modal-overlay" id="modal-join-requests" style="z-index: 1000;">
+        <div class="modal-box" style="width: 500px; max-height: 80vh; display: flex; flex-direction: column;">
+            <div style="padding-bottom: 15px; border-bottom: 1px solid #f1f5f9; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="color: #334155; margin: 0; display: flex; align-items: center; gap: 10px;">
+                    <i class="fa-solid fa-envelope-open-text" style="color: var(--primary-color);"></i>
+                    Danh sách yêu cầu
+                </h3>
+                <button onclick="window.closeRequestModal()" style="border: none; background: none; font-size: 20px; color: #94a3b8; cursor: pointer;">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <!-- Nơi JS đổ dữ liệu danh sách vào -->
+            <div id="modal-list-body" style="overflow-y: auto; flex-grow: 1; padding-right: 5px;"></div>
+            
+            <div style="padding-top: 15px; border-top: 1px solid #f1f5f9; margin-top: 10px;">
+                <button onclick="window.closeRequestModal()" style="width: 100%; padding: 12px; border: none; background: #f1f5f9; border-radius: 10px; cursor: pointer; font-weight: 800; color: #64748b;">
+                    Đóng
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. MODAL XÁC NHẬN XÓA/TỪ CHỐI (z-index cao hơn để đè lên danh sách) -->
+    <div class="modal-overlay" id="modal-confirm-action" style="z-index: 1100;">
+        <div class="modal-box" style="width: 380px; text-align: center; padding: 30px;">
+            <div style="width: 60px; height: 60px; background: #fee2e2; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px;">
+                <i class="fa-solid fa-triangle-exclamation" style="font-size: 28px; color: #ef4444;"></i>
+            </div>
+            <h3 style="color: #334155; margin-bottom: 10px; font-size: 20px;">Xác nhận từ chối?</h3>
+            <p style="color: #64748b; font-size: 14px; margin-bottom: 25px; line-height: 1.5;">
+                Bạn có chắc chắn muốn xóa yêu cầu này không? <br>Hành động này không thể hoàn tác.
+            </p>
+            
+            <div style="display: flex; gap: 15px; justify-content: center;">
+                <button onclick="window.closeConfirmModal()" 
+                        style="padding: 10px 25px; border-radius: 10px; border: 1px solid #e2e8f0; background: white; color: #64748b; font-weight: 700; cursor: pointer; font-size: 14px;">
+                    Quay lại
+                </button>
+                <button onclick="window.executeDeleteAction()" 
+                        style="padding: 10px 25px; border-radius: 10px; border: none; background: #ef4444; color: white; font-weight: 700; cursor: pointer; font-size: 14px; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);">
+                    Đồng ý Xóa
+                </button>
+            </div>
+        </div>
+    </div>
+
+    
+
+    <script>
+(function() {
+    const sidebarContainer = document.querySelector('.sidebar');
+    if (!sidebarContainer) return;
+    fetch('/components/Side-Bar.html')
+        .then(res => res.text())
+        .then(html => {
+            sidebarContainer.innerHTML = html;
+            sidebarContainer.querySelectorAll("script").forEach(oldScript => {
+                const newScript = document.createElement("script");
+                Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+                newScript.textContent = oldScript.textContent;
+                oldScript.parentNode.replaceChild(newScript, oldScript);
+            });
+        })
+        .catch(err => console.error("Sidebar error:", err));
+})();
+</script>
+
+
+<!-- Scripts -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, collection, doc, onSnapshot, updateDoc, deleteDoc, addDoc, setDoc, query, where, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCYOo3FUewsYVIVy-egCKxZfVDUjLmGAQo",
+        authDomain: "warehouse-management-77290.firebaseapp.com",
+        projectId: "warehouse-management-77290",
+        storageBucket: "warehouse-management-77290.firebasestorage.app",
+        messagingSenderId: "881477949386",
+        appId: "1:881477949386:web:7133b60dd2e0bc5d9ca133"
+    };
+    
+    const app = initializeApp(firebaseConfig);
+    const firestore = getFirestore(app);
+    const auth = getAuth(app);
+
+    const activeStoreId = localStorage.getItem('current_store_id');
+    const userGmail = localStorage.getItem('userEmail');
+    const isAdmin = localStorage.getItem('userRole') === 'super_admin';
+    
+    let storeOwnerGmail = "";
+    let masterAccess = false; 
+    let currentEmployees = [];
+    let clickedUserId = null;
+
+    // Danh sách 8 quyền với Icon và màu sắc Gradient đẹp
+    
+    const PERMS_DATA = [
+        { key: 'reports', label: 'Báo cáo', desc: 'Xem thống kê doanh thu và biểu đồ tăng trưởng', icon: 'fa-chart-pie', s: '#8b5cf6', e: '#a78bfa' },
+        { key: 'products', label: 'Sản phẩm', desc: 'Thêm mới, chỉnh sửa thông tin hàng hóa', icon: 'fa-box-open', s: '#3b82f6', e: '#60a5fa' },
+        { key: 'inventory', label: 'Kho hàng', desc: 'Quản lý phiếu nhập xuất và kiểm kê tồn kho', icon: 'fa-warehouse', s: '#f97316', e: '#fb923c' },
+        { key: 'history', label: 'Lịch sử', desc: 'Theo dõi nhật ký hoạt động của hệ thống', icon: 'fa-clock-rotate-left', s: '#64748b', e: '#94a3b8' },
+        { key: 'expenses', label: 'Thu chi', desc: 'Quản lý dòng tiền, quỹ tiền mặt của cửa hàng', icon: 'fa-money-bill-wave', s: '#10b981', e: '#34d399' },
+        { key: 'suppliers', label: 'Đối tác', desc: 'Quản lý danh sách nhà cung cấp hàng hóa', icon: 'fa-truck-fast', s: '#14b8a6', e: '#2dd4bf' },
+        { key: 'clients', label: 'Khách hàng', desc: 'Xem thông tin và công nợ khách hàng', icon: 'fa-users', s: '#ec4899', e: '#f472b6' },
+        { key: 'personnel', label: 'Nhân sự', desc: 'Cấp quyền, quản lý tài khoản và sa thải nhân viên', icon: 'fa-user-shield', s: '#6366f1', e: '#818cf8' }
+    ];
+
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            localStorage.setItem('userName', user.displayName);
+            localStorage.setItem('userPicture', user.photoURL);
+            if (typeof window.updateSidebarUI === "function") window.updateSidebarUI();
+
+            if (activeStoreId) {
+                const myDocId = `${activeStoreId}_${user.email.replace(/\./g, '_')}`;
+                const myRef = doc(firestore, "gmail_personnel", myDocId);
+                const mySnap = await getDoc(myRef);
+                if (mySnap.exists() && mySnap.data().photo !== user.photoURL) {
+                    await updateDoc(myRef, { photo: user.photoURL });
+                }
+            }
+        }
+    });
+
+    async function init() {
+        if (!activeStoreId || !userGmail) return;
+
+        // Chuẩn hóa email hiện tại về chữ thường để so sánh chính xác
+        const currentEmailLower = userGmail.toLowerCase();
+
+        // 1. Lấy thông tin Chủ sở hữu từ bảng Administrator
+        const storeSnap = await getDoc(doc(firestore, "Administrator", activeStoreId));
+        if (storeSnap.exists()) {
+            // Lưu email chủ sở hữu (chuẩn hóa chữ thường)
+            storeOwnerGmail = (storeSnap.data().ownerEmail || "").toLowerCase();
+        }
+
+        // 2. Xác định quyền Master (Admin hệ thống hoặc Chủ sở hữu cửa hàng)
+        const isOwner = (currentEmailLower === storeOwnerGmail);
+        masterAccess = (isAdmin || isOwner);
+
+        // --- CƠ CHẾ TỰ SỬA LỖI (AUTO-FIX) ---
+        // Nếu tôi là Chủ sở hữu, tôi tự kiểm tra xem mình có trong danh sách nhân viên chưa
+        // Nếu chưa hoặc sai quyền -> Tự động thêm/sửa ngay lập tức.
+        if (isOwner) {
+            const myDocId = `${activeStoreId}_${userGmail.replace(/\./g, '_')}`;
+            const myRef = doc(firestore, "gmail_personnel", myDocId);
+            
+            getDoc(myRef).then((snap) => {
+                if (!snap.exists() || snap.data().role !== 'Chủ sở hữu') {
+                    console.log("Đang tự động cấp quyền Chủ sở hữu...");
+                    setDoc(myRef, {
+                        storeId: activeStoreId,
+                        email: userGmail, // Giữ nguyên format gốc để hiển thị đẹp
+                        name: localStorage.getItem('userName') || "Admin",
+                        photo: localStorage.getItem('userPicture') || "",
+                        role: 'Chủ sở hữu',
+                        perms: {
+                            products: true, inventory: true, reports: true, history: true,
+                            expenses: true, suppliers: true, clients: true, personnel: true
+                        },
+                        joinedAt: new Date().toISOString()
+                    }, { merge: true });
+                }
+            });
+        }
+
+        updateMasterUI(); 
+
+        // 3. Lắng nghe thay đổi quyền (để cập nhật giao diện realtime)
+        const myDocId = `${activeStoreId}_${userGmail.replace(/\./g, '_')}`;
+        onSnapshot(doc(firestore, "gmail_personnel", myDocId), (snap) => {
+            if (snap.exists()) {
+                const myData = snap.data();
+                // Logic: Admin HOẶC Chủ HOẶC Quản lý (có quyền personnel)
+                const isManager = (myData.perms && myData.perms.personnel === true);
+                masterAccess = (isAdmin || isOwner || isManager);
+            } else {
+                // Nếu không tìm thấy doc (vd Admin hệ thống), giữ nguyên quyền từ bước 2
+                masterAccess = (isAdmin || isOwner);
+            }
+            updateMasterUI();
+            renderTable();
+            
+             if (clickedUserId) {
+                const updatedStaff = currentEmployees.find(e => e.uid === clickedUserId);
+                if (updatedStaff) renderPermissions(updatedStaff);
+            }
+        });
+
+        setupListeners();
+    }
+
+    function updateMasterUI() {
+        console.log("Master Access:", masterAccess);
+        const masterToggle = document.getElementById('master-allow-toggle');
+        const toggleGroup = document.getElementById('admin-toggle-group');
+        
+        if (masterToggle) {
+            masterToggle.disabled = !masterAccess;
+            // Thay đổi style nhẹ để biết là disabled
+            toggleGroup.style.opacity = masterAccess ? '1' : '0.5';
+            toggleGroup.style.cursor = masterAccess ? 'default' : 'not-allowed';
+        }
+    }
+
+    function setupListeners() {
+        // Lấy danh sách nhân viên
+        onSnapshot(query(collection(firestore, "gmail_personnel"), where("storeId", "==", activeStoreId)), (snap) => {
+            currentEmployees = [];
+            snap.forEach(d => currentEmployees.push({ uid: d.id, ...d.data() }));
+            renderTable();
+        });
+
+        // Lấy trạng thái "Cho phép tham gia"
+        onSnapshot(doc(firestore, "store_settings", activeStoreId), (docSnap) => {
+            const isOpen = docSnap.exists() ? docSnap.data().allowJoin : false;
+            const t = document.getElementById('master-allow-toggle');
+            if (t) { t.checked = isOpen; }
+            updateJoinButtonUI(isOpen);
+        });
+
+        // Lấy danh sách yêu cầu (Chỉ Admin/Chủ/Quản lý mới thấy)
+        // Lưu ý: Dù code chạy, nếu Firestore Security Rules chặn thì cũng không đọc được. 
+        // Nhưng ở mức giao diện thì ok.
+        // --- LẮNG NGHE YÊU CẦU THAM GIA ---
+        onSnapshot(query(collection(firestore, "join_requests"), where("storeId", "==", activeStoreId)), (snap) => {
+            const reqs = [];
+            snap.forEach(d => reqs.push({ id: d.id, ...d.data() }));
+            
+            // Cập nhật số lượng trên chuông
+            const badge = document.getElementById('notification-badge');
+            if(badge) { 
+                badge.innerText = reqs.length; 
+                // Logic: Có yêu cầu VÀ có quyền Master thì mới hiện badge đỏ
+                badge.style.display = (reqs.length > 0 && masterAccess) ? 'flex' : 'none'; 
+            }
+            
+            // GỌI HÀM RENDER NGAY TẠI ĐÂY
+            renderRequestModal(reqs);
+        });
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById('member-table-body');
+        if(!tbody) return; tbody.innerHTML = '';
+        
+        // Sắp xếp: Chủ lên đầu -> Các nhân viên khác
+        const sortedList = [...currentEmployees].sort((a, b) => (a.email === storeOwnerGmail ? -1 : 1));
+
+        // Kiểm tra quyền hiện tại của người đang xem (Tôi là ai?)
+        const amIOwner = (userGmail === storeOwnerGmail);
+        const amIAdmin = isAdmin;
+
+        sortedList.forEach(emp => {
+            const isMe = emp.email === userGmail;
+            const isTargetBoss = emp.email === storeOwnerGmail; // Người trong dòng này có phải chủ không?
+            
+            const tr = document.createElement('tr');
+            if (emp.uid === clickedUserId) tr.classList.add('selected');
+
+            // Avatar
+            const avatarHtml = `<img src="${emp.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" class="avatar-circle">`;
+
+            // Xử lý nút Hành động
+            let actionBtn = '-';
+
+            if (isMe) {
+                // Nếu là chính mình
+                if (isTargetBoss) {
+                    actionBtn = `<span style="color:#94a3b8; font-weight:700; font-size:10px;">CHỦ SỞ HỮU</span>`;
+                } else {
+                    actionBtn = `<button onclick="event.stopPropagation(); window.leaveJob('${emp.uid}')" class="btn-leave">NGHỈ VIỆC</button>`;
+                }
+            } else {
+                // Nếu là người khác -> Kiểm tra xem tôi có quyền sa thải họ không?
+                let canFire = false;
+
+                if (amIAdmin) {
+                    // Admin sa thải được tất cả, trừ Chủ sở hữu cửa hàng
+                    if (!isTargetBoss) canFire = true;
+                } 
+                else if (amIOwner) {
+                    // Chủ sở hữu sa thải được tất cả mọi người
+                    canFire = true;
+                } 
+                else if (masterAccess) {
+                    // Quản lý: Chỉ xóa được nhân viên thường, KHÔNG xóa được Chủ và Quản lý khác
+                    if (!isTargetBoss && emp.role !== 'Quản lý') {
+                        canFire = true;
+                    }
+                }
+
+                if (canFire) {
+                    actionBtn = `<button onclick="event.stopPropagation(); window.removeStaff('${emp.uid}', '${emp.name}')" class="btn-remove-staff">SA THẢI</button>`;
+                }
+            }
+
+            // Badge Role
+            let roleClass = 'badge-default';
+            let roleName = emp.role || 'Nhân viên';
+            if (isTargetBoss) { roleClass = 'badge-owner'; roleName = 'Chủ sở hữu'; } 
+            else if (emp.role === 'Quản lý') { roleClass = 'badge-manager'; }
+
+            tr.innerHTML = `
+                <td><div style="display:flex; align-items:center; gap:12px;">${avatarHtml}<span class="txt-name">${emp.name} ${isMe ? '(Bạn)' : ''}</span></div></td>
+                <td><span class="txt-email">${emp.email}</span></td>
+                <td><span class="badge-role ${roleClass}">${roleName}</span></td>
+                <td style="text-align: center;">${actionBtn}</td>
+            `;
+            tr.onclick = () => { 
+                clickedUserId = emp.uid; 
+                renderTable(); 
+                renderPermissions(emp); 
+            };
+            tbody.appendChild(tr);
+        });
+        checkJoinButtonVisibility();
+    }
+
+    // --- HÀM RENDER CHI TIẾT PHÂN QUYỀN ---
+    function renderPermissions(staff) {
+        const box = document.getElementById('detail-card-content');
+        if(!box) return;
+        
+        // Chuẩn hóa email để so sánh
+        const staffEmailLower = staff.email.toLowerCase();
+        const myEmailLower = userGmail.toLowerCase();
+        
+        const targetIsBoss = (staffEmailLower === storeOwnerGmail); // Người được chọn là chủ?
+        const isTargetMe = (staffEmailLower === myEmailLower);      // Người được chọn là tôi?
+        
+        const amIOwner = (myEmailLower === storeOwnerGmail);
+        const amIAdmin = isAdmin;
+        const currentUserIsBossOrAdmin = (amIOwner || amIAdmin);
+
+        const headerHtml = `
+            <div class="detail-header">
+                <img src="${staff.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" class="detail-avatar-large">
+                <div class="header-info-text">
+                    <h2 style="font-weight: 800; color: #1e293b;">${staff.name} ${isTargetMe ? '(Tôi)' : ''}</h2>
+                    <span style="color:#94a3b8; font-size: 12px; font-weight: 500;">${staff.email}</span>
+                </div>
+            </div>
+            <div style="padding: 15px 25px 5px 25px;">
+                <h4 style="color: #cbd5e1; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 800;">Thiết lập quyền hạn</h4>
+            </div>
+        `;
+
+        const gridHtml = `
+            <div class="permission-grid">
+                ${PERMS_DATA.map(p => {
+                    // 1. Logic hiển thị: Nếu là Chủ -> Luôn TRUE. Nếu không -> Lấy từ DB
+                    const hasPermission = targetIsBoss ? true : (staff.perms?.[p.key] === true);
+                    
+                    // 2. Logic cho phép gạt nút:
+                    let canToggle = false;
+
+                    if (currentUserIsBossOrAdmin) {
+                        // Admin/Chủ sửa được tất cả, TRỪ nút của chính ông Chủ (để tránh tự hủy quyền)
+                        if (!targetIsBoss) canToggle = true;
+                    } 
+                    else if (masterAccess) {
+                        // Quản lý thường: Sửa được người thường, không sửa được Chủ và Quản lý khác (về mục nhân sự)
+                        if (!targetIsBoss) {
+                            if (p.key !== 'personnel') canToggle = true; 
+                        }
+                    }
+
+                    // CSS Classes
+                    const activeClass = hasPermission ? 'active' : '';
+                    const disabledClass = canToggle ? '' : 'disabled-card';
+
+                    return `
+                        <div class="perm-card ${activeClass} ${disabledClass}">
+                            <div class="icon-box" style="--s:${p.s}; --e:${p.e}">
+                                <i class="fa-solid ${p.icon}"></i>
+                            </div>
+                            <div class="perm-info">
+                                <div class="perm-label">
+                                    ${p.label} 
+                                    ${p.key === 'personnel' ? '<i class="fa-solid fa-lock" style="font-size:10px; margin-left:5px; opacity:0.5;"></i>' : ''}
+                                </div>
+                                <div class="perm-desc">${p.desc}</div>
+                            </div>
+                            <label class="switch-master">
+                                <input type="checkbox" 
+                                    ${hasPermission ? 'checked' : ''} 
+                                    ${!canToggle ? 'disabled' : ''} 
+                                    onchange="window.updatePerm('${staff.uid}', '${p.key}', this.checked); this.closest('.perm-card').classList.toggle('active', this.checked)">
+                                <span class="slider-master"></span>
+                            </label>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+
+        box.innerHTML = headerHtml + gridHtml;
+    }
+
+
+// --- HÀM SHOW TOAST (Thay thế alert) ---
+window.showToast = (message, type = 'success') => {
+    let container = document.querySelector('.toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    
+    const icon = type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation';
+    
+    toast.innerHTML = `
+        <i class="fa-solid ${icon}"></i>
+        <span>${message}</span>
+    `;
+
+    container.appendChild(toast);
+
+    // Tự động tắt sau 3 giây
+    setTimeout(() => {
+        toast.style.animation = 'fadeOut 0.5s ease forwards';
+        setTimeout(() => toast.remove(), 500);
+    }, 3000);
+};
+
+
+    // Các hàm Global Actions
+    window.removeStaff = async (uid, name) => {
+        if(confirm(`Bạn có chắc chắn muốn sa thải [${name}]?`)) {
+            await deleteDoc(doc(firestore, "gmail_personnel", uid));
+            // Reset panel phải nếu xóa người đang chọn
+            if(clickedUserId === uid) {
+                clickedUserId = null;
+                document.getElementById('detail-card-content').innerHTML = `...`; // (Reset về default)
+            }
+        }
+    };
+
+    window.leaveJob = async (uid) => {
+        if(confirm("Bạn muốn nghỉ việc?")) {
+            await deleteDoc(doc(firestore, "gmail_personnel", uid));
+            window.location.reload();
+        }
+    };
+
+    window.updatePerm = async (uid, key, val) => {
+        // 1. Tìm nhân viên trong mảng
+        const staffIndex = currentEmployees.findIndex(e => e.uid === uid);
+        if (staffIndex === -1) return;
+        const staff = currentEmployees[staffIndex];
+
+        // Chuẩn hóa email
+        const myEmailLower = userGmail.toLowerCase();
+        const amIOwner = (myEmailLower === storeOwnerGmail);
+        const amIAdmin = isAdmin;
+        
+        // 2. KIỂM TRA QUYỀN (Bỏ qua nếu là Chủ/Admin)
+        if (!amIOwner && !amIAdmin) {
+            // Nếu không phải Chủ/Admin -> Là Quản lý thường
+            if (key === 'personnel') {
+                window.showToast("Chỉ Chủ cửa hàng mới được cấp quyền Nhân sự!", "error");
+                renderPermissions(staff); 
+                return;
+            }
+            if (!masterAccess) {
+                window.showToast("Bạn không có quyền thực hiện!", "error");
+                renderPermissions(staff);
+                return;
+            }
+        }
+
+        // 3. CẬP NHẬT GIAO DIỆN NGAY (Optimistic UI)
+        if (!staff.perms) staff.perms = {};
+        staff.perms[key] = val;
+        if (key === 'personnel') staff.role = val ? 'Quản lý' : 'Nhân viên';
+        
+        // 4. GỬI LÊN SERVER
+        const newPerms = { ...staff.perms };
+        if (!val) delete newPerms[key];
+        
+        const updateData = { perms: newPerms };
+        if (key === 'personnel') updateData.role = val ? 'Quản lý' : 'Nhân viên';
+
+        try { 
+            await updateDoc(doc(firestore, "gmail_personnel", uid), updateData);
+        } catch (e) { 
+            console.error(e);
+            window.showToast("Lỗi kết nối server!", "error");
+            // Revert nếu lỗi
+            staff.perms[key] = !val; 
+            renderPermissions(staff);
+        }
+    };
+
+    // Đưa hàm ra phạm vi toàn cục (Window) để nút bấm HTML gọi được
+    window.approveReq = async (reqId, name, email, photo) => {
+        const fixedUserId = `${activeStoreId}_${email.replace(/\./g, '_')}`;
+        try {
+            // 1. Thêm vào bảng gmail_personnel
+            await setDoc(doc(firestore, "gmail_personnel", fixedUserId), {
+                storeId: activeStoreId, 
+                name: name || 'No Name', 
+                email: email, 
+                photo: photo || '',
+                role: 'Nhân viên', 
+                perms: {}, 
+                joinedAt: new Date().toISOString()
+            });
+            
+            // 2. Xóa khỏi danh sách yêu cầu
+            await deleteDoc(doc(firestore, "join_requests", reqId));
+            
+            // 3. Đóng modal sau khi duyệt
+            document.getElementById('modal-join-requests').style.display = 'none';
+            alert(`Đã duyệt nhân viên: ${name}`);
+        } catch (e) { 
+            console.error("Lỗi duyệt:", e);
+            alert("Có lỗi xảy ra khi duyệt!"); 
+        }
+    };
+
+
+    // --- HÀM RENDER MODAL DANH SÁCH YÊU CẦU (Đã sửa lỗi hiển thị) ---
+// --- 1. HÀM RENDER MODAL DANH SÁCH YÊU CẦU (Đã sửa lỗi hiển thị nút) ---
+function renderRequestModal(list) {
+    const container = document.getElementById('modal-list-body');
+    if (!container) return;
+
+    // Nếu danh sách trống
+    if (!list || list.length === 0) {
+        container.innerHTML = `
+            <div style="text-align:center; padding: 40px; color: #94a3b8;">
+                <i class="fa-solid fa-inbox" style="font-size: 40px; margin-bottom: 10px; opacity: 0.5;"></i>
+                <p>Hiện không có yêu cầu nào.</p>
+            </div>`;
+        return;
+    }
+
+    // Render danh sách có nút bấm
+    container.innerHTML = list.map(r => {
+        // Xử lý ảnh (nếu null thì dùng ảnh default)
+        const userImg = (r.photo && r.photo !== "null" && r.photo !== "") 
+                        ? r.photo 
+                        : 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+
+        // Escaping chuỗi để tránh lỗi khi truyền vào hàm onclick
+        const safeName = r.name ? r.name.replace(/'/g, "\\'") : 'Không tên';
+        const safeEmail = r.email ? r.email : '';
+        const safePhoto = r.photo ? r.photo : '';
+
+        return `
+            <div class="req-card-item" style="display: flex; align-items: center; justify-content: space-between; padding: 15px; border-bottom: 1px solid #f1f5f9; gap: 10px;">
+                <!-- Thông tin user -->
+                <div style="display: flex; align-items: center; gap: 12px; flex-grow: 1;">
+                    <img src="${userImg}" 
+                         style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #e2e8f0;">
+                    <div style="display: flex; flex-direction: column;">
+                        <span style="font-weight: 800; color: #334155; font-size: 15px;">${safeName}</span>
+                        <span style="font-size: 12px; color: #64748b;">${safeEmail}</span>
+                    </div>
+                </div>
+
+                <!-- Nút hành động -->
+                <div class="btn-group" style="display: flex; gap: 8px;">
+                    <button onclick="window.approveReq('${r.id}', '${safeName}', '${safeEmail}', '${safePhoto}')" 
+                            style="background: #10b981; color: white; border: none; padding: 8px 15px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13px; box-shadow: 0 2px 5px rgba(16, 185, 129, 0.3);">
+                        <i class="fa-solid fa-check"></i> Duyệt
+                    </button>
+                    <button onclick="window.deleteReq('${r.id}')" 
+                            style="background: #ef4444; color: white; border: none; padding: 8px 15px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13px; box-shadow: 0 2px 5px rgba(239, 68, 68, 0.3);">
+                        <i class="fa-solid fa-xmark"></i> Hủy
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// --- 2. HÀM DUYỆT YÊU CẦU (Đã thêm Toast) ---
+window.approveReq = async (reqId, name, email, photo) => {
+    // Tạo ID cố định để tránh trùng lặp
+    const fixedUserId = `${activeStoreId}_${email.replace(/\./g, '_')}`;
+    
+    try {
+        // Thêm vào bảng gmail_personnel
+        await setDoc(doc(firestore, "gmail_personnel", fixedUserId), {
+            storeId: activeStoreId, 
+            name: name, 
+            email: email, 
+            photo: photo,
+            role: 'Nhân viên', 
+            perms: {}, 
+            joinedAt: new Date().toISOString()
+        });
+        
+        // Xóa khỏi bảng join_requests
+        await deleteDoc(doc(firestore, "join_requests", reqId));
+        
+        window.showToast(`Đã thêm nhân viên: ${name}`, 'success');
+
+        // Nếu hết yêu cầu thì đóng modal luôn cho gọn
+        const remaining = document.querySelectorAll('.req-card-item').length;
+        if (remaining <= 1) window.closeRequestModal();
+
+    } catch (e) { 
+        console.error("Lỗi duyệt:", e);
+        window.showToast("Lỗi khi duyệt nhân viên!", 'error'); 
+    }
+};
+
+// ============================================================
+// PHẦN 2: LOGIC XÁC NHẬN XÓA (MODAL CẢNH BÁO MỚI)
+// ============================================================
+
+let pendingReqId = null; // Biến lưu tạm ID cần xóa
+
+// Hàm 1: Bấm nút "Hủy" ở danh sách -> Hiện Modal Xác nhận
+window.deleteReq = (id) => { 
+    pendingReqId = id; // Lưu ID lại
+    
+    // Tìm modal xác nhận
+    const confirmModal = document.getElementById('modal-confirm-action');
+    
+    if (confirmModal) {
+        confirmModal.style.display = 'flex'; // Hiện modal xác nhận lên
+        // (Mẹo) Ẩn tạm modal danh sách đi để đỡ rối mắt (tuỳ chọn)
+        // document.getElementById('modal-join-requests').style.display = 'none';
+    } else {
+        // Nếu lỡ chưa có HTML modal xác nhận thì dùng confirm thường
+        if(confirm("Bạn muốn xóa yêu cầu này?")) window.executeDeleteAction();
+    }
+};
+
+// Hàm 2: Bấm nút "Đồng ý Xóa" -> Thực hiện xóa thật
+window.executeDeleteAction = async () => {
+    if (!pendingReqId) return;
+
+    try {
+        await deleteDoc(doc(firestore, "join_requests", pendingReqId));
+        
+        window.showToast("Đã từ chối yêu cầu.", 'success');
+        window.closeConfirmModal();
+        
+        // Nếu muốn modal danh sách hiện lại (nếu nãy có ẩn)
+        // document.getElementById('modal-join-requests').style.display = 'flex';
+
+    } catch (e) {
+        console.error(e);
+        window.showToast("Lỗi khi xóa!", 'error');
+    }
+};
+
+// Hàm 3: Đóng Modal xác nhận
+window.closeConfirmModal = () => {
+    const confirmModal = document.getElementById('modal-confirm-action');
+    if (confirmModal) confirmModal.style.display = 'none';
+    pendingReqId = null;
+    
+    // Hiện lại danh sách yêu cầu (để user còn thao tác tiếp)
+    const listModal = document.getElementById('modal-join-requests');
+    if(listModal) listModal.style.display = 'flex';
+};
+
+// --- 4. HÀM GỬI YÊU CẦU (Dành cho người ngoài) ---
+window.handleSendRequest = async function() {
+    if(!activeStoreId) return window.showToast("Chưa chọn cửa hàng!", 'error');
+    
+    const email = localStorage.getItem('userEmail');
+    const name = localStorage.getItem('userName');
+    const pic = localStorage.getItem('userPicture') || "";
+
+    if (!email || email === 'guest') return window.showToast("Vui lòng đăng nhập Google!", 'error');
+
+    try {
+        const q = query(collection(firestore, "join_requests"), where("storeId","==",activeStoreId), where("email","==", email));
+        const snap = await getDocs(q);
+        
+        if(!snap.empty) return window.showToast("Bạn đã gửi yêu cầu rồi, vui lòng chờ!", 'error');
+
+        await addDoc(collection(firestore, "join_requests"), {
+            storeId: activeStoreId, email, name, photo: pic, timestamp: new Date().toISOString()
+        });
+        
+        window.showToast("Gửi yêu cầu thành công!", 'success');
+    } catch (e) { 
+        console.error(e);
+        window.showToast("Lỗi đường truyền!", 'error');
+    }
+};
+
+// --- 5. CẬP NHẬT TRONG SETUP LISTENERS ---
+// (Đảm bảo đoạn này nằm trong hàm setupListeners hoặc init)
+/* 
+    onSnapshot(query(collection(firestore, "join_requests"), where("storeId", "==", activeStoreId)), (snap) => {
+        const reqs = [];
+        snap.forEach(d => reqs.push({ id: d.id, ...d.data() }));
+        const badge = document.getElementById('notification-badge');
+        if(badge) { 
+            badge.innerText = reqs.length; 
+            badge.style.display = (reqs.length > 0 && masterAccess) ? 'flex' : 'none'; 
+        }
+        renderRequestModal(reqs); // Gọi hàm render mới
+    });
+*/
+
+
+
+    document.getElementById('master-allow-toggle').onchange = async (e) => {
+        if(!masterAccess) {
+            e.target.checked = !e.target.checked; // Revert visual
+            return alert("Bạn không có quyền thực hiện!");
+        }
+        await setDoc(doc(firestore, "store_settings", activeStoreId), { allowJoin: e.target.checked }, { merge: true });
+    };
+
+// --- HÀM MỞ/ĐÓNG MODAL YÊU CẦU (Đã gắn vào Window để nút chuông gọi được) ---
+
+// ============================================================
+// PHẦN 1: LOGIC MỞ DANH SÁCH YÊU CẦU (NÚT CHUÔNG)
+// ============================================================
+
+window.openRequestModal = () => {
+    // Kiểm tra quyền Master/Admin
+    if (!masterAccess) {
+        window.showToast("Bạn không có quyền xem yêu cầu!", "error");
+        return;
+    }
+
+    const modalList = document.getElementById('modal-join-requests');
+    if (modalList) {
+        modalList.style.display = 'flex'; // Mở modal danh sách
+        // Reset lại opacity để có hiệu ứng
+        setTimeout(() => { modalList.style.opacity = '1'; }, 10);
+    } else {
+        console.error("Không tìm thấy ID: modal-join-requests");
+    }
+};
+
+window.closeRequestModal = () => {
+    const modalList = document.getElementById('modal-join-requests');
+    if (modalList) {
+        modalList.style.display = 'none';
+    }
+};
+
+    function checkJoinButtonVisibility() {
+        const btn = document.getElementById('btn-join-store');
+        if (!btn) return;
+        const isMember = currentEmployees.some(e => e.email === userGmail);
+        const isBoss = (userGmail === storeOwnerGmail);
+        // Ẩn nếu: Là Viewer, Thành viên, Chủ, hoặc Admin
+        if (localStorage.getItem('userRole') === 'viewer' || isMember || isBoss || isAdmin) {
+            btn.style.display = 'none';
+        } else {
+            btn.style.display = 'flex';
+        }
+    }
+    function updateJoinButtonUI(isOpen) {
+        const btn = document.getElementById('btn-join-store');
+        if (!btn) return;
+        btn.classList.toggle('disabled', !isOpen);
+        btn.innerHTML = isOpen ? `<i class="fa-solid fa-right-to-bracket"></i> Tham gia` : `<i class="fa-solid fa-lock"></i> Đã khóa`;
+        btn.onclick = isOpen ? window.handleSendRequest : null;
+    }
+
+    init();
+</script>
+
+<!-- Sidebar Loader -->
+
+</body>
+</html>

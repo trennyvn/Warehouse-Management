@@ -1,0 +1,456 @@
+/* --- CSS DÙNG CHUNG CHO TOÀN BỘ HỆ THỐNG --- */
+:root {
+    --primary-bg: #f0f2f5;
+    --text-color: #444;
+    --active-blue: #0056e0;
+    --hover-blue: #007bff;
+    --border-color: #edf0f2;
+}
+
+* { 
+            font-size: 1em;
+            font-weight: bold;
+            font-family: 'Baloo 2', cursive;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+}
+
+
+
+/* Định dạng Sidebar để tránh bị trắng xóa */
+.sidebar {
+    width: 260px; /* Độ rộng của Sidebar */
+    min-width: 260px;
+    background-color: #f9fafe; /* Cho màu trắng hoặc màu của sidebar bạn muốn */
+    
+ 
+    position: sticky;
+    top: 0;
+    border: 1px solid #ffffff;
+    box-shadow: -5px 5px 1px #b5b5ec, inset 0px 0px 2px #b5b5ec ;
+    
+    padding:5px;
+    height: calc(100vh - 40px); /* Giới hạn chiều cao = chiều cao màn hình trừ đi padding (20px top + 20px bottom) */
+    overflow-y: hidden;          /* Hiện thanh cuộn nội bộ khi nội dung dài */
+    overflow-x: hidden;         /* Chặn cuộn ngang không cần thiết */
+    position: relative;
+
+    border-radius: 15px;
+}
+
+/* Ẩn thanh cuộn cho Chrome, Safari và Edge */
+.sidebar::-webkit-scrollbar {
+    display: none;
+}
+
+/* Ẩn thanh cuộn cho IE, Edge và Firefox */
+.sidebar {
+    -ms-overflow-style: none;  /* IE và Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+
+
+/* 2. CÁC THÀNH PHẦN PHỤ */
+.user-select { 
+    height: 40px;
+    padding: 0 10px; 
+    border: 1px solid #dee2e6; 
+    border-radius: 8px; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    margin-bottom: 25px; 
+    cursor: pointer;
+    font-size: 14px;
+}
+
+hr {
+    border: 0;
+    border-top: 2px solid #eee;
+    margin: 10px 0;
+}
+
+/* 3. MENU MỤC ĐƠN (Sản phẩm, Kho, Chế độ POS...) */
+.nav-item {
+    height: 45px;
+    padding: 5px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    color: #555;
+    margin-bottom: 2px;
+    transition: all 0.25s ease;
+    
+ 
+}
+
+.nav-item i { 
+    width: 30px; 
+    font-size: 17.5px; 
+    
+    border-radius: 25%;
+    color: #636e72; 
+    margin-right: 10px;
+    text-align: center;
+    transition: color 0.25s ease;
+}
+
+
+/* Trạng thái Active & Hover cho mục đơn */
+.nav-item.active { 
+    background: #f1f3f5; 
+    color: var(--active-blue) !important; 
+    font-weight: 600; 
+}
+
+.nav-item.active i { color: var(--active-blue) !important; }
+
+.nav-item:hover:not(.active) { 
+    background: #9f9ffc;
+   color: #ffffff;
+  
+    
+}
+
+/* Kích hoạt hiệu ứng cho icon khi Hover vào dòng cha */
+.nav-item:hover:not(.active) i {
+    /* Ép màu icon thành trắng để nổi bật trên nền tím */
+    color: #ffffff !important; 
+    
+    /* Hiệu ứng shadow bạn đã viết */
+    box-shadow: 0 0 0 5px #9f9ffc, inset 0 0 0 50px #9f9ffc;
+    
+    /* Đảm bảo transition mượt cả màu lẫn shadow */
+    transition: all 0.25s ease;
+}
+
+/* 4. CẤU TRÚC DROPDOWN (BÁO CÁO & LIÊN HỆ) */
+.report-group, .nav-group {
+border: 1px solid #ffffff;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    margin: 0px 0px 0px 0;
+}
+
+/* Trạng thái khi mở cụm menu */
+.report-group.active, .nav-group.active {
+    background-color: #f8f9fa; 
+  
+    border: 3px solid #ffffff;
+    box-shadow: -2px 2px 1px #b5b5ec;
+}
+
+/* Header của cụm (Dòng chứa chữ "Báo cáo", "Liên hệ") */
+.report-header, .nav-header {
+    display: flex;
+    align-items: center;
+    padding: 5px 5px;
+    
+    cursor: pointer;
+    color: var(--text-color);
+    transition: all 0.3s ease;
+    border-radius: 10px;
+}
+
+.report-header:hover, .nav-header:hover {
+    color: var(--hover-blue);
+}
+
+.report-group.active .report-header, 
+.nav-group.active .nav-header {
+    background-color: white;
+    color: #000;
+    font-weight: 600;
+    border-radius: 10px 10px 0 0;
+    
+}
+
+/* Icon chính và Mũi tên trong Header */
+.report-icon-main, .nav-icon-wrapper {
+    width: 22px;
+    margin-right: 10px;
+    display: flex;
+    color: #888;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
+}
+
+.report-arrow, .arrow {
+    margin: 0 10px 0 auto;
+    font-size: 15px;
+    color: #888;
+    transition: transform 0.3s;
+}
+
+.report-group.active .report-arrow, 
+.nav-group.active .arrow {
+    transform: rotate(180deg);
+}
+
+/* Hiệu ứng trượt cho Báo cáo & Liên hệ (Accordion style) */
+.report-menu, .sub-menu {
+    display: flex;
+    flex-direction: column;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease, opacity 0.3s ease;
+}
+
+.report-group.active .report-menu, 
+.nav-group.active .sub-menu {
+    max-height: 300px; /* Đủ rộng cho các item */
+    opacity: 1;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+/* Xoay mũi tên khi mở */
+.report-arrow, .arrow {
+    transition: transform 0.3s ease;
+}
+.report-group.active .report-arrow, 
+.nav-group.active .arrow {
+    transform: rotate(180deg);
+}
+
+/* Mục con bên trong (Link) */
+.report-link, .sub-item {
+    display: flex;
+    align-items: center;
+    padding: 12.5px 10px 12.5px 5px; 
+    font-size: 14.5px;
+    color: var(--text-color);
+    text-decoration: none;
+    transition: all 0.2s;
+   
+}
+
+.report-link i, .sub-item i {
+    width: 22px;
+    margin-right: 10px;
+    font-size: 15px;
+    text-align: center;
+    color: #555;
+   
+}
+
+.report-link:hover, .sub-item:hover {
+
+     
+       background: #9f9ffc;
+   color: #ffffff;
+}
+
+
+/* Kích hoạt hiệu ứng cho icon khi Hover vào dòng cha */
+.sub-item:hover:not(.active) i {
+    /* Ép màu icon thành trắng để nổi bật trên nền tím */
+    color: #ffffff !important; 
+  
+    /* Hiệu ứng shadow bạn đã viết */
+    box-shadow: 0 0 0 5px #9f9ffc, inset 0 0 0 50px #9f9ffc;
+    
+    /* Đảm bảo transition mượt cả màu lẫn shadow */
+    transition: all 0.25s ease;
+}
+
+/* Container chính của Sidebar (đảm bảo nav-menu có display: flex) */
+.nav-menu {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 40px);
+    padding-bottom: 15px;
+    
+}
+
+
+.sidebar-footer {
+    margin-top: auto; /* Đẩy xuống dưới cùng */
+    padding: 10px;
+    border-top: 1px solid #eee;
+}
+
+/* Nút Thu gọn */
+.collapse-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    cursor: pointer;
+    margin-bottom: 10px;
+    color: #666;
+    font-size: 14px;
+}
+
+
+
+
+/* Profile style */
+.user-profile {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: 0.2s;
+    gap:5px;
+}
+.user-profile:hover { background: #f0f0f0; }
+
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center; /* Quan trọng để ảnh không bị lệch */
+    background-repeat: no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    overflow: hidden; /* Đảm bảo ảnh không tràn ra ngoài */
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+}
+
+.user-name {
+    font-weight: 700;
+    font-size: 13px;
+    color: #1a1a1a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-email {
+    font-size: 11px;
+    color: #777;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Nút Logout thay thế cho user-options hoặc bổ sung */
+.btn-logout {
+    background: none;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 6px;
+    transition: 0.2s;
+}
+
+.btn-logout:hover {
+    color: #d32f2f;
+    background: #fff0f0;
+}
+
+
+
+
+/* Hiệu ứng cho User Popover (Google style) */
+.user-popover {
+    position: absolute;
+    bottom: 70px; /* Khoảng cách trên profile */
+    left: 10px;
+    right: 10px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    border: 1px solid #e0e0e0;
+    
+    /* Hiệu ứng mượt */
+    display: flex !important; /* Dùng flex để các mục bên trong chuẩn */
+    flex-direction: column;
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(15px); /* Trượt từ dưới lên */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none; /* Tránh click nhầm khi đang ẩn */
+    z-index: 1000;
+}
+
+.user-popover.active {
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.user-popover.active { display: flex; }
+
+/* Các mục trong menu */
+.popover-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    text-decoration: none;
+    color: #444;
+    font-size: 14px;
+    border: none;
+    background: none;
+    width: 100%;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.2s;
+}
+
+.popover-item:hover { background-color: #f5f5f5; }
+.popover-item i { width: 16px; font-size: 16px; color: #666; }
+
+.popover-divider { height: 1px; background: #eee; margin: 4px 0; }
+
+.logout-red:hover { color: #d32f2f; }
+.logout-red:hover i { color: #d32f2f; }
+
+
+
+.logout-btn {
+    text-decoration: none;
+    background: #ff7777;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    transition: 0.15s ease-in-out;
+    outline-offset: -5px;
+}
+
+.logout-btn:hover {
+    background: #e60000;
+    outline: 1px solid #fff;
+    outline-offset: -2px;
+}
+
+
+
+
+
+

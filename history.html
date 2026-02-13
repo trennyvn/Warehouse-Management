@@ -1,0 +1,2287 @@
+    <!DOCTYPE html>
+    <html lang="vi">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+        
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script src="../../my-custom-ui.js"></script>
+        <link rel="stylesheet" href="/sidebar.css">
+
+        <style>
+        * { font-family: 'Baloo 2', cursive; box-sizing: border-box; }
+
+        /* =========================================
+        1. CẤU TRÚC CHUNG
+        ========================================= */
+body { overflow: hidden; background: #eef2f7; margin: 0; min-height: 100vh; width: 100vw; display: flex; user-select: none; position: relative; }
+        
+        body::after { content: ""; position: fixed; width: 150vmax; height: 150vmax; top: -25%; left: -25%; z-index: -1; background-image: radial-gradient(circle at 20% 30%, #d0bcff 0%, transparent 40%), radial-gradient(circle at 80% 70%, #a1c4fd 0%, transparent 40%), radial-gradient(circle at 50% 50%, #c2e9fb 0%, transparent 50%); filter: blur(80px); animation: waveMovement 15s linear infinite; }
+        @keyframes waveMovement { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .table-view { display: flex; width: 100%; min-height: 100vh; padding: 20px; gap: 10px; }
+        .main-content { 
+            flex-grow: 1; border: 3px solid #ffffff; box-shadow: -5px 5px 1px #b5b5ec; 
+            background-color: #F8FAFC; height: calc(100vh - 40px); overflow-y: auto; 
+            overflow-x: hidden; position: relative; border-radius: 15px; padding: 15px;
+            scrollbar-width: none;
+        }
+        .main-content::-webkit-scrollbar { display: none; }
+
+.content-wrapper {
+  padding: 0;
+  background: transparent;
+  min-height: auto;
+}
+
+
+
+    .top-header { 
+        display: flex; align-items: center; justify-content: space-between; 
+        padding: 0 5px; height: 70px; 
+    }
+
+
+        /* HEADER */
+        .page-title { font-size: 25px; font-weight: 700; color: #1a1a1a; margin: 0; display: flex; align-items: center; white-space: nowrap; }
+        .page-title i { margin-right: 12px; color: #f39c12; }
+        .top-header { display: flex; align-items: center; justify-content: space-between; padding: 0 25px; border-bottom: 1px solid #e0e0e0; height: 75px; background: #fff; flex-shrink: 0; }
+        .header-right { display: flex; align-items: center; gap: 15px; position: relative; }
+
+        /* LAYOUT 2 CỘT */
+        .history-layout { display: flex; height: calc(100vh - 75px); width: 100%; }
+        .history-left { width: 450px; min-width: 450px; background: #fff; border-right: 1px solid #e0e0e0; overflow-y: auto; display: flex; flex-direction: column; }
+        .history-left::-webkit-scrollbar {
+            display: none;
+        }
+        .history-right { flex: 1; background: #f8fafc; overflow-y: auto; display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; position: relative; }
+
+        /* UI CHI TIẾT */
+        .detail-header-bar { display: none; align-items: center; justify-content: space-between; padding: 12px 25px; background: #ffffff; border-bottom: 1px solid #eef2f7; position: sticky; top: 0; z-index: 10; height: 65px; }
+        .detail-header-bar.active { display: flex; }
+        .detail-header-info { display: flex; align-items: center; gap: 12px; }
+        .detail-header-info i { font-size: 20px; color: #f39c12; background: #fff9f0; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 10px; }
+        .detail-header-info span { font-weight: 600; font-size: 16px; color: #333; }
+
+        .empty-state { margin: auto; text-align: center; color: #999; display: none; flex-direction: column; align-items: center; }
+        .empty-state.show { display: flex; }
+        .empty-state i { font-size: 50px; margin-bottom: 15px; color: #e0e0e0; }
+
+        /* DROPDOWNS */
+        .custom-date-wrapper { display: flex; align-items: center; background: #fff; border: 1px solid #e0e0e0; border-radius: 50px; padding: 5px 15px; gap: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); height: 42px; position: relative; transition: 0.3s; }
+        .custom-type-wrapper { display: flex; align-items: center; justify-content: space-between; background: #fff; border: 1px solid #e0e0e0; border-radius: 50px; padding: 0 20px; min-width: 180px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); height: 42px; cursor: pointer; position: relative; transition: 0.3s; }
+        .custom-date-wrapper:hover, .custom-type-wrapper:hover { border-color: #f39c12; box-shadow: 0 4px 10px rgba(243, 156, 18, 0.15); }
+
+        .c-dropdown { position: relative; cursor: pointer; text-align: center; }
+        .c-selected { font-weight: 600; color: #333; padding: 5px 0; user-select: none; cursor: pointer; display: inline-block; text-align: center; }
+        #displayMonth { width: 25px; }
+        #displayYear { width: 40px; }
+        .date-separator { font-weight: 700; color: #ccc; margin: 0 2px; }
+
+        .c-options, .type-options { display: none; position: absolute; background: #fff; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 1px solid #f0f0f0; z-index: 1000; padding: 5px; }
+        .c-options { top: 130%; left: 50%; transform: translateX(-50%); min-width: 80px; max-height: 300px; overflow-y: auto; animation: fadeInCentered 0.2s ease-out forwards; }
+        .type-options { top: 130%; right: 0; left: auto; width: 100%; min-width: 200px; animation: fadeInDown 0.2s ease-out forwards; }
+        
+        .c-dropdown.active .c-options, .custom-type-wrapper.active .type-options { display: block; }
+        .c-option-item { padding: 10px 15px; font-weight: 500; color: #555; border-radius: 10px; transition: 0.2s; cursor: pointer; display: flex; align-items: center; font-size: 14px; margin-bottom: 2px; justify-content: center; }
+        .type-options .c-option-item { justify-content: flex-start; }
+        .c-option-item:hover { background-color: #fff6e0; color: #d35400; }
+        .c-option-item.selected { background-color: #f39c12; color: #fff; }
+
+        @keyframes fadeInCentered { from { opacity: 0; transform: translate(-50%, -10px); } to { opacity: 1; transform: translate(-50%, 0); } }
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ITEMS LEFT */
+        .history-item { padding: 15px 20px; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: all 0.2s; display: flex; align-items: flex-start; gap: 15px; background: #fff; }
+        .history-item:hover { background: #f8fafc; }
+        .history-item.active { background: #eff6ff; border-left: 4px solid #f39c12; }
+        .history-item-icon-box { color: #f39c12; font-size: 18px; padding-top: 4px; }
+        .history-item-body { flex: 1; }
+
+        /* DETAIL RIGHT */
+        .detail-summary { display: flex; justify-content: space-between; align-items: flex-start; padding: 20px 25px; background: #fff; border-bottom: 1px solid #f1f5f9; font-size: 14px; line-height: 1.6; color: #475569; }
+                /* Sửa lại class này để ô nhỏ gọn hơn */
+        .summary-box { 
+            background: #f8fafc; 
+            border: 1px solid #e2e8f0; 
+            padding: 6px 12px; /* Giảm độ dày trên dưới */
+            border-radius: 6px; /* Bo góc nhẹ hơn */
+            font-size: 13px; 
+            color: #64748b; 
+            display: inline-flex; /* Để canh giữa nội dung theo chiều dọc */
+            align-items: center;
+            gap: 5px;
+            height: 34px; /* Cố định chiều cao cho đồng bộ */
+            white-space: nowrap;
+        }
+
+        .summary-box strong, 
+        .summary-box b { 
+            color: #1e293b; 
+            font-size: 13px; /* Chữ đậm to bằng chữ thường cho cân đối */
+            padding-top: 1px;
+        }
+        .product-table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: 850px; }
+        .product-table th { text-align: left; padding: 12px 15px; font-size: 13px; color: #64748b; background: #f8fafc; border-bottom: 2px solid #edf2f7; }
+        .product-row td { padding: 12px 15px; vertical-align: middle; border-bottom: 1px solid #f1f5f9; }
+
+        .qty-plus { color: #27ae60; font-weight: 700; }
+        .qty-minus { color: #ef4444; font-weight: 700; }
+        .google-account-pill { display: flex; align-items: center; gap: 8px; padding: 4px 4px 4px 12px; border: 1px solid #e0e0e0; border-radius: 50px; cursor: pointer; background: #fff; }
+        .google-account-pill:hover { background: #f8f9fa; }
+        .google-account-pill .user-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
+        .user-pill-large { display: flex; align-items: center; gap: 10px; }
+        .avatar-circle { width: 35px; height: 35px; background: #818cf8; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; }
+        
+        .action-icons i { cursor: pointer; transition: 0.2s; margin-left: 10px; color: #64748b; }
+        .action-icons i:hover { color: #ef4444; }
+
+
+        /* Thẻ Khách hàng xịn xò */
+.customer-card-new {
+    display: flex;
+    align-items: center;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    padding: 6px 15px 6px 6px;
+    border-radius: 40px; /* Bo tròn viên thuốc */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+    margin-left: auto;
+    transition: all 0.2s ease;
+    min-width: 180px;
+    max-width: 250px;
+}
+
+.customer-card-new:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+    transform: translateY(-1px);
+    border-color: #cbd5e1;
+}
+
+/* Avatar khách hàng */
+.cc-avatar-img {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    margin-right: 10px;
+}
+
+/* Avatar mặc định (khi không có ảnh) */
+.cc-avatar-placeholder {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #60a5fa, #2563eb); /* Màu xanh gradient */
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    margin-right: 10px;
+    font-size: 16px;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.cc-info { display: flex; flex-direction: column; line-height: 1.2; overflow: hidden; }
+.cc-role { font-size: 10px; color: #94a3b8; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+.cc-name { font-size: 13px; color: #1e293b; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cc-phone { font-size: 11px; color: #64748b; font-family: monospace; }
+
+
+/* --- 1. USER PROFILE TRÊN HEADER (MỚI) --- */
+/* --- 1. USER PROFILE HEADER (Chỉnh lại cho chuẩn) --- */
+.user-profile-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 12px;
+    cursor: pointer;
+    border-radius: 30px; /* Bo tròn giống Google */
+    transition: 0.2s;
+    border: 1px solid transparent;
+}
+.user-profile-box:hover { 
+    background: #f1f5f9; 
+    border-color: #e2e8f0;
+}
+
+.u-avatar-circle {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center;
+    background-color: #4f46e5;
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 15px;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    flex-shrink: 0;
+}
+
+.u-info-col { display: flex; flex-direction: column; line-height: 1.2; }
+.u-name-text { font-weight: 700; color: #1e293b; font-size: 13px; }
+.u-sub-text { font-size: 11px; color: #64748b; font-weight: 500; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* --- 2. THẺ NGƯỜI THỰC THI (MỚI - GIỐNG THẺ KHÁCH) --- */
+.executor-card {
+    display: flex;
+    align-items: center;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    padding: 4px 12px 4px 4px;
+    border-radius: 30px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.ec-avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 8px;
+    border: 1px solid #f1f5f9;
+}
+
+.ec-placeholder {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #8b5cf6, #6d28d9); /* Màu tím admin */
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    margin-right: 8px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.ec-info { display: flex; flex-direction: column; line-height: 1.1; }
+.ec-label { font-size: 9px; color: #94a3b8; text-transform: uppercase; font-weight: 700; }
+.ec-name { font-size: 12px; color: #1e293b; font-weight: 700; }
+/* Đã bỏ cc-phone */
+
+
+
+/* --- CSS CHO DROPDOWN KHOẢNG THỜI GIAN --- */
+.history-period-container { position: relative; margin-right: 10px; }
+.btn-history-period {
+    background: #fff;
+    border: 1px solid #cecece;
+    border-radius: 12px;
+    padding: 0 15px;
+    height: 42px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    color: #1a1a1a;
+}
+.btn-history-period:hover { background: #f8fafc; transform: translateY(-1px); }
+.btn-history-period i { color: #3b82f6; }
+
+.history-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+    width: 280px;
+    z-index: 2000;
+    padding: 8px;
+    border: 1px solid #eef2f7;
+    animation: fadeInDown 0.2s ease-out;
+}
+.history-dropdown.show { display: block; }
+
+.history-list { list-style: none; padding: 0; margin: 0; max-height: 400px; overflow-y: auto; }
+.history-list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.2s;
+    margin-bottom: 2px;
+}
+.history-list-item:hover { background: #f1f5f9; }
+.history-list-item .time-info { display: flex; flex-direction: column; gap: 4px; }
+.history-list-item .time-title { font-weight: 800; color: #1e293b; font-size: 15px; }
+.history-list-item .item-count { font-size: 12px; color: #64748b; font-weight: 500; }
+.history-list-item i.fa-arrow-right { font-size: 12px; color: #cbd5e1; }
+
+/* Quick Category Popup */
+.quick-cat-popup {
+    display: none; position: absolute; top: 50px; right: 20px;
+    background: white; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    width: 250px; z-index: 2000; border: 1px solid #e2e8f0;
+}
+
+
+
+
+/* --- CSS BỘ LỌC VIÊN THUỐC (DROPDOWN CÓ ẢNH) --- */
+.history-filter-bar {
+    padding: 12px 15px;
+    background: #fff;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex; flex-direction: column; gap: 8px;
+}
+.filter-row { display: flex; gap: 8px; }
+
+.c-filter-dropdown { position: relative; flex: 1; }
+
+.c-filter-btn {
+    width: 100%; height: 38px;
+    background: #f8fafc; border: 1px solid #e2e8f0;
+    border-radius: 40px; /* Bo tròn viên thuốc */
+    padding: 0 18px;
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer; font-size: 13px; font-weight: 600; color: #475569;
+    transition: 0.2s;
+}
+.c-filter-btn:hover { border-color: #3b82f6; background: #fff; }
+
+.btn-content { display: flex; align-items: center; gap: 8px; overflow: hidden; }
+.btn-content img { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; border: 1px solid #e2e8f0; }
+
+.c-filter-options {
+    display: none; position: absolute; top: calc(100% + 5px);
+    left: 0; right: 0; background: #fff; border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 1px solid #eef2f7;
+    z-index: 100; max-height: 250px; overflow-y: auto; padding: 5px;
+}
+.c-filter-options::-webkit-scrollbar {display:none;}
+.c-filter-options.show { display: block; animation: fadeInDown 0.2s ease; }
+
+.c-filter-item {
+    display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+    border-radius: 8px; cursor: pointer; font-size: 13px; color: #334155;
+}   
+.c-filter-item:hover { background: #f1f5f9; outline: 1px solid #eeeeee; }
+.c-filter-item img, .c-filter-item .mini-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
+.c-filter-item .mini-avatar { background: #4f46e5; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; }
+
+
+
+/* --- UI CHO THẺ CHUYỂN KHO (Route Card) --- */
+.transfer-route-card {
+    display: flex;
+    align-items: center;
+    background: #f0f9ff; /* Nền xanh dương nhạt */
+    border: 1px solid #bae6fd;
+    padding: 8px 15px;
+    border-radius: 12px;
+    gap: 15px;
+    min-width: 250px;
+    position: relative;
+    margin-left: auto; /* Đẩy sang phải giống thẻ khách */
+}
+
+.tr-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.tr-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    color: #64748b;
+    font-weight: 700;
+    margin-bottom: 2px;
+}
+
+.tr-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #0369a1; /* Xanh đậm */
+    max-width: 120px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.tr-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0ea5e9;
+    font-size: 14px;
+    background: #fff;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* Icon Warehouse */
+.tr-icon {
+    font-size: 16px;
+    margin-bottom: 4px;
+    color: #3b82f6;
+}
+
+
+
+
+
+/* Hàng log cơ bản */
+.log-row {
+    border-bottom: 1px solid #edf2f7;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    position: relative;
+    background: #fff;
+}
+
+.log-row:hover {
+    background: #f8fafc;
+}
+
+/* Khi hàng được active */
+.log-row.active {
+    background: #ebf8ff; /* Màu xanh nhạt khi chọn */
+    border-left: 4px solid #3182ce;
+}
+
+/* Phần ghi chú mặc định ẩn */
+.note-detail {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out, padding 0.3s ease;
+    background: #f1f5f9;
+    font-size: 13px;
+    color: #475569;
+}
+
+.log-row.active .note-detail {
+    max-height: 100px; /* Độ cao tối đa khi mở */
+    padding: 10px 20px;
+    border-top: 1px dashed #cbd5e1;
+}
+
+.note-inner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.note-inner i {
+    color: #64748b;
+}
+
+
+/* Style cho dòng sản phẩm khi được chọn */
+.product-row {
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.product-row:hover {
+    background-color: #f8fafc !important;
+}
+.product-row.active {
+    background-color: #f0f7ff !important;
+}
+
+/* Container chứa ghi chú */
+.note-wrapper {
+    max-height: 0;
+    overflow: hidden;
+    transition: all 0.3s ease-out;
+    background: #fdfdfd;
+}
+
+.product-row.active + .note-row .note-wrapper {
+    max-height: 100px;
+    padding: 10px 15px;
+    border-bottom: 1px solid #edf2f7;
+}
+
+.note-content-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: #4a5568;
+    background: #fff;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px dashed #cbd5e1;
+}
+
+        </style>
+    </head>
+    <body>
+        <div class="table-view">
+            <div class="sidebar"></div>
+
+            <div class="main-content content-wrapper">
+                <!-- HEADER -->
+                <div class="header-container top-header">
+                    <h2 class="page-title">
+                        <i class="fa-solid fa-box-archive" style="padding-right: 10px;"></i>Lịch sử
+                    </h2>
+
+                    <div class="header-right">
+    <!-- NÚT KHOẢNG THỜI GIAN MỚI THÊM -->
+    <div class="history-period-container">
+        <button class="btn-history-period" onclick="toggleHistoryDropdown(event)">
+            <i class="fa-solid fa-clock-rotate-left"></i> Các khoảng thời gian tồn tại
+        </button>
+        <div class="history-dropdown" id="historyDropdown">
+            <ul class="history-list" id="historyList">
+                <!-- Dữ liệu sẽ tự load vào đây -->
+            </ul>
+        </div>
+    </div>
+
+    <!-- DATE PICKER CŨ -->
+    <div class="custom-date-wrapper">
+        <div class="c-dropdown" id="monthDropdown">
+            <div class="c-selected" id="displayMonth">--</div>
+            <div class="c-options" id="listMonth"></div>
+        </div>
+        <span class="date-separator">/</span>
+        <div class="c-dropdown" id="yearDropdown">
+            <div class="c-selected" id="displayYear">--</div>
+            <div class="c-options" id="listYear"></div>
+        </div>
+    </div>
+    
+    <!-- TYPE PICKER CŨ -->
+    <div class="custom-type-wrapper" id="typeWrapper">
+        <span class="type-display" id="typeDisplay">Tất cả giao dịch</span>
+        <i class="fa-solid fa-chevron-down type-icon"></i>
+        <div class="type-options" id="typeOptions">
+            <div class="c-option-item selected" data-value="all">Tất cả giao dịch</div>
+            <div class="c-option-item" data-value="nhap">Nhập kho</div>
+            <div class="c-option-item" data-value="xuat">Xuất kho</div>
+            <div class="c-option-item" data-value="kiemke">Kiểm kê kho</div>
+            <div class="c-option-item" data-value="chuyen">Chuyển kho</div>
+        </div>
+    </div>
+
+    <!-- Quick Category Popup (Chèn ẩn) -->
+    <div id="quickCategoryPopup" class="quick-cat-popup">
+        <div class="quick-cat-search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="quickCatSearch" placeholder="Tìm danh mục..." onkeyup="filterQuickCategory()">
+        </div>
+        <ul id="quickCatList" class="quick-cat-list"></ul>
+    </div>
+
+    <div class="user-profile-box" id="userProfileTrigger" onclick="toggleUserMenu(event)">
+        <div id="u-avatar" class="u-avatar-circle"></div>
+        <div class="u-info-col">
+            <div id="u-name" class="u-name-text">Đang tải...</div>
+            <div id="u-email" class="u-sub-text">...</div>
+        </div>
+    </div>
+</div>
+                </div>
+
+                <!-- MAIN LAYOUT -->
+                <div class="history-layout">
+                    <!-- BÊN TRÁI -->
+<div class="history-left" id="historyLeftPanel">
+    <!-- BỘ LỌC MỚI THÊM -->
+<div class="history-filter-bar">
+        <div class="filter-row">
+            <!-- DROP ĐỐI TƯỢNG (Gộp Nhân viên, Khách hàng, Nhà cung cấp) -->
+            <div class="c-filter-dropdown" id="dropSubjectContainer" style="flex: 1;">
+                <div class="c-filter-btn" onclick="toggleFilterDrop('dropSubjectOptions', event)">
+                    <div class="btn-content" id="btnSubjectContent">
+                        <i class="fa-solid fa-user-tag" ></i>
+                        <span>Tất cả đối tượng</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down" style="font-size:10px; opacity:0.5"></i>
+                </div>
+                <!-- Menu này sẽ thay đổi nội dung động -->
+                <div class="c-filter-options" id="dropSubjectOptions"></div>
+            </div>
+
+            <!-- DROP KHUNG GIỜ -->
+            <div class="c-filter-dropdown" style="flex: 1;">
+                <div class="c-filter-btn" onclick="toggleFilterDrop('dropTimeOptions', event)">
+                    <div class="btn-content" id="btnTimeContent">
+                        <i class="fa-solid fa-clock" style="color:#94a3b8"></i>
+                        <span>Tất cả khung giờ</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down" style="font-size:10px; opacity:0.5"></i>
+                </div>
+                <div class="c-filter-options" id="dropTimeOptions"></div>
+            </div>
+
+            <button class="btn-clear-filter" onclick="clearFilters()" style="border-radius: 50%; width: 40px; height: 40px; flex:none; display:flex; align-items:center; justify-content:center; border: 1px solid #e2e8f0; background: #fff; cursor: pointer;">
+                <i class="fa-solid fa-filter-circle-xmark" style="color: #64748b;"></i>
+            </button>
+        </div>
+</div>
+
+    <!-- Danh sách cũ -->
+    <div id="historyListContainer"></div>
+</div>
+
+                    <!-- BÊN PHẢI -->
+                    <div class="history-right" id="historyRightPanel">
+                        <div class="empty-state show">
+                            <i class="fa-solid fa-box-open"></i>
+                            <p>Chọn giao dịch để xem chi tiết</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+
+    <!-- CHÚ Ý: ĐÃ XÓA store-core.js ĐỂ TRÁNH LỖI MODULE -->
+<script>
+    (function() {
+    function fastRenderUser() {
+        const nameEl = document.getElementById('u-name');
+        const emailEl = document.getElementById('u-email');
+        const avatarEl = document.getElementById('u-avatar');
+        
+        // Nếu HTML chưa load kịp thì thôi, đợi sự kiện sau
+        if (!nameEl || !avatarEl) return;
+
+        const sName = localStorage.getItem('userName') || "User";
+        const sEmail = localStorage.getItem('userEmail') || "";
+        let sPic = localStorage.getItem('userPicture');
+        const sRole = localStorage.getItem('userRole');
+
+        // Logic ảnh mặc định cho Viewer
+        if (sRole === 'viewer' && (!sPic || sPic === 'undefined' || sPic === 'null')) {
+            const guestImgs = ["https://i.ibb.co/My2Y95Jg/1013261.png", "https://i.ibb.co/qYCgD0yv/10132601.png"];
+            sPic = guestImgs[Math.floor(Math.random() * guestImgs.length)];
+            localStorage.setItem('userPicture', sPic);
+        }
+
+        // 1. Điền Tên
+        nameEl.textContent = sName;
+
+        // 2. Điền Email hoặc Vai trò
+        if (emailEl) {
+            // Nếu là Admin thì hiện chữ Quản trị viên cho oai, còn lại hiện email
+            if (sRole === 'super_admin' || sRole === 'owner') {
+                emailEl.textContent = "Quản trị viên";
+                emailEl.style.color = "#4f46e5";
+            } else {
+                emailEl.textContent = sEmail;
+            }
+        }
+   
+        // 3. Điền Ảnh
+// 3. Điền Ảnh (Sửa lại)
+if (sPic && sPic.startsWith('http') && sPic !== 'undefined' && sPic !== 'null') {
+    // Xóa chữ cái cũ nếu có và chèn thẻ img để đảm bảo hiển thị
+    avatarEl.innerHTML = `<img src="${sPic}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+    avatarEl.style.backgroundColor = "transparent";
+    avatarEl.style.border = "none";
+} else {
+    avatarEl.innerHTML = sName.charAt(0).toUpperCase();
+    avatarEl.style.backgroundImage = "none";
+    avatarEl.style.backgroundColor = "#4f46e5";
+    avatarEl.style.display = "flex";
+    avatarEl.style.alignItems = "center";
+    avatarEl.style.justifyContent = "center";
+    avatarEl.style.color = "white";
+}
+
+    }
+
+    // Chạy ngay lập tức
+    fastRenderUser();
+    // Chạy lại khi HTML đã load xong (Khắc phục lỗi Ctrl+F5)
+    document.addEventListener('DOMContentLoaded', fastRenderUser);
+
+    // Hàm toggle menu
+    window.toggleMenu = (id, e) => {
+        if(e) e.stopPropagation();
+        document.getElementById(id)?.classList.toggle('active');
+    };
+    window.toggleUserMenu = (e) => window.toggleMenu('userPopover', e);
+})();
+
+
+
+(function() {
+    const sidebarContainer = document.querySelector('.sidebar');
+    if (!sidebarContainer) return;
+
+    fetch('/components/Side-Bar.html')
+        .then(res => res.text())
+        .then(html => {
+            sidebarContainer.innerHTML = html;
+
+            // Chỉ chạy script Module một lần duy nhất
+            sidebarContainer.querySelectorAll("script").forEach(oldScript => {
+                const newScript = document.createElement("script");
+                Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+                newScript.textContent = oldScript.textContent;
+                oldScript.parentNode.replaceChild(newScript, oldScript);
+            });
+        })
+        .catch(err => console.error("Sidebar load error:", err));
+})();
+
+
+</script>
+
+
+
+
+
+<script type="module">
+ const ADMIN_LOGO = localStorage.getItem('admin_logo_url');        
+// --- KHAI BÁO BIẾN CHO BỘ LỌC ---
+let filterState = {
+    subjectType: 'all', // all, staff, customer, supplier
+    subjectValue: '',   // email hoặc ID khách
+    timeRange: ''
+};
+
+    // 1. IMPORT ĐẦY ĐỦ
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { 
+        getFirestore, doc, onSnapshot, updateDoc, getDoc, getDocs, orderBy,
+        collection, query, where, limit 
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";   
+
+    // 2. CẤU HÌNH FIREBASE
+    const firebaseConfig = {
+        apiKey: "AIzaSyCYOo3FUewsYVIVy-egCKxZfVDUjLmGAQo",
+        authDomain: "warehouse-management-77290.firebaseapp.com",
+        projectId: "warehouse-management-77290",
+        storageBucket: "warehouse-management-77290.firebasestorage.app",
+        messagingSenderId: "881477949386",
+        appId: "1:881477949386:web:7133b60dd2e0bc5d9ca133",
+        measurementId: "G-ESPCYW3ZN9"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const STORE_ID = localStorage.getItem('current_store_id');
+    if (!STORE_ID) {
+        alert("Chưa chọn cửa hàng!");
+        window.location.href = '/store.html';
+    }
+
+// --- BIẾN TOÀN CỤC ---
+let logs = [];
+let products = [];
+let productMap = {}; 
+let selectedGroupId = null;
+
+let allStaff = [];      
+let allCustomers = [];  
+let allSuppliers = []; // Thêm dòng này
+let customerMap = {}; 
+let supplierMap = {};  // Thêm dòng này
+let userMap = {};
+let storeOwnerEmail = "";
+
+
+// Biến lưu tạm để gộp dữ liệu
+let oldLogsData = [];
+let newLogsData = [];
+let logsGlobal = {
+    old: [],        // Dữ liệu cũ (Array)
+    import: [],     // Dữ liệu nhập mới
+    export: [],     // Dữ liệu xuất mới
+    audit: [],      // Dữ liệu kiểm kê mới
+    transfer: []    // Dữ liệu chuyển kho mới
+};
+
+
+    const now = new Date();
+    let selectedYear = now.getFullYear();
+    let selectedMonth = now.getMonth() + 1;
+    let currentType = 'all';
+
+    const formatVND = (num) => Number(num || 0).toLocaleString('vi-VN') + '₫';
+    const NO_IMAGE_URL = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' fill='#f8fafc'/><path fill='#cbd5e1' d='M392 64H120c-30.9 0-56 25.1-56 56v272c0 30.9 25.1 56 56 56h272c30.9 0 56-25.1 56-56V120c0-30.9-25.1-56-56-56zm24 328c0 13.3-10.7 24-24 24H120c-13.3 0-24-10.7-24-24V120c0-13.3 10.7-24 24-24h272c13.3 0 24 10.7 24 24v272z'/></svg>`;
+
+    // Quyền hạn
+// --- CẬP NHẬT LOGIC QUYỀN HẠN ---
+let canEditHistory = false;
+const userEmail = localStorage.getItem('userEmail');
+const userRole = localStorage.getItem('userRole');
+
+// Kiểm tra quyền ngay lập tức từ localStorage
+if (userRole === 'super_admin' || userRole === 'owner' || userRole === 'Chủ sở hữu') {
+    canEditHistory = true;
+}
+
+function listenPermissions() {
+    if (!STORE_ID || !userEmail) return;
+    const userId = `${STORE_ID}_${userEmail.replace(/\./g, '_')}`;
+
+    // Lắng nghe thay đổi quyền từ Firestore
+onSnapshot(query(collection(db, "gmail_personnel"), where("storeId", "==", STORE_ID)), (snapshot) => {
+    window.allStaff = snapshot.docs.map(doc => ({
+        name: doc.data().name || "Nhân viên",
+        email: doc.data().email || ""
+    }));
+    // Ghi vào userMap để hiện avatar
+    snapshot.docs.forEach(doc => {
+        const u = doc.data();
+        if (u.email) window.userMap[u.email.trim().toLowerCase()] = u.photo || u.avatar || "";
+    });
+    console.log("Đã tải nhân viên:", window.allStaff.length);
+    window.updateFilterOptions(); // Vẽ lại menu lọc ngay khi có data
+});
+}
+listenPermissions();
+
+    // ============================================================
+    // 4. LOAD DỮ LIỆU REALTIME
+    // ============================================================
+// Biến toàn cục để chứa danh sách khách (Thêm vào đầu file cùng chỗ với logs, products)
+
+
+// ============================================================
+    // 4. LOAD DỮ LIỆU REALTIME (ĐÃ SỬA LỖI HIỂN THỊ)
+    // ============================================================
+    function initRealTimeData() {
+        if (!STORE_ID) return;
+
+        // 1. LẤY THÔNG TIN CỬA HÀNG
+        getDoc(doc(db, "warehouse_stores", STORE_ID)).then(snap => {
+            if (snap.exists()) {
+                storeOwnerEmail = (snap.data().ownerEmail || "").trim().toLowerCase();
+            }
+        });
+
+        // 2. LẮNG NGHE KHÁCH HÀNG (ĐÃ SỬA: CHỈ LẤY CỦA CỬA HÀNG HIỆN TẠI)
+        onSnapshot(query(collection(db, "customers"), where("storeId", "==", STORE_ID)), (snapshot) => {
+            window.allCustomers = snapshot.docs.map(doc => ({
+                id: doc.id,
+                name: doc.data().name || "Khách lạ",
+                img: doc.data().image || ""
+            }));
+            
+            // Reset map tra cứu cũ để tránh dữ liệu rác
+            window.customerMap = {}; 
+
+            // Ghi vào map tra cứu
+            window.allCustomers.forEach(c => {
+                window.customerMap[c.id] = c;
+                if(c.name) window.customerMap[c.name.toLowerCase().trim()] = c;
+            });
+            
+            console.log("Đã tải khách hàng:", window.allCustomers.length);
+            
+            if (typeof updateFilterOptions === 'function') updateFilterOptions(); // Vẽ lại menu lọc
+            mergeAndReloadLogs(); // Cập nhật lại lịch sử hiển thị
+        });
+
+        let allSuppliers = [];
+        let supplierMap = {};
+
+        // LẮNG NGHE NHÀ CUNG CẤP
+  // Tìm đoạn onSnapshot của suppliers trong initRealTimeData và thay bằng:
+onSnapshot(query(collection(db, "suppliers"), where("storeId", "==", STORE_ID)), (snapshot) => {
+    window.allSuppliers = [];
+    window.supplierMap = {}; 
+    
+    snapshot.docs.forEach(doc => {
+        const data = doc.data();
+        const info = {
+            id: doc.id,
+            name: data.name || "NCC không tên",
+            img: data.image || ""
+        };
+        window.allSuppliers.push(info);
+        // Map dùng để tra cứu khi hiển thị lịch sử
+        window.supplierMap[doc.id] = info;
+        if (data.name) window.supplierMap[data.name.toLowerCase().trim()] = info;
+    });
+
+    console.log("🔥 Đã tải NCC:", window.allSuppliers.length, window.allSuppliers);
+    
+    // Ép giao diện cập nhật lại nếu đang mở menu lọc
+    if (typeof updateFilterOptions === 'function') updateFilterOptions();
+    mergeAndReloadLogs(); 
+}, (error) => {
+    console.error("Lỗi lấy NCC:", error);
+});
+
+        // 3. LẮNG NGHE NHÂN SỰ
+        onSnapshot(query(collection(db, "gmail_personnel"), where("storeId", "==", STORE_ID)), (snapshot) => {
+            userMap = {}; 
+            allStaff = [];
+            snapshot.docs.forEach(doc => {
+                const u = doc.data();
+                const finalPic = u.photo || u.photoURL || u.avatar || "";
+                allStaff.push({ name: u.name, email: u.email });
+                if (u.email && finalPic) userMap[u.email.trim().toLowerCase()] = finalPic;
+            });
+            if (typeof updateFilterOptions === 'function') updateFilterOptions();
+            mergeAndReloadLogs(); // Vẽ lại khi nhân viên thay đổi
+        });
+
+        // 4. LẮNG NGHE SẢN PHẨM
+        onSnapshot(query(collection(db, "products"), where("storeId", "==", STORE_ID)), (snapshot) => {
+            productMap = {};
+            snapshot.docs.forEach(doc => {
+                const p = doc.data();
+                const info = { img: p.img, category: p.category, cost: p.cost };
+                if (p.sku) productMap[String(p.sku).trim().toLowerCase()] = info;
+                if (p.name) productMap[String(p.name).trim().toLowerCase()] = info;
+            });
+            mergeAndReloadLogs(); // Vẽ lại khi sản phẩm thay đổi
+        });
+
+        // ==========================================================
+        // 5. LẮNG NGHE LỊCH SỬ (QUAN TRỌNG: PHẦN NÀY ĐÃ BỊ THIẾU TRƯỚC ĐÓ)
+        // ==========================================================
+
+        // A. Lắng nghe dữ liệu CŨ (Array trong document chính)
+        onSnapshot(doc(db, "warehouse_history_logs", STORE_ID), (docSnap) => {
+            if (docSnap.exists()) {
+                logsGlobal.old = (docSnap.data().logs || []).map(item => ({...item, source: 'old'}));
+            } else {
+                logsGlobal.old = [];
+            }
+            mergeAndReloadLogs();
+        });
+
+        // B. Hàm phụ trợ lắng nghe Sub-collection (Mới)
+        const listenToSubCol = (colName, keyName) => {
+            const q = query(
+                collection(db, "warehouse_history_logs", STORE_ID, colName), 
+                orderBy("timestamp", "desc"),
+                limit(200) // Giới hạn 200 dòng mới nhất mỗi loại
+            );
+
+            onSnapshot(q, (snapshot) => {
+                logsGlobal[keyName] = snapshot.docs.map(d => ({
+                    id: d.id,        // ID document để xóa
+                    source: colName, // Nguồn để biết xóa ở đâu
+                    ...d.data()
+                }));
+                mergeAndReloadLogs();
+            });
+        };
+
+        // C. Kích hoạt lắng nghe 4 collection mới
+        listenToSubCol('import_log', 'import');
+        listenToSubCol('export_log', 'export');
+        listenToSubCol('audit_log', 'audit');
+        listenToSubCol('transfer_log', 'transfer');
+    
+    
+// Hàm bật/tắt ghi chú cho sản phẩm trong bảng chi tiết
+window.toggleProductNote = function(event, element) {
+    event.stopPropagation();
+    
+    // Nếu dòng này đang mở thì đóng lại
+    if (element.classList.contains('active')) {
+        element.classList.remove('active');
+    } else {
+        // Đóng tất cả các dòng khác trước khi mở dòng mới
+        document.querySelectorAll('.product-row.active').forEach(row => {
+            row.classList.remove('active');
+        });
+        // Mở dòng được click
+        element.classList.add('active');
+    }
+};
+
+// Xử lý click ra ngoài để đóng tất cả ghi chú
+window.addEventListener('click', function(e) {
+    if (!e.target.closest('.product-row')) {
+        document.querySelectorAll('.product-row.active').forEach(row => {
+            row.classList.remove('active');
+        });
+    }
+});
+
+    // ==========================================================
+    // 5. LẮNG NGHE LỊCH SỬ (CHẾ ĐỘ HYBRID: CŨ + MỚI)
+    // ==========================================================
+
+    // A. Lắng nghe dữ liệu CŨ (Array trong document - File bị giới hạn)
+
+
+// --- HÀM TRỘN DỮ LIỆU & VẼ GIAO DIỆN ---
+// --- THÊM BIẾN TIMER ---
+let debounceTimer = null;
+
+// --- SỬA HÀM mergeAndReloadLogs ---
+function mergeAndReloadLogs() {
+    // Hủy lệnh vẽ trước đó nếu nó chưa kịp chạy
+    if (debounceTimer) clearTimeout(debounceTimer);
+
+    // Đặt lệnh mới: "Chờ 100ms nữa nếu không ai gọi thì tao mới chạy"
+    debounceTimer = setTimeout(() => {
+        console.log("Bat dau render UI..."); // Log để kiểm tra
+        
+        logs = [
+            ...logsGlobal.old,
+            ...logsGlobal.import,
+            ...logsGlobal.export,
+            ...logsGlobal.audit,
+            ...logsGlobal.transfer
+        ];
+
+        logs.sort((a, b) => b.timestamp - a.timestamp);
+
+        reloadHistory(); 
+        if (typeof updateExistencePeriods === 'function') updateExistencePeriods();
+        
+        // Cập nhật bộ lọc
+        updateFilterOptions(); 
+        renderTimeFilterOptions();
+        
+        // Ẩn loading nếu có (nếu bạn muốn thêm loading spinner sau này)
+    }, 100); // 100ms là độ trễ
+}}
+
+
+
+    // ============================================================
+    // 5. XỬ LÝ KHỚP DỮ LIỆU & GOM NHÓM (CÓ TÍNH CHIẾT KHẤU)
+    // ============================================================
+// ============================================================
+// 5. XỬ LÝ KHỚP DỮ LIỆU & GOM NHÓM (ĐÃ SỬA LOGIC KIỂM KÊ)
+// ============================================================
+function getGroupedHistory() {
+    const filteredLogs = logs.filter(log => {
+        const d = new Date(log.timestamp);
+        
+        // 1. Lọc theo Tháng/Năm
+        const matchYear = d.getFullYear() === selectedYear;
+        const matchMonth = (d.getMonth() + 1) === selectedMonth;
+        if (!matchYear || !matchMonth) return false;
+
+        // 2. Lọc theo Loại (Nhập/Xuất/Kiểm kê/Chuyển)
+        let matchType = true;
+        const type = (log.type || '').toLowerCase();
+        
+        if (currentType === 'nhap') matchType = (type === 'nhap' || type === 'import');
+        else if (currentType === 'xuat') matchType = (type === 'xuat' || type === 'export');
+        else if (currentType === 'kiemke') matchType = (type === 'kiemke' || type.includes('check') || type.includes('audit'));
+        else if (currentType === 'chuyen') matchType = (type === 'chuyen' || type.includes('transfer'));
+        
+        if (!matchType) return false;
+
+        // 3. Logic nhận diện khách hàng để Lọc
+        // Nếu là Kiểm kê thì bỏ qua logic lọc khách (trừ khi đang lọc 'Tất cả khách')
+        const isKiemKe = (type === 'kiemke' || type.includes('check') || type.includes('audit'));
+        
+        if (!isKiemKe) {
+            const custIdInLog = log.customerId || ""; 
+            const rawNameInLog = (log.supplier || log.customer || 'Khách lẻ').trim();
+            const latestInfo = customerMap[custIdInLog] || customerMap[rawNameInLog.toLowerCase()];
+            const nameForFilter = latestInfo ? latestInfo.name.toLowerCase() : rawNameInLog.toLowerCase();
+            
+            const matchCust = !filterState.customer || nameForFilter.includes(filterState.customer.toLowerCase());
+            if (!matchCust) return false;
+        } else {
+            // Nếu đang chọn filter khách hàng cụ thể mà gặp phiếu kiểm kê -> Ẩn phiếu kiểm kê
+            if (filterState.customer && filterState.customer !== '') return false;
+        }
+
+        // 4. Lọc theo Người thực thi
+        const logEmail = (log.userEmail || log.email || "").toLowerCase().trim();
+        const logName = (log.userName || log.name || "").toLowerCase().trim();
+        const filterVal = (filterState.executor || "").toLowerCase().trim();
+        let matchExec = true; 
+        
+        // Trong filteredLogs = logs.filter(...)
+        // Tìm trong getGroupedHistory, đoạn xử lý filterState.subjectType !== 'all'
+        // Tìm trong getGroupedHistory, đoạn xử lý filterState.subjectType !== 'all'
+        if (filterState.subjectType !== 'all') {
+            const type = (log.type || '').toLowerCase();
+            const isKiemKe = (type === 'kiemke' || type.includes('check') || type.includes('audit'));
+
+            if (filterState.subjectType === 'staff') {
+                const logEmail = (log.userEmail || log.email || "").toLowerCase().trim();
+                const logName = (log.userName || log.name || "").toLowerCase().trim();
+                const val = filterState.subjectValue;
+                if (val === 'admin') {
+                    if (!(logName.includes('admin') || logEmail === storeOwnerEmail)) return false;
+                } else {
+                    if (logEmail !== val && logName !== val) return false;
+                }
+            } 
+            else if (filterState.subjectType === 'supplier' || filterState.subjectType === 'customer') {
+                if (isKiemKe) return false; // Kiểm kê không có đối tác
+
+                const logCustId = log.customerId || ""; 
+                const logRawName = (log.supplier || log.customer || 'Khách lẻ').trim().toLowerCase();
+                
+                // Chọn Map tương ứng để tra cứu
+                const currentMap = (filterState.subjectType === 'supplier') ? supplierMap : customerMap;
+                
+                // Tìm thông tin đối tác từ ID hoặc Tên trong Log
+                const matchInfo = currentMap[logCustId] || currentMap[logRawName];
+                const finalNameInLog = matchInfo ? matchInfo.name.toLowerCase() : logRawName;
+
+                // So sánh với giá trị đang lọc (subjectValue là tên đối tác viết thường)
+                if (!finalNameInLog.includes(filterState.subjectValue)) return false;
+            }
+        }
+
+        // 4. Lọc theo Khung giờ (Giữ nguyên)
+        
+        const matchTime = !filterState.timeRange || d.getHours() === parseInt(filterState.timeRange);
+        if (!matchTime) return false;
+
+        return true;
+    });
+
+    const groups = {};
+    filteredLogs.forEach(log => {
+        const d = new Date(log.timestamp);
+        const type = (log.type || '').toLowerCase();
+        
+        // --- XÁC ĐỊNH LOẠI PHIẾU ĐỂ GÁN TÊN HIỂN THỊ ---
+        const isKiemKe = (type === 'kiemke' || type.includes('check') || type.includes('audit'));
+        
+        let displayPillName = "";
+        let displayImg = "";
+        let isDeleted = false;
+        let custId = "";
+
+        if (isKiemKe) {
+            // TRƯỜNG HỢP KIỂM KÊ: Không có khách hàng
+       
+            displayImg = ""; // Không hiển thị ảnh
+            isDeleted = false;
+        } else {
+            // TRƯỜNG HỢP NHẬP/XUẤT/CHUYỂN: Tra cứu khách/đối tác
+            custId = log.customerId || "";
+            const rawName = (log.supplier || log.customer || 'Khách lẻ').trim();
+            
+            const latestInfo = customerMap[custId] || customerMap[rawName.toLowerCase()];
+            
+            displayPillName = latestInfo ? latestInfo.name : rawName;
+            displayImg = latestInfo ? latestInfo.img : "";
+            isDeleted = (rawName !== 'Khách lẻ' && !latestInfo && custId !== "");
+        }
+
+        const executorEmail = (log.userEmail || log.email || "").trim().toLowerCase();
+        const executorName = (log.userName || 'Admin').trim();
+        
+        // TẠO KHÓA NHÓM (Thêm isKiemKe vào key để không bị trộn lẫn)
+        const groupKey = `${d.getDate()}_${d.getHours()}_${log.type}_${isKiemKe ? 'Audit' : displayPillName}_${executorEmail}`;
+
+        if (!groups[groupKey]) {
+            groups[groupKey] = {
+                id: groupKey, 
+                rawTimestamp: log.timestamp,
+                dateStr: `${d.getDate()} thg ${d.getMonth() + 1}, ${d.getFullYear()}`,
+                hour: d.getHours(), 
+                type: log.type, 
+                user: executorName, 
+                email: executorEmail,
+                
+                // Các trường hiển thị đối tác
+                customerId: custId,
+                supplier: displayPillName, 
+                customerImg: displayImg,   
+                isCustomerDeleted: isDeleted,
+                
+                grpTotalAmount: 0, 
+                grpNetAdjustment: 0, 
+                grpSubTotal: 0, 
+                itemsList: [] 
+            };
+        }
+
+        const group = groups[groupKey];
+        
+        // TRA CỨU SẢN PHẨM
+        const logSku = String(log.sku || '').trim().toLowerCase();
+        const logNameStr = String(log.name || '').trim().toLowerCase();
+        const prodInfo = productMap[logSku] || productMap[logNameStr];
+        
+        const finalProdImg = (prodInfo && prodInfo.img && prodInfo.img.length > 20) ? prodInfo.img : (log.img || NO_IMAGE_URL);
+        const finalCategory = (prodInfo && prodInfo.category) ? prodInfo.category : (log.category || '---');
+        
+        const itemQty = Number(log.qty || 0); // Với kiểm kê: đây là số lệch (+/-)
+        const itemPrice = Number(log.price || 0);
+        const itemCost = Number(log.cost || (prodInfo ? prodInfo.cost : 0) || 0);
+        const netAdjustment = Number(log.extraFee || 0) - Number(log.discount || 0);
+        
+        // Tính toán tổng tiền (Kiểm kê thường giá = 0 nên không ảnh hưởng Amount)
+        group.grpTotalAmount += (itemQty * itemPrice) + netAdjustment;
+        group.grpNetAdjustment += netAdjustment;
+        group.grpSubTotal += (itemQty * itemCost);
+        
+        group.itemsList.push({
+            id: log.id || null,       
+            source: log.source || 'old', 
+            sku: log.sku, 
+            name: log.name, 
+            img: finalProdImg, 
+            category: finalCategory,
+            price: itemPrice, 
+            cost: itemCost, 
+            netAdjustment: netAdjustment,
+            oldStock: log.oldStock || 0, 
+            newStock: log.newStock || 0, 
+            qty: itemQty,
+            exactTime: log.timestamp,
+            note: log.note || "" // <--- THÊM DÒNG NÀY ĐỂ NHẬN DỮ LIỆU GHI CHÚ
+        });
+    });
+
+    return Object.values(groups).sort((a, b) => b.rawTimestamp - a.rawTimestamp);
+}
+
+
+// --- XỬ LÝ BỘ LỌC CHI TIẾT ---
+window.handleFilterChange = function() {
+    filterState.customer = document.getElementById('filterCustomer').value;
+    filterState.executor = document.getElementById('filterExecutor').value;
+    filterState.timeRange = document.getElementById('filterTime').value;
+    reloadHistory();
+};
+
+
+// Hàm lấy ảnh không cần dán link thủ công
+function getAvatarDynamic(email, name, type = 'staff') {
+    const emailKey = (email || "").toLowerCase().trim();
+    const nameKey = (name || "").toLowerCase().trim();
+    const storeOwner = (storeOwnerEmail || "").toLowerCase();
+
+    // 1. KIỂM TRA ADMIN (Theo Email chủ hoặc Tên có chữ admin)
+    const isAdmin = nameKey.includes('admin') || 
+                    nameKey.includes('chủ sở hữu') || 
+                    emailKey === storeOwner || 
+                    emailKey === 'admin';
+
+    if (isAdmin) return localStorage.getItem('admin_logo_url');
+
+    // 2. KIỂM TRA NHÂN VIÊN
+    if (type === 'staff') {
+        // Ưu tiên 1: Tra trong danh bạ userMap (Ảnh từ Firebase)
+        if (userMap[emailKey]) return userMap[emailKey];
+        if (userMap[nameKey]) return userMap[nameKey];
+
+        // Ưu tiên 2: Nếu là chính mình đang đăng nhập
+        const myEmail = (localStorage.getItem('userEmail') || "").toLowerCase();
+        if (emailKey === myEmail) return localStorage.getItem('userPicture');
+    }
+
+    return "";
+}
+
+
+
+// --- 1. TOGGLE DROPDOWN ---
+window.toggleFilterDrop = function(id, e) {
+    if(e) e.stopPropagation();
+    const target = document.getElementById(id);
+    const isShowing = target.classList.contains('show');
+    
+    // Đóng tất cả menu khác
+    document.querySelectorAll('.c-filter-options').forEach(opt => opt.classList.remove('show'));
+    
+    // Mở menu được nhấn
+    if (!isShowing) target.classList.add('show');
+};
+
+// Đóng menu khi bấm ra ngoài vùng lọc
+window.addEventListener('click', function(e) {
+    if (!e.target.closest('.c-filter-dropdown')) {
+        document.querySelectorAll('.c-filter-options').forEach(opt => opt.classList.remove('show'));
+    }
+});
+
+// --- 2. CẬP NHẬT OPTIONS CÓ HÌNH ẢNH ---
+// Biến tạm để quản lý việc đang ở menu cấp nào: 'root', 'staff', 'customer', 'supplier'
+
+
+
+// --- HÀM TẠO DANH SÁCH GIỜ TỰ ĐỘNG ---
+function renderTimeFilterOptions() {
+    const timeBox = document.getElementById('dropTimeOptions');
+    if (!timeBox) return;
+
+    let html = `<div class="c-filter-item" onclick="selectTime('', 'Tất cả khung giờ')"><i class="fa-solid fa-clock" style="color:#94a3b8"></i>Tất cả khung giờ</div>`;
+    
+    // Tìm các khung giờ thực tế có trong Logs của tháng/năm đang chọn
+    const hoursInLogs = new Set();
+    logs.forEach(log => {
+        const d = new Date(log.timestamp);
+        if (d.getFullYear() === selectedYear && (d.getMonth() + 1) === selectedMonth) {
+            hoursInLogs.add(d.getHours());
+        }
+    });
+
+    // Chuyển Set thành mảng và sắp xếp từ sớm đến muộn
+    const sortedHours = Array.from(hoursInLogs).sort((a, b) => a - b);
+
+    if (sortedHours.length === 0) {
+        html += `<div class="c-filter-item" style="color:#94a3b8; font-style:italic; font-size:12px; justify-content:center;">Không có dữ liệu giờ</div>`;
+    } else {
+        sortedHours.forEach(h => {
+            const label = `${h.toString().padStart(2, '0')}:00 - ${(h + 1).toString().padStart(2, '0')}:00`;
+            html += `
+                <div class="c-filter-item" onclick="selectTime('${h}', '${label}')">
+                    <div class="mini-avatar" style="background:transparent; color:#64748b; display:flex; align-items:center; justify-content:center;">
+                        <i class="fa-regular fa-clock"></i>
+                    </div>
+                    <span>${label}</span>
+                </div>`;
+        });
+    }
+    timeBox.innerHTML = html;
+}
+
+// Đừng quên gọi hàm này cuối hàm updateFilterOptions
+
+
+let currentSubjectView = 'root'; 
+
+window.updateFilterOptions = function() {
+    const ADMIN_LOGO_URL = localStorage.getItem('admin_logo_url');
+    const subjectBox = document.getElementById('dropSubjectOptions');
+    if (!subjectBox) return;
+
+    if (currentSubjectView === 'root') {
+        // --- CẤP 1: MENU CHÍNH ---
+        subjectBox.innerHTML = `
+            <div class="c-filter-item" onclick="selectSubject('all', '', 'Tất cả đối tượng', null)" style="font-weight:700; border-bottom:1px solid #f1f5f9;">
+                <i class="fa-solid fa-user-tag" ></i> Tất cả đối tượng
+            </div>
+            <div class="c-filter-item" onclick="switchSubjectView('staff', event)">
+                <div class="mini-avatar" style="background:#4f46e5; color:#fff;"><i class="fa-solid fa-user-shield"></i></div>
+                <span>Nhân viên</span>
+                <i class="fa-solid fa-chevron-right" style="margin-left:auto; font-size:10px; opacity:0.5"></i>
+            </div>
+            <div class="c-filter-item" onclick="switchSubjectView('supplier', event)">
+                <div class="mini-avatar" style="background:#f59e0b; color:#fff;"><i class="fa-solid fa-truck-field"></i></div>
+                <span>Nhà cung cấp</span>
+                <i class="fa-solid fa-chevron-right" style="margin-left:auto; font-size:10px; opacity:0.5"></i>
+            </div>
+            <div class="c-filter-item" onclick="switchSubjectView('customer', event)">
+                <div class="mini-avatar" style="background:#10b981; color:#fff;"><i class="fa-solid fa-hospital-user"></i></div>
+                <span>Khách hàng</span>
+                <i class="fa-solid fa-chevron-right" style="margin-left:auto; font-size:10px; opacity:0.5"></i>
+            </div>
+        `;
+    } else {
+        // --- CẤP 2: DANH SÁCH CHI TIẾT ---
+        let html = `<div class="c-filter-item" onclick="switchSubjectView('root', event)" style="color:#3b82f6; font-weight:700; border-bottom:1px solid #f1f5f9;"><i class="fa-solid fa-arrow-left"></i> Quay lại</div>`;
+        
+        let dataList = [];
+        let bgColor = '#10b981';
+
+        // ÉP BUỘC LẤY TỪ WINDOW ĐỂ TRÁNH LỖI SCOPE MODULE
+        if (currentSubjectView === 'staff') {
+            dataList = window.allStaff || []; 
+            bgColor = '#4f46e5';
+            const validAdminLogo = (ADMIN_LOGO_URL && ADMIN_LOGO_URL.startsWith('http'));
+            html += `
+                <div class="c-filter-item" onclick="selectSubject('staff', 'admin', 'Admin Hệ thống', '${validAdminLogo ? ADMIN_LOGO_URL : ''}')">
+                    <div class="mini-avatar" style="background:#d35400; color:#fff;">AD</div>
+                    <span>Admin Hệ thống</span>
+                </div>`;
+        } else if (currentSubjectView === 'supplier') {
+            dataList = window.allSuppliers || []; 
+            bgColor = '#f59e0b';
+        } else if (currentSubjectView === 'customer') {
+            dataList = window.allCustomers || []; 
+            bgColor = '#10b981';
+        }
+
+        // Kiểm tra nếu danh sách thực sự trống
+        if (dataList.length === 0) {
+            html += `<div style="padding:20px; text-align:center; color:#94a3b8; font-size:12px; font-style:italic;">Không có dữ liệu hiển thị</div>`;
+        } else {
+            dataList.forEach(item => {
+                const name = item.name || "Không tên";
+                const pic = (currentSubjectView === 'staff') ? getAvatarDynamic(item.email, name, 'staff') : (item.img || item.image || "");
+                const hasPic = (pic && pic.length > 10);
+                
+                // BIẾN QUAN TRỌNG: Staff lọc theo Email, Khách/NCC lọc theo Tên
+                const filterValue = (currentSubjectView === 'staff') ? (item.email || "").toLowerCase() : name.toLowerCase();
+
+                html += `
+                    <div class="c-filter-item" onclick="selectSubject('${currentSubjectView}', '${filterValue.replace(/'/g, "\\'")}', '${name.replace(/'/g, "\\'")}', '${hasPic ? pic : ''}')">
+                        ${hasPic ? 
+                            `<img src="${pic}" class="mini-avatar">` : 
+                            `<div class="mini-avatar" style="background:${bgColor}; color:#fff;">${name.charAt(0).toUpperCase()}</div>`
+                        }
+                        <span>${name}</span>
+                    </div>`;
+            });
+        }
+        subjectBox.innerHTML = html;
+    }
+    
+    if (typeof renderTimeFilterOptions === 'function') renderTimeFilterOptions();
+};
+
+window.selectTime = function(val, label) {
+    filterState.timeRange = val;
+    document.getElementById('btnTimeContent').innerHTML = val === '' 
+        ? `<i class="fa-solid fa-clock" style="color:#94a3b8"></i> <span>Tất cả khung giờ</span>`
+        : `<i class="fa-solid fa-clock" style="color:#3b82f6"></i> <span>${label}</span>`;
+    
+    document.getElementById('dropTimeOptions').classList.remove('show');
+    reloadHistory();
+};
+
+window.currentSubjectView = 'root'; 
+// --- BIẾN TOÀN CỤC ---
+
+
+// Đảm bảo các biến này được khởi tạo mảng rỗng
+window.allStaff = [];      
+window.allCustomers = [];  
+window.allSuppliers = []; 
+window.customerMap = {}; 
+window.supplierMap = {};
+window.userMap = {};
+
+window.switchSubjectView = function(view, e) {
+    if(e) e.stopPropagation();
+    currentSubjectView = view;
+    window.updateFilterOptions();
+};
+
+window.selectSubject = function(type, val, label, pic) {
+    filterState.subjectType = type;
+    filterState.subjectValue = val;
+    
+    const btnContainer = document.getElementById('btnSubjectContent');
+    const hasPic = (pic && pic.length > 10);
+
+    if (type === 'all') {
+        btnContainer.innerHTML = `<i class="fa-solid fa-users-viewfinder" style="color:#94a3b8"></i> <span>Tất cả đối tượng</span>`;
+    } else {
+        const bg = (type === 'staff') ? '#4f46e5' : (type === 'supplier' ? '#f59e0b' : '#10b981');
+        const icon = (type === 'staff') ? 'fa-user-shield' : (type === 'supplier' ? 'fa-truck-field' : 'fa-hospital-user');
+        
+        if (hasPic) {
+            btnContainer.innerHTML = `<img src="${pic}" style="width:24px; height:24px; border-radius:50%; object-fit:cover; border:1px solid #e2e8f0;"> <span>${label}</span>`;
+        } else {
+            btnContainer.innerHTML = `<div class="mini-avatar" style="width:24px; height:24px; border-radius:50%; background:${bg}; color:#fff; display:flex; align-items:center; justify-content:center; font-size:10px;"><i class="fa-solid ${icon}"></i></div> <span>${label}</span>`;
+        }
+    }
+
+    currentSubjectView = 'root'; // Reset về root cho lần mở sau
+    document.getElementById('dropSubjectOptions').classList.remove('show');
+    reloadHistory();
+};
+
+// --- 3. HÀM CHỌN ITEM ---
+window.selectFilter = function(type, val, label, pic) {
+    filterState[type] = val;
+    
+    // Xác định ID nội dung nút bấm (btnCustContent / btnExecContent)
+    let btnId = (type === 'customer') ? 'btnCustContent' : (type === 'executor' ? 'btnExecContent' : 'btnTimeContent');
+    const btnContainer = document.getElementById(btnId);
+    if (!btnContainer) return;
+
+    const hasPic = (pic && pic.length > 10);
+
+    if (val === '') {
+        const icon = (type === 'customer') ? 'fa-user-tag' : (type === 'executor' ? 'fa-user-shield' : 'fa-clock');
+        btnContainer.innerHTML = `<i class="fa-solid ${icon}" style="color:#94a3b8"></i> <span>${label}</span>`;
+    } else if (hasPic) {
+        // HIỆN ẢNH LÊN VIÊN THUỐC
+        btnContainer.innerHTML = `
+            <img src="${pic}" style="width:24px; height:24px; border-radius:50%; object-fit:cover; border:1px solid #e2e8f0;" 
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            <div class="mini-avatar" style="display:none; width:24px; height:24px; border-radius:50%; background:#10b981; color:#fff; align-items:center; justify-content:center; font-size:10px;">${label.charAt(0)}</div>
+            <span>${label}</span>`;
+    } else {
+        // HIỆN VÒNG TRÒN CHỮ CÁI
+        const bg = (type === 'customer') ? '#10b981' : '#4f46e5';
+        btnContainer.innerHTML = `
+            <div class="mini-avatar" style="width:24px; height:24px; border-radius:50%; background:${bg}; color:#fff; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:bold;">${label.charAt(0).toUpperCase()}</div>
+            <span>${label}</span>`;
+    }
+
+    document.querySelectorAll('.c-filter-options').forEach(opt => opt.classList.remove('show'));
+    reloadHistory();
+};
+
+window.clearFilters = function() {
+    filterState = { subjectType: 'all', subjectValue: '', timeRange: '' };
+    currentSubjectView = 'root';
+    
+    document.getElementById('btnSubjectContent').innerHTML = `<span>Tất cả đối tượng</span>`;
+    document.getElementById('btnTimeContent').innerHTML = `<span>Tất cả khung giờ</span>`;
+
+    reloadHistory();
+    updateFilterOptions();
+};
+
+// Gọi hàm updateFilterOptions trong onSnapshot của logs
+// Tìm đoạn onSnapshot(doc(db, "warehouse_history_logs", STORE_ID)... và thêm:
+// updateFilterOptions();
+
+
+// --- THAY THẾ HÀM reloadHistory CŨ (Cập nhật badge hiển thị bên ngoài) ---
+// --- THAY THẾ TOÀN BỘ HÀM reloadHistory ---
+// --- THAY THẾ TOÀN BỘ HÀM reloadHistory ---
+function reloadHistory() {
+    const container = document.getElementById('historyListContainer');
+    if (!container) return;
+    
+    const historyData = getGroupedHistory();
+    container.innerHTML = '';
+
+    if (historyData.length === 0) {
+        document.getElementById('historyRightPanel').innerHTML = `
+            <div class="empty-state show">
+                <i class="fa-solid fa-box-open"></i>
+                <p>Chưa có giao dịch nào phù hợp</p>
+            </div>`;
+        return;
+    }
+
+    historyData.forEach(group => {
+        const type = (group.type || '').toLowerCase();
+        
+        // 1. PHÂN LOẠI RÕ RÀNG (Dùng OR để bắt hết các trường hợp)
+        const isXuat = (type === 'xuat' || type === 'export');
+        const isChuyen = (type === 'chuyen' || type.includes('transfer'));
+        const isKiemKe = (type === 'kiemke' || type.includes('check') || type.includes('audit'));
+        // Nếu không phải 3 loại trên thì là Nhập (bao gồm 'nhap', 'import', hoặc string lạ)
+        const isNhap = (!isXuat && !isChuyen && !isKiemKe); 
+
+        // 2. CẤU HÌNH GIAO DIỆN
+        let icon = 'fa-download';
+        let title = 'Nhập kho';
+        let iconColor = '#22c55e'; // Xanh lá
+        let iconBg = '#f0fdf4';
+        
+        if (isXuat) {
+            icon = 'fa-upload';
+            title = 'Xuất kho';
+            iconColor = '#ef4444'; // Đỏ
+            iconBg = '#fef2f2';
+        } else if (isChuyen) {
+            icon = 'fa-right-left'; 
+            title = 'Chuyển kho';
+            iconColor = '#3b82f6'; // Xanh dương
+            iconBg = '#eff6ff';
+        } else if (isKiemKe) {
+            icon = 'fa-clipboard-check';
+            title = 'Kiểm kê kho';
+            iconColor = '#d97706'; // Cam đất
+            iconBg = '#fffbeb';
+        }
+
+        const timeRange = `${String(group.hour).padStart(2,'0')}:00 - ${String(group.hour+1).padStart(2,'0')}:00`;
+        const isActive = group.id === selectedGroupId ? 'active' : '';
+
+        // Badge Phí/Giảm (Không hiện cho Kiểm kê)
+        let badgeHtml = '';
+        if (!isKiemKe) {
+            if (group.grpNetAdjustment > 0) {
+                badgeHtml = `<span style="font-size:10px; background:#fff7ed; color:#c2410c; padding:1px 6px; border-radius:4px; margin-left:5px;">+Phí</span>`;
+            } else if (group.grpNetAdjustment < 0) {
+                badgeHtml = `<span style="font-size:10px; background:#f0fdf4; color:#15803d; padding:1px 6px; border-radius:4px; margin-left:5px;">-Giảm</span>`;
+            }
+        }
+
+        // Hiển thị giá trị bên phải (Tiền hoặc Số lượng)
+        let valueDisplay = formatVND(group.grpTotalAmount);
+        
+        if (isKiemKe) {
+            // Kiểm kê: Hiện số lệch
+            let totalDiff = 0;
+            group.itemsList.forEach(i => totalDiff += Number(i.qty));
+            const sign = totalDiff > 0 ? '+' : '';
+            const colorDiff = totalDiff > 0 ? '#16a34a' : (totalDiff < 0 ? '#dc2626' : '#64748b');
+            valueDisplay = `<span style="color:${colorDiff}">${sign}${totalDiff} lệch</span>`;
+        } else if (isChuyen) {
+            // Chuyển kho: Hiện số mặt hàng
+             valueDisplay = `${group.itemsList.length} mặt hàng`;
+        }
+
+        // Tên hiển thị (Nếu kiểm kê thì ghi là Cân bằng kho)
+        const displayName = isKiemKe ? "Cân bằng kho" : group.supplier;
+
+        const itemHtml = `
+            <div class="history-item ${isActive}" data-id="${group.id}" onclick="viewDetail('${group.id}', this)">
+                <div class="history-item-icon-box" style="background:${iconBg}; color:${iconColor}; width:35px; height:35px; display:flex; align-items:center; justify-content:center; border-radius:8px;">
+                    <i class="fa-solid ${icon}"></i>
+                </div>
+                <div class="history-item-body">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-weight:700; font-size:15px; color:#334155;">${title}</span>
+                        <span style="font-size:11px; color:#94a3b8;">${group.dateStr}</span>
+                    </div>
+                    <div style="margin: 4px 0; font-size:13px; font-weight:600; color:#0056e0;">
+                        ${isChuyen ? `Đến: ${displayName}` : displayName} ${badgeHtml}
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-size:12px; color:#64748b;">
+                        <span><i class="fa-regular fa-clock"></i> ${timeRange}</span>
+                        <span><b>${valueDisplay}</b></span>
+                    </div>
+                </div>
+            </div>`;
+        container.insertAdjacentHTML('beforeend', itemHtml);
+    });
+
+    // Auto click item đầu tiên hoặc item đang chọn
+    if (!selectedGroupId && container.children.length > 0) {
+        container.children[0].click();
+    } else if (selectedGroupId) {
+        const existEl = document.querySelector(`.history-item[data-id="${selectedGroupId}"]`);
+        if (existEl) viewDetail(selectedGroupId, null); 
+        else if (container.children.length > 0) container.children[0].click();
+    }
+}
+
+
+// --- CẬP NHẬT VIEW DETAIL: CHUẨN UI (ĐÃ FIX LỖI DATA CŨ & LỆCH CỘT) ---
+window.viewDetail = function(groupId, el) {
+    selectedGroupId = groupId;
+    
+    // 1. Active menu hiệu ứng
+    document.querySelectorAll('.history-item').forEach(item => item.classList.remove('active'));
+    if (el) el.classList.add('active');
+    else {
+        const activeEl = document.querySelector(`.history-item[data-id="${groupId}"]`);
+        if (activeEl) activeEl.classList.add('active');
+    }
+    
+    // 2. Lấy dữ liệu
+    const groups = getGroupedHistory();
+    const data = groups.find(g => g.id === groupId);
+    
+    if (!data) {
+        document.getElementById('historyRightPanel').innerHTML = `
+            <div style="display:flex; height:100%; align-items:center; justify-content:center; flex-direction:column; color:#94a3b8;">
+                <i class="fa-regular fa-folder-open" style="font-size:40px; margin-bottom:10px;"></i>
+                <p>Chọn một phiếu để xem chi tiết</p>
+            </div>`;
+        return;
+    }
+
+    // --- PHÂN LOẠI PHIẾU ---
+    const type = (data.type || '').toLowerCase();
+    const isXuat = (type === 'xuat' || type === 'export');
+    const isNhap = (type === 'nhap' || type === 'import');
+    const isChuyen = (type === 'chuyen' || type.includes('transfer'));
+    const isKiemKe = (type === 'kiemke' || type.includes('check') || type.includes('stocktake'));
+    
+    // --- TÍNH TOÁN HEADER ---
+    let totalQty = 0; 
+    const uniqueSet = new Set();
+    
+    data.itemsList.forEach(item => {
+        totalQty += Number(item.qty || 0);
+        const uniqueKey = (item.sku || item.name || "unknown").toString().trim().toLowerCase();
+        uniqueSet.add(uniqueKey);
+    });
+
+    const countLoaiHang = uniqueSet.size;
+
+    // --- CẤU HÌNH GIAO DIỆN THEO LOẠI PHIẾU ---
+    let headerTitle = 'Phiếu Nhập Kho';
+    let headerIcon = 'fa-download';
+    let headerColor = '#22c55e'; // Green
+    let headerBg = '#f0fdf4';
+    let summaryHtml = '';
+    let adjRow = '';
+
+    const totalAdj = Number(data.grpNetAdjustment || 0);
+    if (totalAdj > 0) {
+        adjRow = `<div class="summary-box" style="color:#c2410c; border-color:#ffedd5; background:#fff7ed;">Tổng Phí: <b>+${formatVND(totalAdj)}</b></div>`;
+    } else if (totalAdj < 0) {
+        adjRow = `<div class="summary-box" style="color:#15803d; border-color:#dcfce7; background:#f0fdf4;">Tổng Giảm: <b>-${formatVND(Math.abs(totalAdj))}</b></div>`;
+    }
+
+    if (isKiemKe) {
+        headerTitle = 'Phiếu Kiểm Kê Kho';
+        headerIcon = 'fa-clipboard-check';
+        headerColor = '#6366f1';
+        headerBg = '#eef2ff';
+        summaryHtml = ''; // BỎ TRẠNG THÁI THEO YÊU CẦU
+    } 
+    else if (isXuat) {
+        headerTitle = 'Phiếu Xuất Kho';
+        headerIcon = 'fa-upload';
+        headerColor = '#ef4444'; // Red
+        headerBg = '#fef2f2';
+        summaryHtml = `
+            <div class="summary-box" title="Tổng giá vốn">Vốn: <b>${formatVND(data.grpSubTotal || 0)}</b></div>
+            ${adjRow}
+            <div class="summary-box" style="background:#fff7ed; border:1px solid #ffedd5; color:#c2410c;" title="Tổng tiền khách phải trả">
+                Doanh thu: <b>${formatVND(data.grpTotalAmount || 0)}</b>
+            </div>`;
+    } 
+    else if (isChuyen) {
+        headerTitle = 'Phiếu Chuyển Kho';
+        headerIcon = 'fa-right-left';
+        headerColor = '#3b82f6'; // Blue
+        headerBg = '#eff6ff';
+        summaryHtml = `${adjRow}`; 
+    } 
+    else {
+        // Mặc định Nhập kho
+        summaryHtml = `
+            <div class="summary-box" style="background:#f0fdf4; border:1px solid #dcfce7; color:#15803d;">
+                Tổng nhập: <b>${formatVND(data.grpTotalAmount || 0)}</b>
+            </div>`;
+    }
+
+    // --- HTML ĐỐI TÁC (KIỂM KÊ SẼ RỖNG) ---
+    let partnerHtml = '';
+    if (isKiemKe) {
+        // Kiểm kê: Không hiện thông tin đối tác/khách hàng
+        partnerHtml = ''; 
+    } else if (isChuyen) {
+        partnerHtml = `
+            <div class="transfer-route-card">
+                <div class="tr-node"><i class="fa-solid fa-warehouse tr-icon"></i><span class="tr-label">Từ kho</span><span class="tr-name">Kho này</span></div>
+                <div class="tr-arrow"><i class="fa-solid fa-arrow-right-long"></i></div>
+                <div class="tr-node"><i class="fa-solid fa-shop tr-icon"></i><span class="tr-label">Đến kho</span><span class="tr-name" title="${data.supplier}">${data.supplier}</span></div>
+            </div>`;
+    } else {
+        const logId = data.customerId || "";
+        const rawName = data.supplier || "Khách lẻ";
+        const latest = customerMap[logId] || customerMap[rawName.toLowerCase()];
+        let displayImg = data.customerImg || (latest ? latest.img : "");
+        let isDeleted = (rawName !== 'Khách lẻ' && !latest && logId !== "");
+
+        partnerHtml = `
+            <div class="customer-card-new">
+                ${displayImg ? 
+                    `<img src="${displayImg}" class="cc-avatar-img">` : 
+                    `<div class="cc-avatar-placeholder" style="background:${isDeleted ? '#94a3b8' : '#10b981'}">
+                        ${isDeleted ? '<i class="fa-solid fa-user-slash"></i>' : rawName.charAt(0).toUpperCase()}
+                    </div>`
+                }
+                <div class="cc-info">
+                    <span class="cc-role">${isNhap ? 'NHÀ CUNG CẤP' : 'KHÁCH HÀNG'}</span>
+                    <span class="cc-name">${rawName} ${isDeleted ? '<small style="color:red;">(Đã xóa)</small>' : ''}</span>
+                </div>
+            </div>`;
+    }
+   
+
+    // --- HTML NGƯỜI THỰC THI ---
+    const executorName = (data.user || "Nhân viên").trim();
+    const executorEmail = (data.email || "").trim().toLowerCase();
+    const myEmail = (localStorage.getItem('userEmail') || "").trim().toLowerCase();
+    const ADMIN_LOGO_URL = localStorage.getItem('admin_logo_url'); 
+    
+    let executorPic = null;
+    const isThisExecutorAdmin = (storeOwnerEmail !== "" && executorEmail === storeOwnerEmail) || 
+                                executorEmail.includes('admin') || 
+                                executorName.toLowerCase().includes('admin');
+
+    if (isThisExecutorAdmin) executorPic = ADMIN_LOGO_URL;
+    else {
+        if (executorEmail === myEmail && myEmail !== "") executorPic = localStorage.getItem('userPicture');
+        else executorPic = userMap[executorEmail] || userMap[executorName.toLowerCase()] || "";
+    }
+
+    let executorAvatarHtml = `<div class="ec-placeholder" style="background:${isThisExecutorAdmin ? '#d35400' : '#4f46e5'}; width:32px; height:32px; border-radius:50%; color:white; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:14px;">${executorName.charAt(0).toUpperCase()}</div>`;
+    
+    if (executorPic && executorPic.length > 10) { 
+        executorAvatarHtml = `
+            <img src="${executorPic}" class="ec-avatar" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            <div class="ec-placeholder" style="display:none; background:#4f46e5; color:white; width:32px; height:32px; border-radius:50%; align-items:center; justify-content:center; font-weight:bold; font-size:14px;">${executorName.charAt(0).toUpperCase()}</div>`;
+    }
+
+    const executorHtml = `
+        <div class="executor-card">
+            ${executorAvatarHtml}
+            <div class="ec-info"><span class="ec-label">Người thực thi</span><span class="ec-name" title="${executorEmail}">${executorName}</span></div>
+        </div>`;
+
+    // --- NÚT XÓA ---
+    const trashStyle = (typeof canEditHistory !== 'undefined' && canEditHistory)
+        ? "color:#ef4444; background:#fff1f2; cursor:pointer; opacity:1;" 
+        : "color:#cbd5e1; background:#f8fafc; cursor:not-allowed; opacity:0.5;";
+
+    const actionIconsHtml = `
+        <div style="margin-left:auto;">
+            <i class="fa-regular fa-trash-can" 
+            style="font-size:18px; padding:10px; border-radius:50%; transition:0.3s; ${trashStyle}"
+            title="Xóa phiếu"
+            onclick="${(typeof canEditHistory !== 'undefined' && canEditHistory) ? `window.confirmDeleteHistory('${data.id}')` : `Swal.fire('Thông báo','Bạn không có quyền xóa!','info')`}">
+            </i>
+        </div>`;
+
+    // --- RENDER DANH SÁCH SẢN PHẨM ---
+    const rowsHtml = data.itemsList.map(p => {
+    const categoryBadge = (p.category && p.category !== '---') 
+        ? `<span style="font-size:11px; background:#f1f5f9; color:#64748b; padding:2px 8px; border-radius:4px; border:1px solid #e2e8f0;">${p.category}</span>` 
+        : `<span style="font-size:11px; color:#cbd5e1; font-style:italic;">---</span>`;
+
+    let qtyColor = isNhap ? '#16a34a' : '#dc2626';
+    let qtyBg = isNhap ? '#f0fdf4' : '#fef2f2';
+    let qtySign = isNhap ? '+' : '-';
+    if (isChuyen) { qtyColor = '#0369a1'; qtyBg = '#f0f9ff'; qtySign = '-'; }
+    if (isKiemKe) { qtyColor = '#6366f1'; qtyBg = '#eef2ff'; qtySign = (Number(p.qty) > 0) ? '+' : ''; }
+
+    const rowPrice = Number(p.price || 0);
+    const rowQty = Number(p.qty || 0);
+    const totalSalesPrice = Math.abs(rowPrice * rowQty);
+
+    const hideMoneyStyle = (isChuyen || isKiemKe) ? 'display:none;' : '';
+    const hideAdjStyle = (isChuyen || isKiemKe || isNhap) ? 'display:none;' : '';
+
+    // LẤY GHI CHÚ TỪ DATA
+    const noteText = p.note && p.note.trim() !== "" ? p.note : "Không có ghi chú cho mục này";
+
+    return `
+    <tr class="product-row" onclick="toggleProductNote(event, this)">
+        <td style="width:50px; padding:8px 10px;">
+            <div style="width:40px; height:40px; border-radius:6px; overflow:hidden; border:1px solid #e2e8f0;">
+                <img src="${p.img}" onerror="this.src='${NO_IMAGE_URL}'" style="width:100%; height:100%; object-fit:contain;">
+            </div>
+        </td>
+        <td style="padding:8px 10px;">
+            <div style="font-weight:600; font-size:13px; color:#334155;">${p.name}</div>
+            <div style="color:#94a3b8; font-family:monospace; font-size:11px;">${p.sku || '---'}</div>
+        </td>
+        <td style="text-align:center;">${categoryBadge}</td>
+        <td style="text-align:right; ${hideMoneyStyle}">
+            <div style="font-size:13px; font-weight:700;">${formatVND(rowPrice)}</div>
+        </td>
+        <td style="text-align:right; font-size:13px; font-weight:800; color:#0056e0; ${hideMoneyStyle}">${formatVND(totalSalesPrice)}</td>
+        <td style="text-align:center; font-size:12px; color:#64748b;">
+            ${p.oldStock} → <b>${p.newStock}</b>
+        </td>
+        <td style="text-align:right;">
+            <b style="font-size:13px; color:${qtyColor}; background:${qtyBg}; padding:2px 6px; border-radius:4px;">
+                ${qtySign}${rowQty}
+            </b>
+        </td>
+    </tr>
+    <!-- DÒNG GHI CHÚ ẨN -->
+    <tr class="note-row">
+        <td colspan="8" style="padding:0; border:none;">
+            <div class="note-wrapper">
+                <div class="note-content-box">
+                    <i class="fa-solid fa-comment-dots" style="color:#3498db"></i>
+                    <span><b>Ghi chú:</b> ${noteText}</span>
+                </div>
+            </div>
+        </td>
+    </tr>`;
+}).join('');
+
+    // --- FINAL RENDER ---
+    document.getElementById('historyRightPanel').innerHTML = `
+        <div class="detail-header-bar active">
+            <div style="display:flex; align-items:center; gap:12px; flex:1;">
+                 <div style="width:36px; height:36px; border-radius:8px; background:${headerBg}; color:${headerColor}; display:flex; align-items:center; justify-content:center; font-size:18px;">
+                    <i class="fa-solid ${headerIcon}"></i>
+                </div>
+                <div>
+                    <h3 style="margin:0; font-size:16px; color:#1e293b;">${headerTitle}</h3>
+                    <small style="color:#64748b; font-size:11px;">${data.dateStr} lúc ${String(new Date(data.rawTimestamp).getHours()).padStart(2,'0')}:${String(new Date(data.rawTimestamp).getMinutes()).padStart(2,'0')}</small>
+                </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:15px;">
+                ${executorHtml}
+                ${actionIconsHtml}
+            </div>
+        </div>
+
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 20px; background:#fff; border-bottom:1px solid #f1f5f9;">
+            <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                <div class="summary-box">Loại: <b>${countLoaiHang}</b></div>
+                ${!isKiemKe ? `<div class="summary-box">Tổng SL: <b>${totalQty}</b></div>` : ''}
+                ${summaryHtml}
+            </div>
+            <div style="flex-shrink:0;">
+                ${partnerHtml}
+            </div>
+        </div>
+
+        <div style="flex:1; overflow:hidden; padding:0 20px 20px 20px; background:#fff;">
+            <div style="height:100%; overflow-y:auto; border:1px solid #e2e8f0; border-radius:8px; margin-top:5px;">
+                <table class="product-table" style="width:100%; border-collapse:collapse;">
+                    <thead style="position:sticky; top:0; z-index:5; background:#f8fafc; font-size:12px; color:#64748b; text-transform:uppercase;">
+                        <tr>
+                            <th style="padding:10px; width:50px;">Ảnh</th>
+                            <th style="padding:10px;">Sản phẩm / SKU</th> 
+                            <th style="text-align:center; padding:10px;">Danh mục</th> 
+                            
+                            <!-- Hiển thị "Giá nhập" nếu là phiếu nhập, ngược lại hiện "Giá vốn & Bán" -->
+                            <th style="text-align:right; padding:10px; ${ (isChuyen || isKiemKe) ? 'display:none;' : ''}">
+                                ${isNhap ? 'Giá nhập' : 'Giá vốn & Bán'}
+                            </th>
+                            
+                            <th style="text-align:right; padding:10px; ${ (isChuyen || isKiemKe) ? 'display:none;' : ''}">Thành tiền</th>
+                            
+                            <!-- ẨN cột Phí/Giảm nếu là Nhập kho, Chuyển kho hoặc Kiểm kê -->
+                            <th style="text-align:right; padding:10px; ${ (isChuyen || isKiemKe || isNhap) ? 'display:none;' : ''}">Phí/Giảm</th>
+                            
+                            <th style="text-align:center; padding:10px;">Tồn kho</th>
+                            <th style="text-align:right; padding:10px;">Biến động</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rowsHtml}</tbody>
+                </table>
+            </div>
+        </div>`;
+};
+
+
+// Giả sử đây là đoạn code trong hàm render của bạn
+function renderLogs(data) {
+    const container = document.getElementById('logContainer');
+    container.innerHTML = data.map(log => {
+        // Kiểm tra nếu có ghi chú thì mới hiển thị icon hoặc chuẩn bị nội dung
+        const hasNote = log.note && log.note.trim() !== "";
+        const noteContent = hasNote ? log.note : "Không có ghi chú";
+
+        return `
+            <div class="log-row" onclick="toggleLogNote(event, this)">
+                <div class="main-info">
+                    <div class="col-img">
+                        <img src="${log.img || NO_IMAGE_URL}" class="p-img">
+                    </div>
+                    <div class="col-product">
+                        <div class="p-name">${log.name}</div>
+                        <div class="p-sku">${log.sku}</div>
+                    </div>
+                    <div class="col-cat">
+                        <span class="cat-badge">${log.category || 'Nước'}</span>
+                    </div>
+                    <div class="col-stock">
+                        ${log.oldStock} → ${log.newStock}
+                    </div>
+                    <div class="col-change">
+                        <span class="change-badge ${log.qty >= 0 ? 'pos' : 'neg'}">
+                            ${log.qty > 0 ? '+' : ''}${log.qty}
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- PHẦN GHI CHÚ ẨN -->
+                <div class="note-detail">
+                    <div class="note-inner">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                        <span><b>Ghi chú:</b> ${noteContent}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+    // ============================================================
+    // 8. CHỨC NĂNG XÓA
+    // ============================================================
+// --- CẬP NHẬT HÀM XÓA VĨNH VIỄN ---
+window.confirmDeleteHistory = function(groupId) {
+    if (!canEditHistory) {
+        Swal.fire('Thông báo', 'Quyền xóa của bạn đã bị thu hồi!', 'warning');
+        return;
+    }
+
+    Swal.fire({
+        title: 'Xóa vĩnh viễn?',
+        text: "Dữ liệu giao dịch này sẽ bị xóa hoàn toàn khỏi hệ thống!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Đồng ý xóa',
+        cancelButtonText: 'Hủy'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const groups = getGroupedHistory();
+            const data = groups.find(g => g.id === groupId);
+            if (data) executeDeleteHistory(data);
+        }
+    });
+};
+
+
+
+// --- HÀM THỰC THI XÓA (HỖ TRỢ CẢ CŨ VÀ MỚI) ---
+async function executeDeleteHistory(groupData) {
+    // Hiển thị loading
+    Swal.fire({
+        title: 'Đang xóa...',
+        allowOutsideClick: false,
+        didOpen: () => { Swal.showLoading(); }
+    });
+
+    try {
+        const batch = writeBatch(db); // Dùng batch để xóa nhanh hơn (cho log mới)
+        let oldLogsToRemove = [];
+        let hasNewLogs = false;
+
+        // 1. Phân loại các item cần xóa
+        groupData.itemsList.forEach(item => {
+            if (item.source === 'old') {
+                // Nếu là log cũ -> gom lại để dùng arrayRemove
+                // Cần tái tạo lại object y hệt lúc lưu mới xóa được (khá rủi ro nếu data lệch)
+                // Cách an toàn nhất cho log cũ: Lọc mảng cũ và update lại đè lên.
+                oldLogsToRemove.push(item.exactTime);
+            } else {
+                // Nếu là log mới -> Xóa document
+                // item.source là tên collection (vd: 'import_log')
+                // item.id là ID document
+                if (item.id && item.source) {
+                    const docRef = doc(db, "warehouse_history_logs", currentStoreId, item.source, item.id);
+                    batch.delete(docRef);
+                    hasNewLogs = true;
+                }
+            }
+        });
+
+        const promises = [];
+
+        // 2. Thực thi xóa LOG MỚI (nếu có)
+        if (hasNewLogs) {
+            promises.push(batch.commit());
+        }
+
+        // 3. Thực thi xóa LOG CŨ (nếu có)
+        if (oldLogsToRemove.length > 0) {
+            // Lấy dữ liệu cũ hiện tại
+            const docRef = doc(db, "warehouse_history_logs", currentStoreId);
+            const docSnap = await getDoc(docRef);
+            
+            if (docSnap.exists()) {
+                const currentLogs = docSnap.data().logs || [];
+                // Lọc bỏ những log có timestamp trùng với danh sách cần xóa
+                const updatedLogs = currentLogs.filter(log => !oldLogsToRemove.includes(log.timestamp));
+                
+                promises.push(updateDoc(docRef, { logs: updatedLogs }));
+            }
+        }
+
+        // Chạy tất cả song song
+        await Promise.all(promises);
+        
+        Swal.fire({ title: "Đã xóa!", icon: "success", timer: 1500, showConfirmButton: false });
+        selectedGroupId = null;
+
+    } catch (error) {
+        console.error("Lỗi xóa lịch sử:", error);
+        Swal.fire("Lỗi!", "Không thể xóa giao dịch: " + error.message, "error");
+    }
+}
+
+    // ============================================================
+    // 9. UTILS & INIT
+    // ============================================================
+    (function init() {
+        initRealTimeData();
+        renderYears();
+        renderMonths();
+        
+        const nameEl = document.querySelector('.google-account-pill .user-name');
+        const avatarEl = document.querySelector('.google-account-pill .user-avatar');
+        if (nameEl) nameEl.innerText = localStorage.getItem('userName') || 'Người dùng';
+        if (avatarEl) {
+            const pic = localStorage.getItem('userPicture');
+            if(pic) avatarEl.src = pic;
+        }
+        setupDropdowns();
+    })();
+// Thêm đoạn này vào cuối hàm init() hoặc chạy ngay khi load trang
+
+
+    function setupDropdowns() {
+        const drops = ['yearDropdown', 'monthDropdown', 'typeWrapper'];
+        drops.forEach(id => {
+            const el = document.getElementById(id);
+            if(el) {
+                el.onclick = (e) => {
+                    e.stopPropagation();
+                    drops.forEach(otherId => { if(otherId !== id) document.getElementById(otherId).classList.remove('active'); });
+                    el.classList.toggle('active');
+                }
+            }
+        });
+        document.addEventListener('click', () => {
+            drops.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.classList.remove('active');
+            });
+        });
+        
+        document.querySelectorAll('#typeOptions .c-option-item').forEach(opt => {
+            opt.onclick = function(e) {
+                e.stopPropagation();
+                document.querySelectorAll('#typeOptions .c-option-item').forEach(i => i.classList.remove('selected'));
+                this.classList.add('selected');
+                document.getElementById('typeDisplay').innerText = this.innerText;
+                currentType = this.getAttribute('data-value');
+                document.getElementById('typeWrapper').classList.remove('active');
+                reloadHistory();
+            }
+        });
+    }
+
+    function renderYears() {
+        const listYear = document.getElementById('listYear');
+        const displayYear = document.getElementById('displayYear');
+        if (!listYear) return;
+        
+        listYear.innerHTML = '';
+        const currentYear = new Date().getFullYear();
+        for (let y = currentYear; y >= currentYear - 5; y--) {
+            const item = document.createElement('div');
+            item.className = `c-option-item ${y === selectedYear ? 'selected' : ''}`;
+            item.innerText = y;
+            item.onclick = (e) => { 
+                e.stopPropagation(); selectedYear = y; displayYear.innerText = y;
+                document.getElementById('yearDropdown').classList.remove('active');
+                renderMonths(); reloadHistory();
+            };
+            listYear.appendChild(item);
+        }
+        displayYear.innerText = selectedYear;
+    }
+
+    function renderMonths() {
+        const listMonth = document.getElementById('listMonth');
+        const displayMonth = document.getElementById('displayMonth');
+        if (!listMonth) return;
+
+        listMonth.innerHTML = '';
+        const currentYear = new Date().getFullYear();
+        const currentMonth = new Date().getMonth() + 1;
+        let maxMonth = (selectedYear === currentYear) ? currentMonth : 12;
+        
+        for (let m = 1; m <= maxMonth; m++) {
+            const item = document.createElement('div');
+            item.className = `c-option-item ${m === selectedMonth ? 'selected' : ''}`;
+            const mText = m < 10 ? '0' + m : m;
+            item.innerText = mText;
+            item.onclick = (e) => { 
+                e.stopPropagation(); selectedMonth = m; displayMonth.innerText = mText;
+                document.getElementById('monthDropdown').classList.remove('active'); 
+                reloadHistory();
+            };
+            listMonth.appendChild(item);
+        }
+        displayMonth.innerText = selectedMonth < 10 ? '0' + selectedMonth : selectedMonth;
+    }
+
+
+    window.toggleMenu = function(id) {
+        const element = document.getElementById(id);
+        if (element) element.classList.toggle('active');
+    };
+
+
+    // --- 1. HÀM TOGGLE DROPDOWN ---
+window.toggleHistoryDropdown = function(e) {
+    if(e) e.stopPropagation();
+    const drop = document.getElementById('historyDropdown');
+    const isShowing = drop.classList.contains('show');
+    closeAllDropdowns();
+    if (!isShowing) drop.classList.add('show');
+};
+
+// --- 2. HÀM ĐÓNG TẤT CẢ DROPDOWN (Cập nhật theo yêu cầu của bạn) ---
+window.closeAllDropdowns = function() {
+    document.querySelectorAll('.dropdown-content').forEach(c => c.classList.remove('show'));
+    document.querySelectorAll('.custom-select-container').forEach(c => c.classList.remove('show'));
+    const historyDrop = document.getElementById('historyDropdown');
+    if(historyDrop) historyDrop.classList.remove('show');
+    
+    // Đóng các dropdown tháng/năm/loại cũ
+    document.getElementById('monthDropdown')?.classList.remove('active');
+    document.getElementById('yearDropdown')?.classList.remove('active');
+    document.getElementById('typeWrapper')?.classList.remove('active');
+};
+
+// --- 3. EVENT LISTENER CLICK TOÀN CỤC ---
+window.addEventListener('click', function(e) {
+    // Logic của bạn
+    if (!e.target.closest('.history-period-container') && 
+        !e.target.closest('.custom-date-wrapper') &&
+        !e.target.closest('.custom-type-wrapper') &&
+        !e.target.closest('#quickCategoryPopup')) {
+        closeAllDropdowns();
+    }
+    
+    const quickPopup = document.getElementById('quickCategoryPopup');
+    if (quickPopup && quickPopup.style.display === 'block' && !quickPopup.contains(e.target) && !e.target.closest('.badge')) {
+        quickPopup.style.display = 'none';
+    }
+});
+
+// --- 4. HÀM TỰ ĐỘNG CẬP NHẬT KHOẢNG THỜI GIAN TỪ LOGS ---
+function updateExistencePeriods() {
+    const listEl = document.getElementById('historyList');
+    if (!listEl || logs.length === 0) return;
+
+    // Nhóm logs theo Tháng/Năm
+    const periods = {};
+    logs.forEach(log => {
+        const d = new Date(log.timestamp);
+        const m = d.getMonth() + 1;
+        const y = d.getFullYear();
+        const key = `${m < 10 ? '0' + m : m}/${y}`;
+        periods[key] = (periods[key] || 0) + 1;
+    });
+
+    // Sắp xếp thời gian mới nhất lên đầu
+    const sortedKeys = Object.keys(periods).sort((a, b) => {
+        const [m1, y1] = a.split('/').map(Number);
+        const [m2, y2] = b.split('/').map(Number);
+        return y2 !== y1 ? y2 - y1 : m2 - m1;
+    });
+
+    listEl.innerHTML = sortedKeys.map(key => {
+        const [m, y] = key.split('/');
+        return `
+            <li class="history-list-item" onclick="selectPeriod('${m}', '${y}')">
+                <div class="time-info">
+                    <span class="time-title">${key}</span>
+                    <span class="item-count">Tổng số mục: ${periods[key]} mục</span>
+                </div>
+                <i class="fa-solid fa-arrow-right"></i>
+            </li>
+        `;
+    }).join('');
+}
+
+// --- 5. HÀM KHI CLICK VÀO MỘT KHOẢNG THỜI GIAN ---
+window.selectPeriod = function(m, y) {
+    // Cập nhật biến toàn cục
+    selectedMonth = parseInt(m);
+    selectedYear = parseInt(y);
+
+    // Cập nhật UI hiển thị ở date-wrapper
+    document.getElementById('displayMonth').innerText = m;
+    document.getElementById('displayYear').innerText = y;
+
+    // Đóng dropdown và reload dữ liệu
+    closeAllDropdowns();
+    reloadHistory();
+    
+    // Đồng bộ lại các item "selected" trong dropdown tháng/năm gốc
+    renderMonths();
+    renderYears();
+};
+
+// --- 6. GỌI CẬP NHẬT KHI CÓ DỮ LIỆU MỚI ---
+// Bạn hãy tìm hàm onSnapshot(doc(db, "warehouse_history_logs", STORE_ID)...) 
+// và thêm dòng updateExistencePeriods() vào cuối nó.
+
+
+</script>
+
+    </body>
+    </html>

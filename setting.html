@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cài đặt tài khoản - Trenny Warehouse</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../my-custom-ui.js"></script>
+    <link rel="stylesheet" href="/sidebar.css">
+    
+    <style>
+        /* --- GIỮ NGUYÊN CSS CŨ --- */
+        body { overflow: hidden; background: #eef2f7; margin: 0; min-height: 100vh; width: 100vw; display: flex; user-select: none; position: relative; }
+        
+        body::after { content: ""; position: fixed; width: 150vmax; height: 150vmax; top: -25%; left: -25%; z-index: -1; background-image: radial-gradient(circle at 20% 30%, #d0bcff 0%, transparent 40%), radial-gradient(circle at 80% 70%, #a1c4fd 0%, transparent 40%), radial-gradient(circle at 50% 50%, #c2e9fb 0%, transparent 50%); filter: blur(80px); animation: waveMovement 15s linear infinite; }
+        @keyframes waveMovement { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .table-view { display: flex; width: 100%; min-height: 100vh; padding: 20px; gap: 10px; }
+        .main-content { 
+            flex-grow: 1; border: 3px solid #ffffff; box-shadow: -5px 5px 1px #b5b5ec; 
+            background-color: #F8FAFC; height: calc(100vh - 40px); overflow-y: auto; 
+            overflow-x: hidden; position: relative; border-radius: 15px; padding: 15px;
+            scrollbar-width: none;
+        }
+        .main-content::-webkit-scrollbar { display: none; }
+        .top-header { display: flex; align-items: center; justify-content: space-between; padding: 0 25px; border-bottom: 1px solid #f0f0f0; height: 70px; background: #fff; position: sticky; top: 0; z-index: 100; }
+        .page-title { font-size: 18px; font-weight: 700; color: #1a1a1a; margin: 0; display: flex; align-items: center; }
+        .settings-content-body { padding: 30px 25px; }
+        .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; align-items: start; }
+        .settings-card { background: white; border: 1px solid #f0f0f0; border-radius: 12px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .settings-card h3 { font-size: 14px; color: #666; margin-top: 0; margin-bottom: 20px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .editable-item { position: relative; display: flex; align-items: center; padding: 15px; }
+        .store-item { display: flex; align-items: center; gap: 20px; padding: 25px; border: 1px solid #f8f9fa; border-radius: 12px; background: #fff; position: relative; }
+        .logo-container { position: relative; width: 75px; height: 75px; cursor: pointer; border-radius: 12px; overflow: hidden; flex-shrink: 0; border: 1px solid #eee; }
+        .store-logo { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease; }
+        .upload-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.4); display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; opacity: 0; transition: all 0.3s ease; }
+        .logo-container:hover .upload-overlay { opacity: 1; }
+        .logo-container:hover .store-logo { transform: scale(1.1); }
+        .store-name-input { border: 1px solid transparent; background: transparent; font-family: 'Segoe UI', sans-serif; font-size: 20px; font-weight: 800; color: #1a1a1a; width: 100%; padding: 5px 10px; border-radius: 6px; outline: none; transition: all 0.2s; }
+        .store-name-input:focus { border-color: #1a73e8; background: #fbfcfe; }
+        .store-badge { font-size: 13px; color: #1a73e8; background: #e8f0fe; padding: 4px 12px; border-radius: 20px; font-weight: 600; margin-top: 6px; display: inline-flex; align-items: center; }
+        .btn-save-store { margin-left: auto; background-color: #1a73e8; color: white; border: none; padding: 12px 24px; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; box-shadow: 0 4px 6px rgba(26, 115, 232, 0.15); }
+        .btn-save-store:hover { background-color: #1557b0; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(26, 115, 232, 0.25); }
+        .menu-img-icon { width: 24px; height: 24px; object-fit: contain; }
+        .icon-box { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 18px;}
+        .personal-profile { display: flex; align-items: center; gap: 15px; padding: 15px; border: 1px solid #f8f9fa; border-radius: 12px; background: #fff; }
+        .user-avatar-large { width: 52px; height: 52px; border-radius: 50%; background: #d32f2f; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 20px; background-size: cover; background-position: center; border: 2px solid #fff; box-shadow: 0 0 0 1px #eee; }
+        .user-details .user-name { font-weight: 700; color: #1a1a1a; font-size: 15px; }
+        .user-details .user-email { font-size: 12px; color: #777; display: block; margin-top: 2px; }
+        .card-right { grid-row: span 2; display: flex; flex-direction: column; }
+        .menu-item { display: flex; align-items: center; padding: 14px; border: 1px solid #f8f9fa; border-radius: 12px; margin-bottom: 12px; cursor: pointer; transition: all 0.2s ease; }
+        .menu-item:hover { background: #f8f9fa; border-color: #e0e0e0; transform: translateX(5px); }
+        .menu-item span { flex: 1; font-size: 14px; font-weight: 600; color: #333; margin-left: 15px; }
+        .menu-item i.fa-chevron-right { font-size: 12px; color: #bbb; }
+        .blue { background: #e8f0fe; color: #1a73e8; }
+        .purple { background: #f3e8fd; color: #9334e6; }
+        .blue-light { background: #e4f7fb; color: #12b5cb; }
+        .orange { background: #d2fff3; outline: 1px solid #eeeeee; }
+        .green { background: #e6f7ed; color: #2ecc71; }
+        .logo-placeholder { width: 100%; height: 100%; background: #1a73e8; color: white; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: 800; text-transform: uppercase; }
+        .btn-remove-item { position: absolute; top: 15px; left: 15px; width: 28px; height: 28px; border-radius: 50%; background-color: #ffffff; border:1px solid #cecece; color: #ff4d4f; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; transition: all 0.3s ease; z-index: 5; }
+        .btn-remove-item:hover { background-color: #ff4d4f; color: white; transform: rotate(90deg); }
+        
+        /* CSS MODAL (ĐÃ KHÔI PHỤC) */
+        .modal-box {
+            background: white;
+            width: 900px;
+            max-width: 95%;
+            height: 80vh; /* Chiều cao cố định để scroll bên trong */
+            
+            /* --- PHẦN BO TRÒN --- */
+            border-radius: 20px; /* Độ bo tròn (bạn có thể chỉnh 15px hoặc 20px tùy thích) */
+            overflow: hidden;    /* Bắt buộc phải có để cắt các góc thừa của Header */
+            /* -------------------- */
+
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3); /* Đổ bóng sâu hơn cho nổi */
+            display: flex;
+            flex-direction: column;
+            
+            /* Hiệu ứng xuất hiện */
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+        .modal-overlay {  display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 1000; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s ease; }
+        .modal-overlay.active { display: flex; opacity: 1; }
+        .modal-body {
+            flex: 1;
+            display: flex;
+            overflow: hidden; /* Không cho cuộn ở body chính, chỉ cuộn ở danh sách */
+            background: #f8f9fa; /* Màu nền tổng thể xám nhẹ */
+            
+        }
+        .modal-overlay.active .modal-box { transform: translateY(0); }
+        .modal-header { padding: 20px 25px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #fff; }
+        .modal-title { font-size: 20px; font-weight: 700; color: #1a1a1a; margin: 0; }
+        .close-btn { font-size: 24px; color: #888; cursor: pointer; transition: 0.2s; }
+        .close-btn:hover { color: #ff4d4f; }
+        .modal-toolbar { padding: 15px 25px; background: #fcfcfc; border-bottom: 1px solid #eee; display: flex; gap: 15px; align-items: center; }
+        /* Custom Dropdown */
+        /* Làm đẹp ô chọn loại danh mục */
+        .toolbar-select {
+            appearance: none;
+            -webkit-appearance: none;
+            background-color: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 20px; /* Bo tròn mềm mại */
+            padding: 8px 35px 8px 15px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a73e8; /* Màu chữ xanh cho nổi */
+            cursor: pointer;
+            outline: none;
+            /* Tạo icon mũi tên nhỏ bên phải */
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231a73e8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 14px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        .toolbar-select:hover {
+            background-color: #f0f7ff;
+            border-color: #1a73e8;
+        }
+
+        .toolbar-select:focus {
+            border-color: #1a73e8;
+            box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+        }
+
+        /* --- CUSTOM DROPDOWN STYLE --- */
+        .custom-dropdown {
+            position: relative;
+            width: 180px;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        /* Nút hiển thị chính */
+        .dropdown-btn {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px; /* Bo tròn nút */
+            padding: 10px 15px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+            transition: all 0.2s;
+        }
+
+        .dropdown-btn:hover {
+            border-color: #1a73e8;
+            background: #f8faff;
+        }
+
+        /* Danh sách sổ xuống */
+        .dropdown-options {
+            position: absolute;
+            top: 110%; /* Cách nút một chút */
+            left: 0;
+            width: 100%;
+            background: #fff;
+            border: 1px solid #f0f0f0;
+            border-radius: 12px; /* Bo tròn danh sách */
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            display: none; /* Mặc định ẩn */
+            z-index: 100;
+            overflow: hidden;
+            padding: 5px;
+        }
+
+        /* Khi active thì hiện ra */
+        .custom-dropdown.active .dropdown-options {
+            display: block;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        /* Từng dòng option */
+        .dropdown-item {
+            padding: 10px 12px;
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #555;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dropdown-item:hover {
+            background-color: #e8f0fe; /* Màu nền khi di chuột */
+            color: #1a73e8;
+        }
+
+        .dropdown-item.selected {
+            background-color: #1a73e8;
+            color: white;
+            font-weight: 600;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+
+        .toolbar-search { flex: 1; padding: 8px 15px; border: 1px solid #ddd; border-radius: 8px; outline: none; transition: border 0.2s; }
+        .toolbar-search:focus { border-color: #1a73e8; }
+        .toolbar-icon-btn { width: 38px; height: 38px; border: 1px solid #ddd; background: white; border-radius: 8px; cursor: pointer; color: #555; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        .toolbar-icon-btn:hover { background: #f0f0f0; color: #1a73e8; }
+        .toolbar-icon-btn.delete:hover { background: #fff1f0; color: #ff4d4f; border-color: #ffccc7; }
+        .toolbar-icon-btn.add-new { width: auto; padding: 0 15px; background-color: #1a73e8; color: white; border: 1px solid #1a73e8; display: flex; align-items: center; gap: 0; transition: all 0.3s ease; }
+        .toolbar-icon-btn.add-new:hover { background-color: #1557b0; }
+        .toolbar-icon-btn.add-new.disabled { background-color: #f1f3f4; color: #bdc1c6; border-color: #f1f3f4; cursor: not-allowed; pointer-events: none; }
+        .modal-body { flex: 1; display: flex; overflow: hidden; background: #fff; }
+        .category-col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #e0e0e0;
+            min-width: 0; /* Quan trọng để flexbox không bị vỡ khi nội dung dài */
+            transition: flex 0.3s ease; /* Hiệu ứng trượt khi ẩn/hiện cột */
+            
+        }
+
+        .category-col:last-child {
+            border-right: none;
+        }
+        /* Header của từng cột */
+        .col-header {
+            padding: 15px 20px;
+            background: #fff;
+            font-weight: 700;
+            color: #555;
+            font-size: 14px;
+            text-transform: uppercase;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            z-index: 10;
+        }
+
+        /* Vùng chứa danh sách cuộn được */
+        .col-content {
+            flex: 1;
+            padding: 15px; /* Khoảng cách lề ngoài của danh sách */
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        /* --- ITEM DANH MỤC (PHẦN BẠN MUỐN CHỈNH) --- */
+        .cate-item {
+            /* Quan trọng: Padding sẽ tính vào trong kích thước, không làm vỡ khung */
+            box-sizing: border-box; 
+            
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            
+            /* --> BẠN CHỈNH PADDING Ở ĐÂY <-- */
+            padding: 10px 10px; 
+            
+            width: 100%;
+            margin-bottom: 10px;
+            background: #ffffff;
+            border: 1px solid #eef2f7;
+            border-radius: 10px; /* Bo góc */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03); /* Đổ bóng nhẹ */
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        /* Hiệu ứng khi di chuột vào */
+        .cate-item:hover {
+            border-color: #1a73e8;
+            background-color: #fbfdff;
+            box-shadow: 0 5px 15px rgba(26, 115, 232, 0.12);
+            transform: translateY(-2px);
+        }
+
+        /* Nhóm bên trái (Checkbox + Tên) */
+        .cate-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1; /* Chiếm hết khoảng trống */
+            overflow: hidden;
+        }
+
+        .cate-check {
+            width: 18px;
+            height: 18px;
+            accent-color: #1a73e8;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .cate-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: #333;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis; /* Dài quá thì ... */
+        }
+
+        /* Nút xóa (Thùng rác) */
+        .cate-delete-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: none;
+            background: transparent;
+            color: #aaa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.2s;
+            flex-shrink: 0;
+        }
+
+        .cate-delete-btn:hover {
+            background: #ffecec;
+            color: #ff4d4f;
+        }
+
+        /* Trạng thái trống */
+        .empty-state-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            color: #adb5bd;
+            text-align: center;
+            border: 2px dashed #f0f0f0;
+            border-radius: 12px;
+            margin-top: 10px;
+        }
+       
+    </style>
+    
+</head>
+
+<body>
+<div class="table-view">
+<div class="sidebar" id="sidebar-container"></div>
+
+<main class="main-content">
+    <div class="header-container top-header">
+        <h2 class="page-title">
+            <i class="fa-solid fa-user-gear" style="padding-right: 12px; color: #555;"></i>Tài khoản
+        </h2>
+    </div>
+
+    <div class="settings-content-body">
+        <div class="settings-grid">
+            <div class="settings-left">
+                <!-- BOX CỬA HÀNG (SỬ DỤNG FIREBASE) -->
+                <div class="settings-card">
+                    <h3>Cửa hàng của bạn</h3>
+                    <div class="card-content">  
+                        <div class="store-item editable-item">
+                            <button class="btn-remove-item" onclick="removeLogo(event)">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                    
+                            <div class="logo-container" id="logoWrapper" onclick="document.getElementById('storeLogoInput').click();">
+                                <img alt="Logo" class="store-logo" id="storeLogoPreview" style="display:none;">
+                                <div id="textPlaceholder" class="logo-placeholder">?</div>
+                                <div class="upload-overlay"><i class="fa-solid fa-camera"></i></div>
+                            </div>
+
+                            <input type="file" id="storeLogoInput" accept="image/*" style="display: none;" onchange="uploadImage(event)">
+
+                            <div class="store-info" style="flex: 1;">
+                                <input type="text" id="storeNameInput" class="store-name-input" placeholder="Nhập tên cửa hàng...">
+                                <div style="padding-left: 10px;">
+                                    <span class="store-badge">
+                                        <i class="fa-solid fa-crown" style="margin-right: 5px;"></i> Chủ sở hữu 
+                                        <i class="fa-solid fa-circle-check" style="font-size: 11px; margin-left: 5px;"></i>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <button class="btn-save-store" onclick="saveStoreName()">
+                                <i class="fa-solid fa-floppy-disk"></i> Lưu
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- BOX HỒ SƠ GOOGLE -->
+                <div class="settings-card" style="margin-top: 25px;">
+                    <h3>Hồ sơ cá nhân (Google)</h3>
+                    <div class="card-content">
+                        <div class="personal-profile">
+                            <div class="user-avatar-large" id="set-avatar">?</div>
+                            <div class="user-details">
+                                <span class="user-name" id="set-name">Đang tải...</span>
+                                <span class="user-email" id="set-email">...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-card card-right">
+                <h3>Cấu hình hệ thống</h3>
+                <div class="card-content">
+                    <!-- SỰ KIỆN MỞ MODAL DANH MỤC -->
+                    <div class="menu-item" onclick="openCategoryModal()">
+                        <div class="icon-box orange">
+                            <img src="https://cdn-icons-png.flaticon.com/512/3405/3405818.png" alt="Cost Icon" class="menu-img-icon">
+                        </div> 
+                        <span>Tất cả danh mục</span> 
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </div>
+
+                    <div class="menu-item">
+                        <div class="icon-box purple"><i class="fa-solid fa-shop"></i></div> 
+                        <span>Chuyển đổi kho nội bộ</span> 
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </div>
+
+                    <div class="menu-item">
+                        <div class="icon-box blue-light"><i class="fa-solid fa-credit-card"></i></div> 
+                        <span>Phương thức thanh toán & Thu chi</span> 
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </div>
+
+                    <div class="menu-item">
+                        <div class="icon-box green"><i class="fa-solid fa-palette"></i></div> 
+                        <span>Giao diện & Hiển thị</span> 
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- ============== MODAL CATEGORY (ĐÃ KHÔI PHỤC) ============== -->
+<!-- ============== MODAL CATEGORY (CẤU TRÚC MỚI) ============== -->
+<div class="modal-overlay" id="categoryModal">
+    <div class="modal-box">
+        <!-- Header -->
+        <div class="modal-header">
+            <h3 class="modal-title"><i class="fa-solid fa-layer-group" style="margin-right: 10px; color: #1a73e8;"></i>Quản lý danh mục</h3>
+            <span class="close-btn" onclick="closeCategoryModal()"><i class="fa-solid fa-xmark"></i></span>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="modal-toolbar">
+            <div class="custom-dropdown" id="typeDropdown">
+                <div class="dropdown-btn" onclick="toggleDropdown()">
+                    <span id="selected-text">Tất cả loại</span>
+                    <i class="fa-solid fa-chevron-down" style="font-size: 12px; color: #888;"></i>
+                </div>
+                <div class="dropdown-options">
+                    <div class="dropdown-item selected" onclick="selectType('all', 'Tất cả loại', this)"><i class="fa-solid fa-layer-group"></i> Tất cả loại</div>
+                    <div class="dropdown-item" onclick="selectType('product', 'Sản phẩm', this)"><i class="fa-solid fa-box-open"></i> Sản phẩm</div>
+                    <div class="dropdown-item" onclick="selectType('cost', 'Chi phí', this)"><i class="fa-solid fa-file-invoice-dollar"></i> Chi phí</div>
+                </div>
+                <input type="hidden" id="view-filter" value="all">
+            </div>
+
+            <input type="text" class="toolbar-search" id="cate-search" placeholder="Tìm kiếm danh mục..." onkeyup="searchCategory()">
+
+            <button class="toolbar-icon-btn" id="sort-btn" onclick="toggleSort()"><i class="fa-solid fa-arrow-down-a-z"></i></button>
+            <button class="toolbar-icon-btn" onclick="toggleSelectAll()"><i class="fa-solid fa-check-double"></i></button>
+            <button class="toolbar-icon-btn delete" onclick="deleteSelectedCategories()"><i class="fa-regular fa-trash-can"></i></button>
+            
+            <button class="toolbar-icon-btn add-new disabled" id="add-cate-btn" onclick="addNewCategoryFromModal()">
+                <i class="fa-solid fa-circle-plus"></i> <span style="margin-left:6px; font-weight:600;">Thêm mới</span>
+            </button>
+        </div>
+
+        <!-- Body (2 Cột) -->
+        <div class="modal-body">
+            <!-- Cột Sản Phẩm -->
+            <div class="category-col" id="col-product">
+                <div class="col-header" style="color: #1a73e8; ">
+                    <i class="fa-solid fa-box-open"></i> DANH MỤC SẢN PHẨM
+                </div>
+                <div class="col-content" id="product-cate-list">
+                    <!-- Javascript sẽ render cate-item vào đây -->
+                </div>
+            </div>
+
+            <!-- Cột Chi Phí -->
+            <div class="category-col" id="col-cost">
+                <div class="col-header" style="color: #e67e22; ">
+                    <i class="fa-solid fa-file-invoice-dollar"></i> DANH MỤC CHI PHÍ
+                </div>
+                <div class="col-content" id="expense-cate-list">
+                    <!-- Javascript sẽ render cate-item vào đây -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+<script src="/items/contact/upload-image-edit.js"></script>
+
+
+<!-- ###################################################################### -->
+<!-- PHẦN XỬ LÝ ẢNH & TÊN CỬA HÀNG (Administrator) -->
+<!-- ###################################################################### -->
+<script type="module">
+
+    // --- KHAI BÁO BIẾN TRẠNG THÁI ---
+    let originalName = "";
+    let originalLogo = ""; // Logo gốc trên server
+    let pendingLogo = null; // Logo mới vừa chọn (chưa lưu)
+
+    // 1. IMPORT CÁC HÀM CẦN THIẾT
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, doc, addDoc, getDoc, updateDoc, serverTimestamp, query, where, onSnapshot, orderBy, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    // 2. CẤU HÌNH FIREBASE
+    const firebaseConfig = {
+        apiKey: "AIzaSyCYOo3FUewsYVIVy-egCKxZfVDUjLmGAQo",
+        authDomain: "warehouse-management-77290.firebaseapp.com",
+        projectId: "warehouse-management-77290",
+        storageBucket: "warehouse-management-77290.firebasestorage.app",
+        messagingSenderId: "881477949386",
+        appId: "1:881477949386:web:7133b60dd2e0bc5d9ca133",
+        measurementId: "G-ESPCYW3ZN9"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    
+    // 3. BIẾN TOÀN CỤC
+    const currentStoreId = localStorage.getItem('current_store_id');
+    const userEmail = localStorage.getItem('userEmail') || "Quản trị viên";
+    
+    window.localProducts = []; 
+    window.localExpenses = []; 
+    window.isSortAsc = true;     
+    
+    let unsubscribeProducts = null;
+    let unsubscribeExpenses = null;
+
+    // --- HÀM 1: TẢI INFO CỬA HÀNG ---
+    async function loadStoreInfo() {
+        if (!currentStoreId) return;
+        
+        // Disable nút lưu mặc định
+        toggleSaveButton(false);
+
+        const storeRef = doc(db, "Administrator", currentStoreId);
+        try {
+            const docSnap = await getDoc(storeRef);
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                
+                // 1. Lưu dữ liệu gốc
+                originalName = data.name || "";
+                originalLogo = data.logo || "";
+                
+                // 2. Reset biến tạm
+                pendingLogo = null; 
+
+                // 3. Hiển thị
+                const nameInput = document.getElementById('storeNameInput');
+                if(nameInput) {
+                    nameInput.value = originalName;
+                    nameInput.addEventListener('input', checkChanges);
+                }
+                
+                updateLogoUI(originalLogo, originalName);
+            }
+        } catch (error) { console.error("Lỗi store:", error); }
+    }
+
+
+    // --- HÀM XỬ LÝ SỰ KIỆN UPLOAD TỪ HTML ---
+    window.uploadImage = function(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        // Kiểm tra định dạng
+        if (!file.type.match('image.*')) {
+            return Swal.fire("Lỗi", "Vui lòng chọn file ảnh (JPG, PNG, WEBP)", "error");
+        }
+
+        // Hiện loading trong lúc nén
+        const previewImg = document.getElementById('storeLogoPreview');
+        const textPlaceholder = document.getElementById('textPlaceholder');
+        if(textPlaceholder) textPlaceholder.innerText = "...";
+
+        // Gọi hàm nén
+        compressImage(file, 50) // Mục tiêu: 50KB
+            .then(base64 => {
+                // Gọi lại hàm hoàn tất cũ của bạn để lưu và hiện preview
+                window.onSaveImageComplete(base64);
+                
+                // Reset input để chọn lại ảnh giống cũ vẫn nhận
+                event.target.value = ''; 
+            })
+            .catch(err => {
+                console.error(err);
+                Swal.fire("Lỗi", "Không thể xử lý ảnh này", "error");
+            });
+    }
+
+    // --- LOGIC NÉN ẢNH (CORE) ---
+    function compressImage(file, maxSizeKB) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            
+            reader.onload = function(event) {
+                const img = new Image();
+                img.src = event.target.result;
+                
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+
+                    // 1. RESIZE: Nếu ảnh quá to (> 600px), thu nhỏ lại trước
+                    const MAX_WIDTH = 600;
+                    const MAX_HEIGHT = 600;
+
+                    if (width > height) {
+                        if (width > MAX_WIDTH) {
+                            height = Math.round(height * (MAX_WIDTH / width));
+                            width = MAX_WIDTH;
+                        }
+                    } else {
+                        if (height > MAX_HEIGHT) {
+                            width = Math.round(width * (MAX_HEIGHT / height));
+                            height = MAX_HEIGHT;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+
+                    // Mẹo: Vẽ nền trắng để ảnh PNG trong suốt không bị đen khi chuyển sang JPEG
+                    ctx.fillStyle = "#FFFFFF";
+                    ctx.fillRect(0, 0, width, height);
+                    
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // 2. NÉN LOOP: Giảm chất lượng dần cho đến khi < 50KB
+                    let quality = 0.9; // Bắt đầu từ 90%
+                    let dataURL = canvas.toDataURL('image/jpeg', quality);
+                    
+                    // Hàm tính dung lượng file từ Base64 (xấp xỉ)
+                    // Công thức: (độ dài chuỗi * 3) / 4 - padding = số bytes
+                    // 50KB = 51200 bytes
+                    const targetBytes = maxSizeKB * 1024; 
+
+                    while (getByteSize(dataURL) > targetBytes && quality > 0.1) {
+                        quality -= 0.1; // Giảm 10% mỗi lần
+                        dataURL = canvas.toDataURL('image/jpeg', quality);
+                    }
+
+                    console.log(`Đã nén ảnh xuống: ${(getByteSize(dataURL)/1024).toFixed(2)} KB (Quality: ${quality.toFixed(1)})`);
+                    resolve(dataURL);
+                };
+                
+                img.onerror = (err) => reject(err);
+            };
+        });
+    }
+
+    // Hàm phụ trợ: Tính kích thước Byte của chuỗi Base64
+    function getByteSize(base64String) {
+        let stringLength = base64String.length - 'data:image/jpeg;base64,'.length;
+        let sizeInBytes = 4 * Math.ceil((stringLength / 3)) * 0.5624896334383812;
+        return sizeInBytes;
+    }
+
+    // --- HÀM 2: KIỂM TRA THAY ĐỔI (LOGIC MỚI: SO SÁNH VỚI BẢN GỐC) ---
+    function checkChanges() {
+        const currentNameInput = document.getElementById('storeNameInput').value.trim();
+        
+        // 1. Kiểm tra Tên
+        const isNameChanged = currentNameInput !== originalName;
+
+        // 2. Kiểm tra Logo
+        // Nếu pendingLogo là null nghĩa là người dùng chưa đụng vào logo -> Lấy original làm chuẩn
+        // Nếu pendingLogo khác null nghĩa là đã có thao tác (up mới hoặc xóa) -> Lấy pending làm chuẩn
+        const currentLogoState = (pendingLogo !== null) ? pendingLogo : originalLogo;
+        
+        const isLogoChanged = currentLogoState !== originalLogo;
+
+        // 3. Kết luận: Chỉ bật nút nếu 1 trong 2 cái THỰC SỰ khác bản gốc
+        if (isNameChanged || isLogoChanged) {
+            toggleSaveButton(true);
+        } else {
+            toggleSaveButton(false);
+        }
+    }
+
+    // --- UI HELPERS ---
+    function toggleSaveButton(enable) {
+        const btn = document.querySelector('.btn-save-store');
+        if (!btn) return;
+        
+        if (enable) {
+            btn.classList.remove('disabled'); // Xóa class làm mờ (CSS bạn đã thêm ở bước trước)
+            btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Lưu thay đổi';
+            btn.style.pointerEvents = "auto";
+        } else {
+            btn.classList.add('disabled'); // Thêm class làm mờ
+            btn.innerHTML = '<i class="fa-solid fa-check"></i> Đã đồng bộ';
+            btn.style.pointerEvents = "none";
+        }
+    }
+
+    // --- CẬP NHẬT UI LOGO ---
+    function updateLogoUI(logoBase64, storeName) {
+        const previewImg = document.getElementById('storeLogoPreview');
+        const textPlaceholder = document.getElementById('textPlaceholder');
+        const nameChar = (storeName || "S").charAt(0).toUpperCase();
+
+        if (logoBase64 && logoBase64.length > 50) { 
+            previewImg.src = logoBase64;
+            previewImg.style.display = "block";
+            if(textPlaceholder) textPlaceholder.style.display = "none";
+        } else {
+            previewImg.style.display = "none";
+            previewImg.src = "";
+            if(textPlaceholder) {
+                textPlaceholder.style.display = "flex";
+                textPlaceholder.innerText = nameChar;
+            }
+        }
+    }
+
+    // --- HÀM 2: LẮNG NGHE DỮ LIỆU ---
+    window.initDataListeners = function() {
+        if (!currentStoreId) return;
+
+        // 2.1. Product
+        if (!unsubscribeProducts) {
+            const qProd = query(collection(db, "product_categories"), where("storeId", "==", currentStoreId), orderBy("createdAt", "desc"));
+            unsubscribeProducts = onSnapshot(qProd, (snapshot) => {
+                window.localProducts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderAllCategories();
+            });
+        }
+        // 2.2. Expense
+        if (!unsubscribeExpenses) {
+            const qExp = query(collection(db, "expense_categories"), where("storeId", "==", currentStoreId), orderBy("createdAt", "desc"));
+            unsubscribeExpenses = onSnapshot(qExp, (snapshot) => {
+                window.localExpenses = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderAllCategories();
+            });
+        }
+    }
+
+    // --- HÀM 3: VẼ GIAO DIỆN (ĐÃ SỬA LỖI NẰM DƯỚI ĐÁY) ---
+    // --- 1. HÀM RENDER (KHÔNG CÓ INLINE STYLE) ---
+    window.renderAllCategories = function() {
+        // Lấy container
+        const containerProduct = document.getElementById('product-cate-list'); // ID chuẩn mới
+        const containerCost = document.getElementById('expense-cate-list');    // ID chuẩn mới
+        const searchTerm = document.getElementById('cate-search') ? document.getElementById('cate-search').value.toLowerCase() : "";
+
+        // Template HTML sạch (Chỉ dùng class)
+        const createHTML = (item, type) => `
+            <div class="cate-item" onclick="this.querySelector('.cate-check').click()">
+                <div class="cate-left">
+                    <input type="checkbox" class="cate-check" data-id="${item.id}" onclick="event.stopPropagation()">
+                    <span class="cate-name" title="${item.name}">${item.name}</span>
+                </div>
+                <button class="cate-delete-btn" title="Xóa" onclick="event.stopPropagation(); window.deleteCategory('${item.id}', '${item.name}', '${type}')">
+                    <i class="fa-regular fa-trash-can"></i>
+                </button>
+            </div>
+        `;
+
+        // Logic sắp xếp
+        let productsToShow = [...window.localProducts];
+        let expensesToShow = [...window.localExpenses];
+
+        if (!window.isSortAsc) {
+            productsToShow.reverse();
+            expensesToShow.reverse();
+        }
+
+        // Hàm hỗ trợ render từng cột
+        const renderColumn = (container, items, type) => {
+            if (!container) return;
+            container.innerHTML = ''; // Xóa cũ
+
+            const filtered = items.filter(c => c.name.toLowerCase().includes(searchTerm));
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state-box">
+                        <i class="fa-solid fa-inbox" style="font-size: 32px; margin-bottom: 10px; opacity: 0.5;"></i>
+                        <span>Không tìm thấy danh mục</span>
+                    </div>`;
+            } else {
+                filtered.forEach(item => {
+                    container.insertAdjacentHTML('beforeend', createHTML(item, type));
+                });
+            }
+        };
+
+        // Thực thi render
+        renderColumn(containerProduct, productsToShow, 'product');
+        renderColumn(containerCost, expensesToShow, 'expense');
+    }
+
+    // --- 2. HÀM FILTER VIEW (XỬ LÝ ẨN HIỆN CỘT) ---
+    window.filterView = function() {
+        const type = document.getElementById('view-filter').value;
+        
+        // Lấy thẻ CỘT (chứ không phải list bên trong)
+        const colProd = document.getElementById('col-product');
+        const colCost = document.getElementById('col-cost');
+        const addBtn = document.getElementById('add-cate-btn');
+
+        if(!colProd || !colCost) return;
+
+        // Reset hiển thị trước
+        colProd.style.display = 'flex';
+        colCost.style.display = 'flex';
+
+        if (type === 'all') {
+            // Hiển thị cả 2 cột chia đôi
+            addBtn.classList.add('disabled');
+        } else if (type === 'product') {
+            // Chỉ hiện Product, ẩn Cost
+            addBtn.classList.remove('disabled');
+            colCost.style.display = 'none';
+        } else {
+            // Chỉ hiện Cost, ẩn Product
+            addBtn.classList.remove('disabled');
+            colProd.style.display = 'none';
+        }
+    }
+
+    // --- HÀM 4: THÊM MỚI ---
+    window.addNewCategoryFromModal = async function() {
+        if (!currentStoreId) return Swal.fire("Lỗi", "Lỗi ID Cửa hàng", "error");
+        const viewType = document.getElementById('view-filter').value;
+        
+        let targetCollection = "";
+        let typeLabel = "";
+        if (viewType === 'product') { targetCollection = "product_categories"; typeLabel = "Sản phẩm"; } 
+        else if (viewType === 'cost') { targetCollection = "expense_categories"; typeLabel = "Chi phí"; } 
+        else { return Swal.fire("Thông báo", "Vui lòng chọn loại để thêm.", "info"); }
+
+        const { value: catName } = await Swal.fire({
+            title: `Thêm danh mục ${typeLabel}`,
+            input: 'text',
+            inputPlaceholder: 'Nhập tên danh mục...',
+            showCancelButton: true,
+            confirmButtonText: 'Lưu',
+            cancelButtonText: 'Hủy'
+        });
+
+        if (catName && catName.trim() !== "") {
+            const listCheck = (viewType === 'product') ? window.localProducts : window.localExpenses;
+            if(listCheck.some(c => c.name.toLowerCase() === catName.trim().toLowerCase())) 
+                return Swal.fire("Lỗi", "Tên đã tồn tại!", "warning");
+
+            try {
+                await addDoc(collection(db, targetCollection), {
+                    name: catName.trim(),
+                    storeId: currentStoreId,
+                    ownerEmail: userEmail,
+                    createdAt: serverTimestamp()
+                });
+                Swal.fire({ icon: 'success', title: 'Thành công', toast: true, position: 'top-end', showConfirmButton: false, timer: 1500 });
+            } catch (e) { Swal.fire("Lỗi", e.message, "error"); }
+        }
+    };
+
+    // --- HÀM 5: XÓA ---
+    window.deleteCategory = async function(id, name, type) {
+        const collectionName = (type === 'product') ? "product_categories" : "expense_categories";
+        const confirm = await Swal.fire({
+            title: `Xóa "${name}"?`, icon: 'warning', showCancelButton: true,
+            confirmButtonColor: '#d33', confirmButtonText: 'Xóa', cancelButtonText: 'Hủy'
+        });
+
+        if (confirm.isConfirmed) {
+            try {
+                await deleteDoc(doc(db, collectionName, id));
+                Swal.fire({ icon: 'success', title: 'Đã xóa', toast: true, position: 'top-end', showConfirmButton: false, timer: 1000 });
+            } catch (e) { Swal.fire("Lỗi", e.message, "error"); }
+        }
+    }
+
+
+    // --- HÀM 6: TÍCH CHỌN TẤT CẢ (CHỈ TÁC ĐỘNG VÀO MỤC ĐANG HIỂN THỊ) ---
+    window.toggleSelectAll = function() {
+        const viewType = document.getElementById('view-filter').value;
+        
+        // 1. Xác định phạm vi chọn dựa trên tab đang xem
+        let selector = '';
+        if (viewType === 'product') {
+            selector = '#product-cate-list .cate-check'; // Chỉ lấy ô trong cột Sản phẩm
+        } else if (viewType === 'cost') {
+            selector = '#expense-cate-list .cate-check'; // Chỉ lấy ô trong cột Chi phí
+        } else {
+            selector = '.cate-check'; // Lấy tất cả
+        }
+
+        const checkboxes = document.querySelectorAll(selector);
+        if (checkboxes.length === 0) return;
+
+        // 2. Kiểm tra trạng thái: Nếu CÓ BẤT KỲ ô nào chưa chọn -> Chọn hết. Ngược lại -> Bỏ chọn hết.
+        // (Cách này thông minh hơn check all thuần túy)
+        const isSomeUnchecked = Array.from(checkboxes).some(cb => !cb.checked);
+
+        checkboxes.forEach(cb => {
+            cb.checked = isSomeUnchecked;
+        });
+    }
+
+    // --- HÀM 7: XÓA CÁC MỤC ĐÃ CHỌN (CHỈ XÓA CÁI ĐANG HIỂN THỊ) ---
+    window.deleteSelectedCategories = async function() {
+        const viewType = document.getElementById('view-filter').value;
+
+        // 1. Xác định phạm vi xóa dựa trên tab đang xem
+        let selector = '';
+        if (viewType === 'product') {
+            selector = '#product-cate-list .cate-check:checked'; // Chỉ lấy ô ĐÃ CHỌN trong cột Sản phẩm
+        } else if (viewType === 'cost') {
+            selector = '#expense-cate-list .cate-check:checked'; // Chỉ lấy ô ĐÃ CHỌN trong cột Chi phí
+        } else {
+            selector = '.cate-check:checked'; // Lấy tất cả ô đã chọn (khi xem mode All)
+        }
+
+        const checkedBoxes = document.querySelectorAll(selector);
+
+        if (checkedBoxes.length === 0) {
+            return Swal.fire("Thông báo", "Vui lòng chọn ít nhất một mục trong danh sách hiện tại để xóa!", "info");
+        }
+
+        // 2. Hỏi xác nhận
+        const confirm = await Swal.fire({
+            title: `Xóa ${checkedBoxes.length} danh mục?`, // Số lượng giờ sẽ chuẩn xác
+            text: "Hành động này sẽ xóa dữ liệu vĩnh viễn.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'Xóa ngay',
+            cancelButtonText: 'Hủy'
+        });
+
+        if (confirm.isConfirmed) {
+            Swal.fire({ title: 'Đang xử lý...', didOpen: () => Swal.showLoading() });
+            const promises = [];
+
+            checkedBoxes.forEach(cb => {
+                const id = cb.getAttribute('data-id');
+                // Tìm xem checkbox này thuộc cột nào để xóa đúng bảng
+                const isProduct = cb.closest('#product-cate-list');
+                const collectionName = isProduct ? "product_categories" : "expense_categories";
+
+                promises.push(deleteDoc(doc(db, collectionName, id)));
+            });
+
+            try {
+                await Promise.all(promises);
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Đã xóa thành công',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            } catch (error) {
+                Swal.fire("Lỗi", "Có lỗi xảy ra: " + error.message, "error");
+            }
+        }
+    }
+
+
+    // --- HÀM 5: LƯU DỮ LIỆU LÊN SERVER ---
+    window.saveStoreName = async function() {
+        if (!currentStoreId) return;
+
+        // Check lại lần cuối xem có gì thay đổi không
+        const btn = document.querySelector('.btn-save-store');
+        if (btn.classList.contains('disabled')) return;
+
+        const newName = document.getElementById('storeNameInput').value.trim();
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang lưu...';
+        
+        try {
+            const updateData = {};
+            
+            // Chỉ gửi những trường có thay đổi
+            if (newName !== originalName) updateData.name = newName;
+            
+            // Nếu pendingLogo khác null (tức là có thao tác), thì cập nhật logo mới
+            // (kể cả là chuỗi rỗng "" do thao tác xóa)
+            if (pendingLogo !== null && pendingLogo !== originalLogo) {
+                updateData.logo = pendingLogo;
+            }
+
+            if (Object.keys(updateData).length > 0) {
+                await updateDoc(doc(db, "Administrator", currentStoreId), updateData);
+                
+                // CẬP NHẬT LẠI TRẠNG THÁI GỐC
+                if (updateData.name) originalName = newName;
+                if (updateData.hasOwnProperty('logo')) { // Kiểm tra key tồn tại
+                    originalLogo = updateData.logo;
+                    localStorage.setItem('storeLogo', originalLogo);
+                }
+                
+                // Reset biến tạm
+                pendingLogo = null;
+
+                Swal.fire({
+                    icon: 'success', 
+                    title: 'Đã lưu thay đổi', 
+                    toast: true, 
+                    position: 'top-end', 
+                    showConfirmButton: false, 
+                    timer: 1500
+                });
+            }
+
+            // Tắt nút lưu vì giờ dữ liệu đã đồng bộ
+            checkChanges();
+
+        } catch (error) {
+            console.error(error);
+            Swal.fire("Lỗi", "Lỗi khi lưu: " + error.message, "error");
+            checkChanges();
+        }
+    }
+    window.toggleDropdown = function() { document.getElementById('typeDropdown')?.classList.toggle('active'); }
+    window.selectType = function(value, text, element) {
+        document.getElementById('selected-text').innerText = text;
+        document.getElementById('view-filter').value = value;
+        document.querySelectorAll('.dropdown-item').forEach(item => item.classList.remove('selected'));
+        if(element) element.classList.add('selected');
+        document.getElementById('typeDropdown').classList.remove('active');
+        filterView();
+    }
+    window.addEventListener('click', function(e) {
+        const dropdown = document.getElementById('typeDropdown');
+        if (dropdown && !dropdown.contains(e.target)) dropdown.classList.remove('active');
+    });
+    window.openCategoryModal = function() {
+        const modal = document.getElementById('categoryModal');
+        if(modal) {
+            modal.classList.add('active');
+            window.initDataListeners();
+            const firstItem = document.querySelector('.dropdown-item');
+            if (firstItem) window.selectType('all', 'Tất cả loại', firstItem);
+        }
+    }
+    window.closeCategoryModal = function() { document.getElementById('categoryModal')?.classList.remove('active'); }
+    const modalOverlay = document.getElementById('categoryModal');
+    if(modalOverlay) modalOverlay.addEventListener('click', function(e) { if (e.target === this) closeCategoryModal(); });
+
+  
+
+    window.searchCategory = function() { renderAllCategories(); }
+    window.toggleSort = function() { window.isSortAsc = !window.isSortAsc; renderAllCategories(); }
+    // --- XỬ LÝ KHI CHỌN ẢNH XONG (Sửa lại hàm này) ---
+    // --- HÀM 4: XỬ LÝ KHI CHỌN ẢNH MỚI ---
+    window.onSaveImageComplete = function(base64Result) {
+        // Lưu vào biến tạm
+        pendingLogo = base64Result;
+        
+        // Cập nhật UI
+        const currentName = document.getElementById('storeNameInput').value;
+        updateLogoUI(pendingLogo, currentName);
+        
+        // Kiểm tra để bật nút lưu
+        checkChanges();
+    };
+
+    // --- HÀM 3: XỬ LÝ KHI XÓA LOGO (CÓ HỎI XÁC NHẬN) ---
+    window.removeLogo = async function(event) {
+        if(event) { event.preventDefault(); event.stopPropagation(); }
+        
+        // Kiểm tra nếu hiện tại không có logo thì không cần xóa
+        const currentLogoState = (pendingLogo !== null) ? pendingLogo : originalLogo;
+        if (!currentLogoState) return; 
+
+        // HỎI XÁC NHẬN TRƯỚC
+        const result = await Swal.fire({
+            title: 'Gỡ ảnh đại diện?',
+            text: "Ảnh sẽ bị gỡ khỏi giao diện xem trước. Bạn cần bấm 'Lưu thay đổi' để áp dụng.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'Gỡ bỏ',
+            cancelButtonText: 'Hủy'
+        });
+
+        if (result.isConfirmed) {
+            // Đánh dấu là đã xóa (chuỗi rỗng)
+            pendingLogo = ""; 
+            
+            // Cập nhật UI
+            const currentName = document.getElementById('storeNameInput').value;
+            updateLogoUI("", currentName); 
+            
+            // Kiểm tra để bật nút lưu
+            checkChanges();
+        }
+    }
+
+
+    loadStoreInfo();
+</script>
+
+
+<!-- ###################################################################### -->
+<!-- PHẦN 2: XỬ LÝ DANH MỤC (KHÔI PHỤC LOGIC CŨ - STOREDB) -->
+<!-- ###################################################################### -->
+<script>
+    // --- SIDEBAR LOADER & PROFILE INFO ---
+    (function() {
+        const userLoggedIn = localStorage.getItem('userLoggedIn');
+        if (userLoggedIn !== 'true') { window.location.replace('/index.html?auth=required'); return; }
+        
+        fetch('/components/Side-Bar.html').then(res => res.text()).then(data => {
+            const container = document.getElementById('sidebar-container');
+            if (container) {
+                container.innerHTML = data;
+                container.querySelectorAll("script").forEach(oldScript => {
+                    const newScript = document.createElement("script");
+                    Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+                    newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+                    oldScript.parentNode.replaceChild(newScript, oldScript);
+                });
+            }
+        });
+
+        const name = localStorage.getItem('userName');
+        const pic = localStorage.getItem('userPicture');
+        document.getElementById('set-name').textContent = name || "Người dùng";
+        document.getElementById('set-email').textContent = localStorage.getItem('userEmail') || "...";
+        const avatarEl = document.getElementById('set-avatar');
+        if (avatarEl) {
+            if (pic && pic !== "null") {
+                avatarEl.style.backgroundImage = `url('${pic}')`;
+                avatarEl.textContent = ""; 
+            } else if (name) {
+                avatarEl.textContent = name.charAt(0).toUpperCase();
+            }
+        }
+    })();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nhà cung cấp</title> <!-- Đổi Title -->
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/sidebar.css"> 
+
+<style>
+    /* ==========================================================================
+       GIỮ NGUYÊN CSS NHƯ FILE CŨ (KHÔNG XÓA GÌ)
+       ========================================================================== */
+    * { box-sizing: border-box; font-family: 'Baloo 2', cursive; }
+
+    body {
+        font-family: 'Baloo 2', cursive;
+        margin: 0;
+        min-height: 100vh;
+        width: 100vw;
+        display: flex;
+        overflow: hidden;
+        user-select: none;
+        position: relative;
+        background: #eef2f7; 
+    }
+
+    /* Hiệu ứng nền */
+    body::after {
+        content: "";
+        position: fixed;
+        width: 150vmax;
+        height: 150vmax;
+        top: -25%;
+        left: -25%;
+        z-index: -1;
+        background-image: 
+            radial-gradient(circle at 20% 30%, #d0bcff 0%, transparent 40%),
+            radial-gradient(circle at 80% 70%, #a1c4fd 0%, transparent 40%),
+            radial-gradient(circle at 50% 50%, #c2e9fb 0%, transparent 50%);
+        filter: blur(80px);
+        animation: waveMovement 15s linear infinite;
+    }
+
+    @keyframes waveMovement {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    body::before {
+        content: "";
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.6) 0%, transparent 80%);
+        pointer-events: none;
+        z-index: -1;
+    }
+
+    .table-view {
+        display: flex;
+        width: 100%;
+        min-height: 100vh;
+        padding: 20px;
+        gap: 10px;
+    }
+
+    .table-view > div { border-radius: 15px; }
+
+    .main-content {
+        flex-grow: 1;
+        width: auto;
+        max-width: none;
+        border: 3px solid #ffffff;
+        box-shadow: -5px 5px 1px #b5b5ec;
+        box-sizing: border-box;
+        background-color: #F8FAFC;
+        height: calc(100vh - 40px);
+        overflow-y: auto;
+        overflow-x: hidden;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .main-content { scrollbar-width: none; -ms-overflow-style: none; }
+    .main-content::-webkit-scrollbar { display: none; }
+
+    /* HEADER */
+    .content-header {
+        flex-shrink: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 25px;
+        border-bottom: 1px solid #f0f2f5;
+        background: #fff;
+        height: 70px;
+    }
+    .content-header h2 { font-size: 25px; font-weight: 700; color: #1a1a1a; margin: 0; }
+
+    /* BODY */
+    .content-body {
+        display: flex;
+        flex: 1;
+        height: 100%; 
+        overflow: hidden;
+        background-color: #f8f9fa;
+    }
+
+    /* LEFT COLUMN */
+    .list-section {
+        width: 450px;
+        background: white;
+        border-right: 1px solid #edf0f2;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .search-toolbar { 
+        display: flex; gap: 10px; align-items: center; width: 100%; flex-shrink: 0; margin-bottom: 15px;
+    }
+
+    #renderSupplierItems { /* Đổi ID cho phù hợp logic */
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding-right: 5px;
+        padding-bottom: 20px;
+    }
+
+    /* RIGHT COLUMN */
+    .detail-section {
+        flex: 1;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        height: 100%;
+        overflow-y: auto;
+    }
+
+    /* Scrollbar Styling */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #0056e0; }
+
+    /* Components */
+    .btn-add { 
+        background-color: #0056e0; color: white; border: none; padding: 10px 20px; border-radius: 10px; 
+        font-weight: 650; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 16px; 
+        transition: all 0.3s ease; outline: 1.25px solid #cacaca; outline-offset: -100px; 
+    }
+    .btn-add:hover { background: #ffffff; color:#0056e0; outline: 1.25px solid #cacaca; outline-offset: 2.5px; box-shadow: 0px 2.5px 1px 2px rgba(0, 86, 224, 1);}
+    
+    .search-input-wrapper { flex: 1; }
+    .search-input-wrapper input { width: 100%; padding: 10px 15px; border: 1.5px solid #dee2e6; border-radius: 10px; outline: none; font-size: 15px; transition: all 0.3s; }
+    .search-input-wrapper input:focus { border-color: #0056e0; box-shadow: 0 0 0 4px rgba(0, 86, 224, 0.05); }
+
+    .filter-actions { display: flex; gap: 7.5px; height: 100%; max-height: 100px; }
+    .tool-btn { width: 42px; height: 42px; border: 1px solid #dee2e6; background: #f8f9fa; border-radius: 10px; color: #555; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; transition: all 0.2s; }
+    .tool-btn:hover { background: #e2e6ea; color: #0056e0; border-color: #cbd3da;}
+    .tool-btn.active-select { background: #e7f3ff; color: #0056e0; border-color: #0056e0; }
+    .tool-btn.btn-trash:hover { background: #fee2e2; color: #dc3545; border-color: #ffcccc; }
+    
+    @keyframes iconScale { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+    .icon-animate { animation: iconScale 0.3s ease-in-out; }
+    .tool-btn.active-sort { color: #ff9800; }
+
+    .supplier-item { display: flex; align-items: center; padding: 15px; background: #fff; border-radius: 12px; cursor: pointer; border: 1px solid #f0f0f0; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); position: relative; flex-shrink: 0; }
+    .supplier-item:hover { background: #fff; border-color: #457b9d; transform: translateX(5px); box-shadow: -5px 5px 10px rgba(0,0,0,0.05); }
+    .supplier-item.active { background: linear-gradient(to right,#f1faee,#457b9d); border: 1px solid #ffffff; box-shadow: -2px 3px 8px rgba(0,0,0,0.1); }
+
+    .avatar { width: 50px; height: 50px; background: #f0f2f5; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #457b9d; margin-right: 15px; flex-shrink: 0; font-size: 20px; }
+    .supplier-item.active .avatar { background: #8adadc; outline: 3px solid #fff; color: #f1faee; text-shadow: -1px 1px 0 #1d3557; }
+
+    .info { flex: 1; min-width: 0; }
+    .info .name { font-size: 16px; font-weight: 700; color: #1a1a1a; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .supplier-item.active .info .name { color: #2f3e46; }
+    .info .phone { font-size: 14px; font-weight: 600; color: #888; }
+
+    .check-circle { width: 24px; height: 24px; border: 2px solid #ccc; border-radius: 50%; margin-left: 10px; position: relative; background: white; flex-shrink: 0; transition: border-color 0.2s ease; }
+    .check-circle::after { content: ""; width: 12px; height: 12px; background-color: #457b9d; border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .check-circle.checked::after { transform: translate(-50%, -50%) scale(1); }
+    .supplier-item.active .check-circle { background: rgba(255, 255, 255, 0.9); }
+
+    .header-left { display: flex; align-items: center; gap: 20px; }
+    .image-upload-container { position: relative; width: 80px; height: 80px; background: #f8f9fa; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1px dashed #ccc; transition: all 0.2s; overflow: hidden; }
+    .image-upload-container:hover { background-color: #f0f7ff; border-color: #0056e0; }
+    .image-upload-container img { width: 100%; height: 100%; object-fit: cover; }
+    .image-upload-container i { font-size: 24px; color: #999; }
+    
+    .remove-img-btn { position: absolute; top: 2px; right: 2px; background: rgba(255,255,255,0.8); border: none; border-radius: 50%; color: #dc3545; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; }
+
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 5px; }
+    .detail-card-info { background: #fff; padding: 20px; border-radius: 12px; border: 1px solid #eee; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+    .section-title { margin-bottom: 15px; border-bottom: 2px solid; padding-bottom: 8px; font-size: 16px; font-weight: 700; }
+    .client-color { color: #0056e0; border-color: #e7f3ff; }
+    .bank-color { color: #28a745; border-color: #e8f5e9; }
+    .full-width { grid-column: span 2; }
+
+    .info-group-wrapper { display: flex; flex-direction: column; gap: 10px; }
+    .info-chip { background: #f8f9fa; border: 1px solid #eef0f2; border-radius: 8px; padding: 10px 15px; display: flex; align-items: center; gap: 10px; }
+    .info-chip label { font-size: 13px; color: #666; font-weight: 700; min-width: 70px; }
+    .info-chip span { font-size: 15px; font-weight: 600; color: #222; }
+    .chip-bank-number span { color: #0056e0; font-family: 'Consolas', monospace; font-size: 16px; letter-spacing: 0.5px; }
+
+    .detail-card-header { background: white; border-radius: 16px; padding: 20px 30px; border: 1px solid #edf0f2; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03); display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-shrink: 0; }
+    .whatsapp-link { color: #28a745; font-weight: 600; display: flex; align-items: center; gap: 6px; font-size: 18px; margin-top: 5px; }
+
+    .action-buttons { display: flex; gap: 10px; }
+    .btn-delete-card { background: #fff; color: #dc3545; border: 1px solid #dc3545; width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
+    .btn-delete-card:hover { background: #dc3545; color: #fff; }
+    .btn-edit-card { background: #0056e0; color: white; border: none; padding: 0 20px; height: 40px; border-radius: 10px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+    .btn-edit-card:hover { background: #0044b3; }
+
+    /* Modals */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 2000; }
+    .modal-box { background: white; width: 600px; border-radius: 15px; overflow: hidden; box-shadow: 0 20px 25px rgba(0,0,0,0.1); max-height: 90vh; display: flex; flex-direction: column; }
+    .modal-header { padding: 15px 25px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #fff; }
+    .modal-body { padding: 25px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; overflow-y: auto; }
+    .form-group.full { grid-column: span 2; }
+    .form-group label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; color: #444; }
+    .form-group input, .form-group textarea { width: 100%; padding: 10px 12px; border: 1.5px solid #dee2e6; border-radius: 8px; outline: none; font-size: 14px; box-sizing: border-box; }
+    .form-group input:focus, .form-group textarea:focus { border-color: #0056e0; }
+    .modal-footer { padding: 15px 25px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; background: #f9f9f9; }
+    
+    .btn-save { background: #e9ecef; color: #adb5bd; border: none; padding: 10px 30px; border-radius: 8px; font-weight: 600; cursor: not-allowed; transition: 0.3s; }
+    .btn-save.active { background: #0056e0; color: white; cursor: pointer; }
+
+    .modal-header i.fa-xmark { font-size: 20px; cursor: pointer; color: #777; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background 0.2s; }
+    .modal-header i.fa-xmark:hover { background: #f0f0f0; color: #333; }
+
+    .btn-modal-cancel, .btn-modal-confirm { padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; border: none; }
+    .btn-modal-cancel { background: #f1f3f5; color: #495057; }
+    .btn-modal-confirm { background: #fa5252; color: white; margin-left: 10px; }
+
+    /* Toast */
+    .toast-container { position: fixed; top: 20px; right: 20px; z-index: 10000; }
+    .toast-msg { background: #ffffff; border-left: 5px solid #ff4d4d; padding: 15px 25px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 15px; margin-bottom: 10px; animation: slideIn 0.4s ease forwards, fadeOut 0.4s ease 2.5s forwards; }
+    .toast-msg i { color: #ff4d4d; font-size: 20px; }
+    .toast-msg span { color: #333; font-weight: 600; }
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes fadeOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(20px); opacity: 0; } }
+
+</style>
+</head>
+<body>
+
+<div class="table-view">
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar-container">
+        <!-- Sidebar content loaded via JS -->
+    </div>
+
+    <div class="main-content">
+<div class="content-header">
+    <h2><i class="fa-solid fa-truck-field" style="padding-right: 10px;"></i>Nhà cung cấp</h2>
+    <!-- Nút thêm nằm ở đây -->
+    <button class="btn-add" onclick="openModal('modalAdd')">
+        <i class="fa-solid fa-circle-plus"></i> Thêm mới
+    </button>
+</div>
+
+        <div class="content-body">
+            <div class="list-section">
+                <!-- Search Toolbar -->
+                <div class="search-toolbar">
+                    <div class="search-input-wrapper">
+                        <input type="text" id="searchTerm" placeholder="Tìm kiếm theo tên" oninput="searchSupplier()">
+                    </div>
+                    <div class="filter-actions">
+                        <button class="tool-btn" id="sortBtn" onclick="sortSuppliers()" title="Sắp xếp A-Z">
+                            <i class="fa-solid fa-arrow-down-a-z"></i>
+                        </button>
+                        <button class="tool-btn" id="btnSelectAll" onclick="toggleSelectAll()" title="Chọn tất cả">
+                            <i class="fa-regular fa-circle-check"></i>
+                        </button>
+                        <button class="tool-btn btn-trash" onclick="checkBulkDelete()" title="Xóa các mục đã chọn">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Khu vực danh sách có scroll (ID MỚI) -->
+                <div id="renderSupplierItems"></div>
+            </div>
+
+            <!-- Detail View -->
+            <div class="detail-section" id="detailView">
+                <p style="text-align: center; color: #ccc; margin-top: 100px;">Chưa có dữ liệu nhà cung cấp</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modals -->
+<div class="modal-overlay" id="modalAdd">
+    <div class="modal-box" style="width: 850px;">
+        <div class="modal-header">
+            <h3 style="flex: 1; text-align: center; margin-left: 30px; margin:0;">Thêm nhà cung cấp mới</h3>
+            <i class="fa-solid fa-xmark" onclick="closeModal('modalAdd')"></i>
+        </div>
+        <div class="modal-body" style="grid-template-columns: 1fr 1fr; gap: 25px; padding: 20px 30px;">
+            <div class="form-column">
+                <h4 class="section-title client-color"><i class="fa-solid fa-building"></i> Thông tin chung</h4>
+                <div class="form-group">
+                    <label>Tên nhà cung cấp <span style="color:red">*(Bắt buộc)</span></label>
+                    <input type="text" id="inName" maxlength="35" placeholder="Ví dụ: Công ty ABC..." oninput="validateAddBtn()">
+                </div>
+                <div class="form-group">
+                    <label>Số điện thoại</label>
+                    <input type="text" id="inPhone" maxlength="15" placeholder="0xxxxxxxxx" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                </div>      
+                <div class="form-group">
+                    <label>Địa chỉ <small>(135 ký tự)</small></label>
+                    <textarea id="inAddress" maxlength="135" placeholder="Kho hàng, văn phòng..." style="height: 115px; resize:none;"></textarea>
+                </div>  
+            </div>
+            <div class="form-column">
+                <h4 class="section-title bank-color"><i class="fa-solid fa-building-columns"></i> Thông tin thanh toán</h4>
+                <div class="form-group">
+                    <label>Tên ngân hàng</label>
+                    <input type="text" id="inBankName" maxlength="30" placeholder="Ví dụ: Vietcombank, MB Bank...">
+                </div>
+                <div class="form-group">
+                    <label>Chủ tài khoản</label>
+                    <input type="text" id="inBankUser" maxlength="30" placeholder="Tên in hoa không dấu">
+                </div>
+                <div class="form-group">
+                    <label>Số tài khoản</label>
+                    <input type="text" id="inBankNumber" class="bank-input" maxlength="34" placeholder="Nhập số tài khoản ngân hàng" oninput="formatBankNumber(this)">
+                </div>
+            </div>
+            <div class="form-group full">
+                <label><i class="fa-solid fa-pen-fancy"></i> Ghi chú chi tiết <small>(150 ký tự)</small></label>
+                <textarea id="inNote" maxlength="150" placeholder="Nhập các ghi chú hoặc điều khoản đặc biệt..." style="height: 100px; resize:none;"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-save" id="saveAddBtn" onclick="saveSupplier()"><i class="fa-solid fa-floppy-disk"></i> Lưu</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modalEdit">
+    <div class="modal-box" style="width: 850px;">
+        <div class="modal-header">
+            <h3 style="flex: 1; text-align: center; margin:0;">Cập nhật thông tin</h3>
+            <i class="fa-solid fa-xmark" onclick="closeModal('modalEdit')"></i>
+        </div>
+        <div class="modal-body" style="grid-template-columns: 1fr 1fr; gap: 25px; padding: 20px 30px;">
+            <div class="form-column">
+                <h4 class="section-title client-color"><i class="fa-solid fa-pen-to-square"></i> Thông tin nhà cung cấp</h4>
+                <div class="form-group">
+                    <label>Tên nhà cung cấp <span style="color:red">*(Bắt buộc)</span></label>
+                    <input type="text" id="editName" maxlength="35" placeholder="Nhập lại tên muốn thay đổi" oninput="validateEditBtn()">
+                </div>
+                <div class="form-group">
+                    <label>Số điện thoại</label>
+                    <input type="text" id="editPhone" maxlength="15" placeholder="Nhập số điện thoại mới" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                </div>
+                <div class="form-group">
+                    <label>Địa chỉ <small>(135 ký tự)</small></label>
+                    <textarea id="editAddress" maxlength="135" placeholder="Cập nhật địa chỉ mới..." style="height: 115px; resize:none;"></textarea>
+                </div>
+            </div>
+            <div class="form-column">
+                <h4 class="section-title bank-color"><i class="fa-solid fa-building-columns"></i> Thông tin thanh toán</h4>
+                <div class="form-group">
+                    <label>Tên ngân hàng</label>
+                    <input type="text" id="editBankName" maxlength="30" placeholder="Ví dụ: TPBank, Agribank...">
+                </div>
+                <div class="form-group">
+                    <label>Chủ tài khoản</label>
+                    <input type="text" id="editBankUser" maxlength="30" placeholder="Cập nhật tên chủ tài khoản...">
+                </div>
+                <div class="form-group">
+                    <label>Số tài khoản</label>
+                    <input type="text" id="editBankNumber" class="bank-input" maxlength="34" placeholder="Cập nhật số tài khoản mới..." oninput="formatBankNumber(this)">
+                </div>
+            </div>
+            <div class="form-group full">  
+                <label><i class="fa-solid fa-comment-medical"></i> Ghi chú <small>(150 ký tự)</small></label>
+                <textarea id="editNote" maxlength="150" placeholder="Cập nhật nội dung ghi chú..." style="height: 100px; resize:none;"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-save" id="saveEditBtn" onclick="updateSupplier()"><i class="fa-solid fa-floppy-disk"></i> Lưu thay đổi</button>
+        </div>
+    </div>
+</div>
+
+<div id="modalDelete" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:white; padding:30px; border-radius:20px; text-align:center; width:320px; box-shadow: 0 15px 30px rgba(0,0,0,0.2);">
+        <i class="fa-solid fa-trash-can" style="font-size: 45px; color: #ff4d4d; margin-bottom: 20px; display: block;"></i>
+        <p id="deleteMsg" style="line-height: 1.5; color: #444;"></p> 
+        <div style="display:flex; justify-content: center; gap:12px;">
+            <button class="btn-modal-cancel" onclick="closeModal('modalDelete')">Hủy</button>
+            <button class="btn-modal-confirm" onclick="confirmDelete()">Xóa ngay</button>
+        </div>
+    </div>
+</div>
+
+<div id="toastContainer" class="toast-container"></div>
+
+<!-- Upload handling hidden elements -->
+<input type="file" id="supplierImageInput" accept="image/*" style="display: none;" onchange="uploadImage(event)">
+
+<script src="upload-image-edit.js"></script>
+
+<script type="module">
+    // 1. IMPORT FIREBASE
+    import { db } from "/firebase-config.js"; 
+    import { 
+    collection, addDoc, doc, updateDoc, deleteDoc, 
+    onSnapshot, query, orderBy, where, serverTimestamp, writeBatch,
+    getDoc 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+// 3. MAIN LOGIC
+let suppliers = [];
+let currentIndex = -1;
+let deletionMode = 'single';
+let isAscending = true;
+
+// --- QUYỀN HẠN & ID CỬA HÀNG ---
+let canEditSuppliers = false; 
+const activeStoreId = localStorage.getItem('current_store_id');
+const userEmail = localStorage.getItem('userEmail');
+
+// Hàm kiểm tra quyền Real-time
+async function listenPermissions() {
+    // 1. Kiểm tra Admin hệ thống
+    const localRole = localStorage.getItem('userRole');
+    if (localRole === 'super_admin') {
+        console.log("Quyền: Bạn là Super Admin -> Full quyền.");
+        canEditSuppliers = true;
+        updateAccessUI();
+        return; 
+    }
+
+    if (!activeStoreId || !userEmail) return;
+
+    // 2. Kiểm tra xem có phải CHỦ CỬA HÀNG không
+    try {
+        const storeRef = doc(db, "Administrator", activeStoreId);
+        const storeSnap = await getDoc(storeRef);
+        
+        if (storeSnap.exists()) {
+            const storeData = storeSnap.data();
+            if (storeData.ownerEmail === userEmail) {
+                console.log("Quyền: Bạn là Chủ kho -> Full quyền.");
+                canEditSuppliers = true;
+                updateAccessUI();
+                return;
+            }
+        }
+    } catch (err) {
+        console.error("Lỗi kiểm tra chủ kho:", err);
+    }
+
+    // 3. Nếu là Nhân viên thường -> Kiểm tra bảng phân quyền
+    const myDocId = `${activeStoreId}_${userEmail.replace(/\./g, '_')}`;
+    onSnapshot(doc(db, "gmail_personnel", myDocId), (snap) => {
+        if (snap.exists()) {
+            const myData = snap.data();
+            // LƯU Ý: Ở đây kiểm tra quyền 'suppliers' (nếu bạn có set trong object perms)
+            // Nếu chưa có, bạn có thể dùng chung quyền 'clients' hoặc tạo mới.
+            // Ở đây tôi giả định dùng key 'suppliers'.
+            canEditSuppliers = (myData.perms && myData.perms.suppliers === true);
+            console.log("Quyền nhân viên:", canEditSuppliers);
+            updateAccessUI();
+        } else {
+            canEditSuppliers = false;
+            updateAccessUI();
+        }
+    });
+}
+
+listenPermissions();
+
+// Hàm tạo ID duy nhất cho nhà cung cấp
+function generateSupplierId() {
+    const randomString = () => Math.random().toString(36).substring(2, 10);
+    return `SUP-${randomString()}`;
+}
+
+// Hàm ẩn/hiện các nút chức năng chính
+function updateAccessUI() {
+    // 1. Nút Thêm mới
+    const btnAdd = document.querySelector('.btn-add');
+    if (btnAdd) btnAdd.style.display = canEditSuppliers ? 'flex' : 'none';
+
+    // 2. Nút Thùng rác (Xóa nhiều)
+    const btnBulkDelete = document.querySelector('.btn-trash');
+    if (btnBulkDelete) {
+        if (canEditSuppliers) {
+            btnBulkDelete.style.display = 'flex';
+            btnBulkDelete.onclick = checkBulkDelete;
+            btnBulkDelete.style.opacity = '1';
+            btnBulkDelete.style.cursor = 'pointer';
+        } else {
+            btnBulkDelete.style.display = 'flex';
+            btnBulkDelete.style.opacity = '0.5';
+            btnBulkDelete.style.cursor = 'not-allowed';
+            btnBulkDelete.onclick = () => showToast("Bạn không có quyền xóa!");
+        }
+    }
+
+    if (currentIndex !== -1) selectSupplier(currentIndex);
+    renderList();
+}
+
+listenPermissions();
+
+    // 2. HELPER FUNCTIONS GLOBAL
+    window.openModal = function(id) { const m = document.getElementById(id); if(m) m.style.display = 'flex'; };
+    window.closeModal = function(id) { const m = document.getElementById(id); if(m) m.style.display = 'none'; };
+
+    window.formatBankNumber = function(input) {
+        let value = input.value.replace(/\D/g, '');
+        input.value = value.replace(/(\d{4})(?=\d)/g, '$1 ');
+    };
+
+    window.triggerUpload = function(e) { 
+        if(!canEditSuppliers) {
+            showToast("Quyền hạn: Không được phép thay đổi ảnh!");
+            return;
+        }
+        document.getElementById('supplierImageInput').click(); 
+    };
+
+    // --- CẦU NỐI VỚI FILE UPLOAD JS ---
+    window.onSaveImageComplete = async function(base64Image) {
+        if (currentIndex === -1 || !suppliers[currentIndex]) {
+            alert("Lỗi: Chưa chọn nhà cung cấp để lưu ảnh!");
+            return;
+        }
+
+        const docId = suppliers[currentIndex].id;
+
+        try {
+            if(typeof showToast === 'function') showToast("Đang lưu ảnh lên hệ thống...");
+
+            // LƯU Ý: Collection là suppliers
+            await updateDoc(doc(db, "suppliers", docId), {
+                image: base64Image
+            });
+
+            if(typeof showToast === 'function') showToast("Đã lưu ảnh xong!");
+            
+            suppliers[currentIndex].image = base64Image;
+            selectSupplier(currentIndex);
+
+        } catch (error) {
+            console.error("Lỗi Firebase:", error);
+            alert("Không thể lưu ảnh: " + error.message);
+        }
+    };
+
+    // Check Login
+    const userLoggedIn = localStorage.getItem('userLoggedIn');
+    if (userLoggedIn !== 'true') window.location.replace('/index.html?auth=required'); 
+    
+    // Load Sidebar
+    fetch('/components/Side-Bar.html')
+        .then(res => res.text())
+        .then(data => {
+            const container = document.getElementById('sidebar-container');
+            if (container) {
+                container.innerHTML = data;
+                container.querySelectorAll("script").forEach(oldScript => {
+                    const newScript = document.createElement("script");
+                    Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+                    newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+                    oldScript.parentNode.replaceChild(newScript, oldScript);
+                });
+            }
+        });
+
+// --- Firebase Listener: SUPPLIERS ---
+try {
+    if (activeStoreId) {
+        // Query vào collection "suppliers"
+        const q = query(
+            collection(db, "suppliers"), 
+            where("storeId", "==", activeStoreId), 
+            orderBy("createdAt", "desc")
+        );
+
+        onSnapshot(q, (snapshot) => {
+            const newSuppliers = snapshot.docs.map(doc => {
+                const data = doc.data();
+                const docRef = doc.ref; 
+
+                if (!data.supplierId) {
+                    const newId = generateSupplierId();
+                    // Fix lỗi import updateDoc trong scope module
+                    updateDoc(docRef, { supplierId: newId });
+                    return { id: doc.id, ...data, supplierId: newId, selected: false };
+                }
+
+                return { id: doc.id, ...data, selected: false };
+            });
+            
+            // Giữ trạng thái chọn
+            newSuppliers.forEach(newItem => {
+                const oldItem = suppliers.find(c => c.id === newItem.id);
+                if (oldItem) newItem.selected = oldItem.selected;
+            });
+
+            suppliers = newSuppliers;
+            
+            if (!isAscending) {
+                suppliers.sort((a, b) => b.name.localeCompare(a.name));
+            } else {
+                suppliers.sort((a, b) => a.name.localeCompare(b.name)); 
+            }
+
+            renderList(); 
+            if (currentIndex > -1 && currentIndex < suppliers.length) selectSupplier(currentIndex);
+        }, (error) => {
+            console.error("Lỗi tải dữ liệu:", error);
+        });
+    }
+} catch (e) {
+    console.error("Firebase Init Error:", e);
+}
+
+    // Render Function
+    function renderList() {
+        const listContainer = document.getElementById('renderSupplierItems');
+        if (!listContainer) return;
+        
+        let listHTML = "";
+        const allSelected = suppliers.length > 0 && suppliers.every(c => c.selected);
+        const btnSelectAll = document.getElementById('btnSelectAll');
+        
+        if(btnSelectAll) {
+             if(allSelected) btnSelectAll.classList.add('active-select');
+             else btnSelectAll.classList.remove('active-select');
+        }
+
+        const searchTerm = document.getElementById('searchTerm') ? document.getElementById('searchTerm').value.toLowerCase() : "";
+
+        suppliers.forEach((supp, index) => {
+            if (supp.name.toLowerCase().includes(searchTerm)) {
+                const avatarLetter = supp.name ? supp.name.charAt(0).toUpperCase() : "?";
+                const isChecked = supp.selected ? 'checked' : '';
+                // Chỉ hiện nút check nếu có quyền
+                const checkboxHtml = canEditSuppliers ? `<div class="check-circle ${isChecked}" onclick="window.toggleSelect(${index}, event)"></div>` : '';
+
+                listHTML += `
+                    <div class="supplier-item ${index === currentIndex ? 'active' : ''}" onclick="window.selectSupplier(${index})">
+                        <div class="avatar">${avatarLetter}</div>
+                        <div class="info">
+                            <div class="name">${supp.name}</div>
+                            <div class="phone">${supp.phone || '---'}</div>
+                        </div>
+                        ${checkboxHtml}
+                    </div>
+                `;
+            }
+        });
+
+        if(listHTML === "") listContainer.innerHTML = `<div style="text-align:center; padding: 20px; color:#999;">Không tìm thấy nhà cung cấp</div>`;
+        else listContainer.innerHTML = listHTML;
+    }
+
+    window.searchSupplier = renderList;
+    window.renderList = renderList;
+
+    window.toggleSelect = function(index, event) {
+        event.stopPropagation();
+        suppliers[index].selected = !suppliers[index].selected;
+        renderList();
+    };
+
+    window.toggleSelectAll = function() {
+        const allSelected = suppliers.length > 0 && suppliers.every(c => c.selected);
+        suppliers.forEach(c => c.selected = !allSelected);
+        renderList();
+    };
+
+    window.sortSuppliers = function() {
+        const btn = document.getElementById('sortBtn');
+        const icon = btn.querySelector('i');
+        icon.classList.remove('icon-animate');
+        void icon.offsetWidth; 
+        icon.classList.add('icon-animate');
+
+        isAscending = !isAscending;
+
+        setTimeout(() => {
+            if (!isAscending) {
+                icon.className = 'fa-solid fa-arrow-up-z-a icon-animate';
+                btn.classList.add('active-sort');
+                btn.title = "Sắp xếp Z-A";
+            } else {
+                icon.className = 'fa-solid fa-arrow-down-a-z icon-animate';
+                btn.classList.remove('active-sort');
+                btn.title = "Sắp xếp A-Z";
+            }
+        }, 150);
+
+        suppliers.sort((a, b) => isAscending ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name));
+        currentIndex = -1;
+        document.getElementById('detailView').innerHTML = 
+            `<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 300px; color: #bbb;">
+                <i class="fa-solid fa-arrow-rotate-right" style="font-size: 40px; margin-bottom: 15px;"></i>
+                <p>Đã sắp xếp danh sách</p>
+            </div>`;
+        renderList();
+    };
+
+    window.selectSupplier = function(index) {
+        currentIndex = index;
+        const data = suppliers[index];
+        if (!data) return;
+
+        const formattedBankNumber = data.bankNumber 
+            ? data.bankNumber.replace(/\D/g, '').replace(/(\d{4})(?=\d)/g, '$1 ') 
+            : 'Chưa có số';
+
+        const actionButtonsHtml = canEditSuppliers ? `
+            <div class="action-buttons">
+                <button class="btn-delete-card" onclick="reqDeleteSingle()" title="Xóa nhà cung cấp">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+                <button class="btn-edit-card" onclick="prepareEdit()">
+                    <i class="fa-solid fa-pen-to-square"></i> Sửa
+                </button>
+            </div>
+        ` : '';
+
+        const removeImgBtn = (canEditSuppliers && data.image) ? `
+            <button class="remove-img-btn" onclick="removeSupplierImage(event)" title="Bỏ ảnh">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        ` : '';
+
+        const uploadAction = canEditSuppliers ? `onclick="triggerUpload(event)"` : `style="cursor:default"`;
+
+        const detailHTML = `
+            <div class="detail-card-header">
+                <div class="header-left">
+                    <div class="image-upload-container" ${uploadAction}>
+                        ${data.image 
+                            ? `<img src="${data.image}" style="pointer-events: none; width:100%; height:100%; object-fit:cover;" /> ${removeImgBtn}` 
+                            : `<i class="fa-solid fa-camera" style="pointer-events: none;"></i>`
+                        }
+                    </div>
+
+                    <div class="header-info-text">
+                        <h3 style="margin:0;">${data.name}</h3>
+                        <div class="whatsapp-link"><i class="fa-solid fa-phone"></i> ${data.phone || '---'}</div>
+                    </div>
+                </div>
+                
+                ${actionButtonsHtml}
+            </div>
+
+            <div class="detail-grid">
+                <div class="detail-card-info">
+                    <h4 class="section-title client-color" style="border:none;"><i class="fa-solid fa-address-card"></i> Thông tin</h4>
+                    <div class="info-group-wrapper">
+                        <div class="info-chip"><label>SĐT:</label><span>${data.phone || '---'}</span></div>
+                        <div class="info-chip"><label>Địa chỉ:</label><span>${data.address || 'Chưa có'}</span></div>
+                    </div>
+                </div> 
+
+                <div class="detail-card-info">
+                    <h4 class="section-title bank-color" style="border:none;"><i class="fa-solid fa-building-columns"></i> Thanh toán</h4>
+                    <div class="info-group-wrapper">
+                        <div class="info-chip"><label>Ngân hàng:</label><span>${data.bankName || '---'}</span></div>
+                        <div class="info-chip"><label>Chủ TK:</label><span style="text-transform: uppercase;">${data.bankUser || '---'}</span></div>
+                        <div class="info-chip chip-bank-number"><label>STK:</label><span>${formattedBankNumber}</span></div>
+                    </div>
+                </div>
+
+                <div class="detail-card-info full-width">
+                    <h4 class="section-title" style="border:none; color:#555;"><i class="fa-solid fa-bars-staggered"></i> Ghi chú</h4>
+                    <div style="background:#f8f9fa; padding:15px; border-radius:10px; border: 1px dashed #ced4da;">
+                        <p style="margin:0; font-size:15px; color:#444;">${data.note || 'Không có ghi chú.'}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.getElementById('detailView').innerHTML = detailHTML;
+        renderList();
+    };
+
+    // CRUD for SUPPLIERS
+    window.saveSupplier = async function() {
+        const isSuperAdmin = localStorage.getItem('userRole') === 'super_admin';
+        if (!isSuperAdmin && !canEditSuppliers) {
+            showToast("Lỗi: Bạn không có quyền thêm nhà cung cấp!");
+            return;
+        }
+
+        const newId = generateSupplierId(); 
+        const nameInput = document.getElementById('inName');
+        const btn = document.getElementById('saveAddBtn');
+        
+        if (!nameInput.value.trim()) { alert("Vui lòng nhập tên"); return; }
+        
+        btn.innerHTML = '...'; btn.disabled = true;
+
+        try {
+            await addDoc(collection(db, "suppliers"), {
+                storeId: activeStoreId,
+                supplierId: newId,
+                name: nameInput.value.trim(),
+                phone: document.getElementById('inPhone').value.trim(),
+                address: document.getElementById('inAddress').value.trim(),
+                bankName: document.getElementById('inBankName').value.trim(),
+                bankUser: document.getElementById('inBankUser').value.trim(),
+                bankNumber: document.getElementById('inBankNumber').value.trim(),
+                note: document.getElementById('inNote').value.trim(),
+                image: null,
+                createdAt: serverTimestamp()
+            });
+            showToast("Thêm nhà cung cấp thành công!");
+            closeModal('modalAdd');
+            
+            // Reset form
+            document.getElementById('inName').value = "";
+            document.getElementById('inPhone').value = "";
+            document.getElementById('inAddress').value = "";
+            document.getElementById('inBankName').value = "";
+            document.getElementById('inBankUser').value = "";
+            document.getElementById('inBankNumber').value = "";
+            document.getElementById('inNote').value = "";
+
+        } catch (error) { showToast("Lỗi: " + error.message); } 
+        finally { btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Lưu'; btn.disabled = false; }
+    };
+
+    window.updateSupplier = async function() {
+        if (currentIndex === -1) return;
+        const btn = document.getElementById('saveEditBtn');
+        btn.innerHTML = '...';
+        try {
+            await updateDoc(doc(db, "suppliers", suppliers[currentIndex].id), {
+                name: document.getElementById('editName').value,
+                phone: document.getElementById('editPhone').value.trim(),
+                address: document.getElementById('editAddress').value.trim(),
+                bankName: document.getElementById('editBankName').value.trim(),
+                bankUser: document.getElementById('editBankUser').value.trim(),
+                bankNumber: document.getElementById('editBankNumber').value.trim(),
+                note: document.getElementById('editNote').value.trim()
+            });
+            showToast("Cập nhật thành công!");
+            closeModal('modalEdit');
+        } catch (e) { showToast("Lỗi: " + e.message); }
+        finally { btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Lưu thay đổi'; }
+    };
+
+    // --- XÓA ĐƠN ---
+    window.reqDeleteSingle = function() {
+        if (!canEditSuppliers) {
+            showToast("Bạn không có quyền xóa!");
+            return; 
+        }
+        if (currentIndex === -1 || !suppliers[currentIndex]) {
+            showToast("Lỗi: Không xác định được mục cần xóa!");
+            return;
+        }
+
+        deletionMode = 'single';
+        const msg = document.getElementById('deleteMsg');
+        if(msg) {
+            const suppName = suppliers[currentIndex].name;
+            msg.innerHTML = `Bạn chắc chắn muốn xóa nhà cung cấp <b>${suppName}</b>?<br><br><small style="color:red">Hành động này không thể hoàn tác!</small>`;
+        }
+        openModal('modalDelete');
+    };
+
+    // --- XÓA NHIỀU ---
+    window.checkBulkDelete = function() {
+        if (!canEditSuppliers) {
+            showToast("Bạn không có quyền xóa dữ liệu!");
+            return; 
+        }
+        const selectedCount = suppliers.filter(c => c.selected).length;
+        if (selectedCount === 0) {
+            showToast("Vui lòng tích chọn mục cần xóa!");
+            return; 
+        }
+
+        deletionMode = 'bulk';
+        const msg = document.getElementById('deleteMsg');
+        if(msg) {
+            msg.innerHTML = `Bạn đã chọn xóa <b>${selectedCount}</b> nhà cung cấp.<br><br><small style="color:red">Tất cả dữ liệu này sẽ bị xóa vĩnh viễn!</small>`;
+        }
+        openModal('modalDelete');
+    };
+
+    // --- CONFIRM DELETE (Đã áp dụng logic sửa lỗi) ---
+    window.confirmDelete = async function() {
+        if (!canEditSuppliers) {
+            showToast("Từ chối truy cập: Bạn không có quyền xóa!");
+            closeModal('modalDelete');
+            return;
+        }
+        
+        const btn = document.querySelector('.btn-modal-confirm');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xử lý...';
+        btn.disabled = true;
+
+        try {
+            if (deletionMode === 'single') {
+                const target = suppliers[currentIndex];
+                if (!target || !target.id) throw new Error("Không tìm thấy ID");
+                await deleteDoc(doc(db, "suppliers", target.id));
+            } else {
+                const batch = writeBatch(db);
+                const selectedItems = suppliers.filter(c => c.selected);
+                if (selectedItems.length === 0) throw new Error("Danh sách rỗng");
+
+                selectedItems.forEach(item => {
+                    if (item.id) batch.delete(doc(db, "suppliers", item.id));
+                });
+                await batch.commit();
+            }
+
+            showToast("Đã xóa dữ liệu thành công!");
+            closeModal('modalDelete');
+            
+            currentIndex = -1;
+            document.getElementById('detailView').innerHTML = `
+                <div style="text-align:center; color:#ccc; margin-top:100px;">
+                    <i class="fa-solid fa-trash-can" style="font-size:48px; margin-bottom:10px; opacity:0.3;"></i>
+                    <p>Đã xóa dữ liệu</p>
+                </div>`;
+            
+            if(document.getElementById('btnSelectAll')) {
+                document.getElementById('btnSelectAll').classList.remove('active-select');
+            }
+
+        } catch (e) {
+            console.error("LỖI XÓA:", e);
+            showToast("Lỗi khi xóa: " + e.message);
+        } finally {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    };
+
+    function uploadImage(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        if (file.size > 800 * 1024) {
+            alert("Ảnh quá lớn! Vui lòng chọn ảnh dưới 800KB.");
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const base64String = e.target.result;
+            if (typeof window.handleImageFromExternal === 'function') {
+                window.handleImageFromExternal(base64String);
+            } else {
+                console.error("Thiếu script xử lý ảnh!");
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+
+    window.removeSupplierImage = async function(event) {
+        event.stopPropagation();
+        if(!canEditSuppliers) {
+            showToast("Quyền hạn: Không được phép xóa ảnh!");
+            return;
+        }
+        if (currentIndex > -1 && confirm("Xóa ảnh?")) {
+            await updateDoc(doc(db, "suppliers", suppliers[currentIndex].id), { image: null });
+            showToast("Đã xóa ảnh");
+        }
+    };
+
+    window.validateAddBtn = function() {
+        const btn = document.getElementById('saveAddBtn');
+        document.getElementById('inName').value.trim() ? btn.classList.add('active') : btn.classList.remove('active');
+    };
+
+    window.validateEditBtn = function() {
+        const btn = document.getElementById('saveEditBtn');
+        document.getElementById('editName').value.trim() ? btn.classList.add('active') : btn.classList.remove('active');
+    };
+
+    window.prepareEdit = function() {
+        if(!canEditSuppliers) {
+            showToast("Lỗi: Bạn chỉ có quyền xem thông tin!");
+            return;
+        }
+        const data = suppliers[currentIndex];
+        document.getElementById('editName').value = data.name || "";
+        document.getElementById('editPhone').value = data.phone || "";
+        document.getElementById('editAddress').value = data.address || "";
+        document.getElementById('editBankName').value = data.bankName || "";
+        document.getElementById('editBankUser').value = data.bankUser || "";
+        document.getElementById('editBankNumber').value = data.bankNumber || "";
+        document.getElementById('editNote').value = data.note || "";
+        openModal('modalEdit');
+        window.validateEditBtn();
+    };
+
+    function showToast(message) {
+        const container = document.getElementById('toastContainer');
+        if(!container) return;
+        const toast = document.createElement('div');
+        toast.className = 'toast-msg';
+        toast.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> <span>${message}</span>`;
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 500);
+        }, 3000);
+    }
+</script>
+
+</body>
+</html>

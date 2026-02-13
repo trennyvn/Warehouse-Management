@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/sidebar.css"> 
+    <style>
+        .user-avatar {
+            width: 40px; height: 40px; border-radius: 50%; 
+            background-color: #eee;
+            background-size: cover; background-position: center; background-repeat: no-repeat;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; color: white; font-size: 18px; border: 1px solid #ddd;
+        }
+        
+        /* CSS cho trạng thái bị KHÓA */
+        .nav-item.locked {
+            opacity: 0.5; /* Làm mờ */
+            cursor: not-allowed !important; /* Con trỏ cấm */
+            background-color: transparent !important; /* Không sáng màu khi hover */
+            pointer-events: auto; /* Vẫn cho phép click để hiện thông báo */
+        }
+        .nav-item.locked:hover {
+            background-color: transparent !important;
+            color: inherit !important;
+        }
+    </style>
+</head>
+<body>
+
+<!-- MENU SIDEBAR -->
+<nav class="nav-menu">
+    <div class="report-group" id="group-bao-cao">
+        <div class="report-header" onclick="toggleMenu('group-bao-cao')">
+            <div class="report-icon-main"><i class="fa-solid fa-chart-line"></i></div>
+            <span>Báo cáo</span> <i class="fa fa-chevron-down report-arrow"></i>
+        </div>
+        <div class="report-menu">
+          
+            <a href="/items/report/inventory.html" class="report-link"><i class="fa-solid fa-boxes-stacked"></i> Hàng tồn kho</a>
+          
+            
+        </div>
+    </div>
+
+    <hr>
+    
+    <!-- Sản phẩm (Giữ nguyên) -->
+    <div class="nav-item" onclick="window.location.href='/items/product.html'">
+        <div class="nav-icon-wrapper"><i class="fa-solid fa-box-archive" ></i></div> <span>Sản phẩm</span>
+    </div>
+
+    <!-- 4 MỤC KHO HÀNG (CÓ ID ĐỂ JS ĐIỀU KHIỂN) -->
+    <div class="nav-item" id="nav-import" data-href="/items/import-stock.html" data-name="Nhập kho">
+        <div class="nav-icon-wrapper"><i class="fa-solid fa-box-archive"></i></div> <span>Nhập kho</span>
+    </div>
+    <div class="nav-item" id="nav-export" data-href="/items/export-stock.html" data-name="Xuất kho">
+        <div class="nav-icon-wrapper"><i class="fa-solid fa-box-archive"></i></div> <span>Xuất kho</span>
+    </div>
+    <div class="nav-item" id="nav-audit" data-href="/items/audit-stock.html" data-name="Kiểm kê kho">
+        <div class="nav-icon-wrapper"><i class="fa-solid fa-arrows-rotate"></i></div> <span>Kiểm kê kho</span>
+    </div>
+    <div class="nav-item" id="nav-transfer" data-href="/items/transfer-stock.html" data-name="Chuyển kho">
+        <div class="nav-icon-wrapper"><i class="fa-solid fa-right-left"></i></div> <span>Chuyển kho</span>
+    </div>
+
+    <hr>
+    
+    <a href="/items/history.html" style="text-decoration: none;">
+        <div class="nav-item"><div class="nav-icon-wrapper"><i class="fa-solid fa-history"></i></div> <span>Lịch sử</span></div>
+    </a>
+    <a href="/items/expense.html" style="text-decoration: none;">
+        <div class="nav-item"><div class="nav-icon-wrapper"><i class="fa-solid fa-money-bill-wave"></i></div> <span>Chi phí</span></div>
+    </a>
+
+    <hr>
+    
+    <div class="nav-group" id="group-lien-he">
+        <div class="nav-header" onclick="toggleMenu('group-lien-he', event)">
+            <div class="nav-icon-wrapper"><i class="fa-solid fa-users"></i></div> 
+            <span>Liên hệ</span> <i class="fa fa-chevron-down arrow"></i>
+        </div>
+        <div class="sub-menu">
+            <a href="/items/contact/client.html" class="sub-item"><i class="fa-solid fa-user-tag" style="padding-right: 5px;"></i> Khách hàng</a>
+            <a href="/items/contact/supplier.html" class="sub-item"><i class="fa-solid fa-truck-field" style="padding-right: 5px;"></i> Nhà cung cấp</a>
+            <a href="/items/contact/personnel.html" class="sub-item"><i class="fa-solid fa-user-tie" style="padding-right: 5px;"></i> Nhân viên</a>
+        </div>
+    </div>
+
+    <div class="sidebar-footer">
+        <div class="user-popover" id="userPopover">
+            <a href="/components/setting.html" class="popover-item"><i class="fa-solid fa-gear"></i> Cài đặt</a>
+            <div class="popover-divider"></div>
+            <button id="btnLogout" class="popover-item logout-red"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</button>
+        </div>
+
+        <div class="user-profile" onclick="toggleUserMenu(event)">
+            <div class="user-avatar" id="u-avatar"></div>
+            <div class="user-info">
+                <span class="user-name" id="u-name">...</span>
+                <span class="user-email" id="u-email"></span>
+            </div>
+                    <div class="user-options">
+                        <a href="/store.html" class="logout-btn">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                        </a>
+                    </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- MODAL THÔNG BÁO LỖI (Ẩn mặc định) -->
+<div id="permErrorModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center;">
+    <div style="background:white; padding:25px; border-radius:12px; width:320px; text-align:center; box-shadow:0 10px 25px rgba(0,0,0,0.2);">
+        <i class="fa-solid fa-circle-exclamation" style="font-size:40px; color:#ef4444; margin-bottom:15px;"></i>
+        <h3 style="margin:0 0 10px 0; color:#333;">Truy cập bị từ chối</h3>
+        <p style="color:#666; font-size:14px; margin-bottom:20px;">Bạn không có quyền truy cập vào mục <b id="permErrorTarget"></b>.</p>
+        <button onclick="document.getElementById('permErrorModal').style.display='none'" style="background:#334155; color:white; border:none; padding:8px 20px; border-radius:6px; cursor:pointer; font-weight:600;">Đóng</button>
+    </div>
+</div>
+
+<!-- === SCRIPT 1: UI SIÊU TỐC === -->
+<script>
+    (function() {
+        function fastRenderUser() {
+            const nameEl = document.getElementById('u-name');
+            const emailEl = document.getElementById('u-email');
+            const avatarEl = document.getElementById('u-avatar');
+            if (!nameEl || !avatarEl) return;
+
+            const sName = localStorage.getItem('userName') || "User";
+            const sEmail = localStorage.getItem('userEmail') || "";
+            let sPic = localStorage.getItem('userPicture');
+            const sRole = localStorage.getItem('userRole');
+
+            if (sRole === 'viewer' && (!sPic || sPic === 'undefined' || sPic === 'null')) {
+                const guestImgs = ["https://i.ibb.co/My2Y95Jg/1013261.png", "https://i.ibb.co/qYCgD0yv/10132601.png"];
+                sPic = guestImgs[Math.floor(Math.random() * guestImgs.length)];
+                localStorage.setItem('userPicture', sPic);
+            }
+
+            nameEl.textContent = sName;
+            if (emailEl) emailEl.textContent = sEmail;
+
+            if (sPic && sPic.startsWith('http')) {
+                avatarEl.style.backgroundImage = `url('${sPic}')`;
+                avatarEl.textContent = ""; 
+                avatarEl.style.border = "none";
+                avatarEl.style.backgroundColor = "transparent";
+            } else {
+                avatarEl.style.backgroundImage = "none";
+                avatarEl.style.backgroundColor = "#4f46e5";
+                avatarEl.textContent = sName.charAt(0).toUpperCase();
+            }
+        }
+        fastRenderUser();
+        document.addEventListener('DOMContentLoaded', fastRenderUser);
+
+        window.toggleMenu = (id, e) => {
+            if(e) e.stopPropagation();
+            document.getElementById(id)?.classList.toggle('active');
+        };
+        window.toggleUserMenu = (e) => window.toggleMenu('userPopover', e);
+        window.onclick = (e) => {
+            ['group-bao-cao','userPopover'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el && !el.contains(e.target)) el.classList.remove('active');
+            });
+        };
+    })();
+</script>
+
+<!-- === SCRIPT 2: FIREBASE MODULE & REALTIME PERMISSION === -->
+<!-- === SCRIPT 2: FIREBASE MODULE & REALTIME PERMISSION (BẢN SỬA LỖI VA CHẠM) === -->
+<script type="module">
+    import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    // 1. Dùng chung Config với file Personnel của bạn để đồng bộ
+    const firebaseConfig = {
+        apiKey: "AIzaSyCYOo3FUewsYVIVy-egCKxZfVDUjLmGAQo",
+        authDomain: "warehouse-management-77290.firebaseapp.com",
+        projectId: "warehouse-management-77290",
+        storageBucket: "warehouse-management-77290.firebasestorage.app",
+        messagingSenderId: "881477949386",
+        appId: "1:881477949386:web:7133b60dd2e0bc5d9ca133"
+    };
+
+    const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+    const db = getFirestore(app);
+
+    const storeId = localStorage.getItem('current_store_id');
+    const email = localStorage.getItem('userEmail')?.toLowerCase();
+    const role = localStorage.getItem('userRole');
+
+    const restrictedPages = ['import-stock.html', 'export-stock.html', 'audit-stock.html', 'transfer-stock.html'];
+    const isRestrictedPath = restrictedPages.some(page => window.location.pathname.includes(page));
+
+    function initSecurity() {
+        // MẶC ĐỊNH: Cho phép click trước để tránh bị "chết" nút khi đang load
+        updateUI(true); 
+
+        if (role === 'super_admin') return;
+
+        if (!storeId || !email) {
+            // Nếu không có thông tin và đang ở trang cấm thì mới đuổi đi
+            if (isRestrictedPath) window.location.replace('/items/product.html');
+            // Nếu ở trang Report, vẫn cho hiện nút nhưng ở trạng thái khóa (có thể click để báo lỗi)
+            updateUI(false);
+            return;
+        }
+
+        const docId = `${storeId}_${email.replace(/\./g, '_')}`;
+        
+        onSnapshot(doc(db, "gmail_personnel", docId), (snap) => {
+            let hasAccess = false;
+            if (snap.exists()) {
+                const data = snap.data();
+                // Khớp logic với file Personnel: Chủ sở hữu hoặc perms.inventory === true
+                if (data.role === 'Chủ sở hữu' || (data.perms && data.perms.inventory === true)) {
+                    hasAccess = true;
+                }
+            }
+
+            updateUI(hasAccess);
+
+            if (!hasAccess && isRestrictedPath) {
+                window.location.replace('/items/product.html');
+            }
+        }, (err) => {
+            console.error("Firebase Sidebar Error:", err);
+            updateUI(false);
+        });
+    }
+
+    function updateUI(allowed) {
+        const ids = ['nav-import', 'nav-export', 'nav-audit', 'nav-transfer'];
+        
+        ids.forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+
+            // QUAN TRỌNG: Luôn cho phép pointer-events để tránh bị "liệt" click
+            el.style.pointerEvents = "auto";
+
+            if (allowed) {
+                el.classList.remove('locked');
+                el.style.opacity = "1";
+                el.style.filter = "none";
+                el.style.cursor = "pointer";
+                el.onclick = () => {
+                    const url = el.getAttribute('data-href');
+                    if (url) window.location.href = url;
+                };
+            } else {
+                el.classList.add('locked');
+                el.style.opacity = "0.4";
+                el.style.filter = "grayscale(100%)";
+                el.style.cursor = "not-allowed";
+                el.onclick = () => {
+                    const targetName = el.getAttribute('data-name') || "mục này";
+                    const modal = document.getElementById('permErrorModal');
+                    if(modal) {
+                        document.getElementById('permErrorTarget').textContent = targetName;
+                        modal.style.display = 'flex';
+                    } else {
+                        alert("Bạn không có quyền truy cập kho hàng!");
+                    }
+                };
+            }
+        });
+    }
+
+    initSecurity();
+</script>
+
+</body>
+</html>

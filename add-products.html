@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Thêm sản phẩm mới - Warehouse Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Thêm SweetAlert2 để thông báo đẹp hơn -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    
+    <style>
+        /* --- GIỮ NGUYÊN CSS CŨ CỦA BẠN --- */
+        body { overflow: hidden; background: #eef2f7; margin: 0; min-height: 100vh; width: 100vw; display: flex; user-select: none; position: relative; }
+        
+        body::after { content: ""; position: fixed; width: 150vmax; height: 150vmax; top: -25%; left: -25%; z-index: -1; background-image: radial-gradient(circle at 20% 30%, #d0bcff 0%, transparent 40%), radial-gradient(circle at 80% 70%, #a1c4fd 0%, transparent 40%), radial-gradient(circle at 50% 50%, #c2e9fb 0%, transparent 50%); filter: blur(80px); animation: waveMovement 15s linear infinite; }
+        @keyframes waveMovement { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .table-view { display: flex; width: 100%; min-height: 100vh; padding: 20px; gap: 10px; }
+        .main-content { 
+            flex-grow: 1; border: 3px solid #ffffff; box-shadow: -5px 5px 1px #b5b5ec; 
+            background-color: #F8FAFC; height: calc(100vh - 40px); overflow-y: auto; 
+            overflow-x: hidden; position: relative; border-radius: 15px; padding: 15px;
+            scrollbar-width: none;
+        }
+        .main-content::-webkit-scrollbar { display: none; }
+        .header-add-product { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; margin-bottom: 30px; border-bottom: 1.5px solid #e2e8f0; }
+        .header-add-product h2 { font-size: 26px; font-weight: 800; color: #1a202c; margin: 0; }
+        .btn-back-custom { text-decoration: none; display: flex; align-items: center; gap: 8px; padding: 10px 20px; background: #fff; color: #4a5568; border-radius: 12px; font-weight: 700; border: 1.5px solid #e2e8f0; transition: 0.3s; }
+        .btn-back-custom:hover { color: #0061f2; border-color: #0061f2; transform: translateX(-5px); }
+        .form-section { display: flex; gap: 30px; width: 100%; align-items: flex-start; }
+        .left-form-col { flex: 2; display: flex; flex-direction: column; gap: 25px; }
+        .right-image-col { flex: 1; position: sticky; top: 20px; display: flex; flex-direction: column; gap: 20px; }
+        .form-card { background: #fff; padding: 25px; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid #edf2f7; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-weight: 700; margin-bottom: 8px; color: #2d3748; }
+        .form-group label span { color: #e53e3e; font-size: 13px; font-weight: 400; }
+        .form-control-full, .input-group-custom input { width: 100%; padding: 12px 15px; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 15px; font-weight: 600; box-sizing: border-box; transition: 0.3s; }
+        .form-control-full:focus { border-color: #0061f2; outline: none; box-shadow: 0 0 0 3px rgba(0, 97, 242, 0.1); }
+        .other-section {
+            background: #fff; 
+            border-radius: 16px; 
+            border: 1px solid #edf2f7; 
+            
+            /* QUAN TRỌNG: Đổi hidden thành visible hoặc xóa dòng này đi */
+            overflow: visible; 
+        }
+        .other-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-weight: 800; background: #fcfcfd; }
+        .other-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; }
+        .other-content.active {
+            max-height: 1000px; 
+            padding: 25px; 
+            border-top: 1px solid #edf2f7;
+            
+            /* QUAN TRỌNG: Cho phép lịch đè lên trên các phần tử khác */
+            overflow: visible; 
+        }
+        .btn-save-product { width: 100%; padding: 18px; background: linear-gradient(to bottom, #007bff, #0061f2); color: white; border: none; border-radius: 14px; font-size: 16px; font-weight: 800; cursor: pointer; box-shadow: 0 8px 0 #0046ad, 0 15px 25px rgba(0, 97, 242, 0.3); transition: 0.1s; text-transform: uppercase; }
+        .btn-save-product:active { transform: translateY(4px); box-shadow: 0 2px 0 #0046ad; }
+        .custom-dropdown { position: relative; width: 100%; }
+        .dropdown-selected { padding: 12px 15px; border: 1.5px solid #e2e8f0; border-radius: 12px; background: #fff; cursor: pointer; display: flex; justify-content: space-between; font-weight: 600; color: #4a5568; }
+        .dropdown-content { display: none; position: absolute; top: 110%; left: 0; width: 100%; background: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 100; border: 1px solid #edf2f7; max-height: 250px; overflow-y: auto; }
+        .dropdown-content.show { display: block; animation: fadeIn 0.2s ease-out; }
+        @keyframes fadeIn { from{opacity:0;transform:translateY(-10px);} to{opacity:1;transform:translateY(0);} }
+        .cat-item { text-align: center; padding: 12px 15px; cursor: pointer; font-weight: 600; transition: 0.2s; display: flex-start; justify-content: space-between; align-items: center; }
+        .cat-item:hover { background: #f0f7ff; color: #0061f2; }
+        .cat-item.active { background: #0061f2; color: white; }
+        .image-upload-box { width: 100%; aspect-ratio: 1/1; border: 2.5px dashed #cbd5e0; border-radius: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden; background: #fff; }
+        .image-upload-box:hover { border-color: #0061f2; background: #f0f7ff; }
+        .btn-remove-img { position: absolute; top: 10px; right: 10px; background: white; border: none; color: #ef4444; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 10; }
+        .input-group-custom { display: flex; gap: 10px; }
+        .btn-action { padding: 0 15px; border-radius: 10px; border: none; color: #fff; cursor: pointer; font-weight: 600; }
+        .btn-random { background: #38a169; }
+        .currency-input-wrapper { position: relative; flex: 1; }
+        .currency-symbol-inside { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-weight: 700; pointer-events: none; }
+    
+    
+        /* --- CUSTOM DATE PICKER CSS --- */
+        .custom-date-wrapper {
+            position: relative;
+            width: 100%;
+            z-index: 9999999;   
+        }
+
+        /* Ô hiển thị ngày (thay cho input cũ) */
+        .date-input-display {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            background: #fff;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            font-size: 15px;
+            color: #333;
+            transition: all 0.2s;
+        }
+
+        .date-input-display:hover {
+            border-color: #0061f2;
+            background: #fbfdff;
+        }
+
+        /* Khung lịch popup (Hiện lên trên) */
+        .calendar-dropdown {
+            display: none;
+            position: absolute;
+            
+            /* --- SỬA ĐỔI Ở ĐÂY --- */
+            top: auto;          /* Hủy bỏ thuộc tính top cũ */
+            bottom: 115%;       /* Đẩy lịch lên phía trên ô input (cách 1 chút) */
+            left: 0;
+            /* -------------------- */
+            
+            width: 280px;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 5px 30px rgba(0,0,0,0.15); /* Đổ bóng nhẹ lại */
+            border: 1px solid #edf2f7;
+            z-index: 999;
+            padding: 15px;
+            user-select: none;
+            
+            /* Đổi hiệu ứng thành trượt từ dưới lên */
+            animation: slideUp 0.2s ease-out;
+        }
+
+        /* Class kích hoạt hiển thị */
+        .calendar-dropdown.active {
+            display: block;
+        }
+
+        /* Tạo mũi tên nhỏ trỏ xuống (Optional - cho đẹp) */
+        .calendar-dropdown::after {
+            content: "";
+            position: absolute;
+            bottom: -6px; /* Nằm dưới đáy lịch */
+            left: 20px;
+            width: 12px;
+            height: 12px;
+            background: white;
+            transform: rotate(45deg);
+            border-bottom: 1px solid #edf2f7;
+            border-right: 1px solid #edf2f7;
+        }
+
+        /* Animation trượt lên */
+        @keyframes slideUp {
+            from { 
+                opacity: 0; 
+                transform: translateY(10px); /* Bắt đầu thấp hơn 1 chút */
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+
+        /* Header lịch */
+        .cal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .cal-title {
+            font-weight: 800;
+            color: #1a202c;
+            font-size: 16px;
+            text-transform: capitalize;
+        }
+
+        .cal-nav-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #64748b;
+            transition: 0.2s;
+        }
+
+        .cal-nav-btn:hover {
+            background: #f1f5f9;
+            color: #0061f2;
+        }
+
+        /* Thứ trong tuần */
+        .cal-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            text-align: center;
+            font-size: 13px;
+            color: #94a3b8;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        /* Lưới ngày */
+        .cal-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+        }
+
+        .cal-day {
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            transition: 0.2s;
+        }
+
+        .cal-day:hover:not(.empty) {
+            background-color: #eef6ff;
+            color: #0061f2;
+        }
+
+        .cal-day.selected {
+            background-color: #0061f2;
+            color: white;
+            box-shadow: 0 4px 10px rgba(0, 97, 242, 0.3);
+        }
+
+        .cal-day.today {
+            border: 1px solid #0061f2;
+            color: #0061f2;
+        }
+
+        .cal-day.empty {
+            cursor: default;
+        }
+
+        /* Footer (Hôm nay / Xóa) */
+        .cal-footer {
+            margin-top: 15px;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .cal-footer span {
+            cursor: pointer;
+            color: #0061f2;
+        }
+        .cal-footer span:hover {
+            text-decoration: underline;
+        }
+
+    
+    </style>
+</head>
+<body>
+<div class="table-view">
+<div class="sidebar" id="sidebar-container"></div>
+
+<div class="main-content">
+    <div class="header-add-product">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsTAAALEwEAmpwYAAAB3ElEQVR4nO2Xu0oDQRSGP4JVjKBIVMROCFhbahGDWIiCaO8D5AkUU3h5AjvT+gKK8QVMNKm8xM4nUEhhlGhEIysDZ2FYd3ZncxGL/HBgc/bMnH/OZc4G+uguRoAccA+8Aw3gBjgAkvQYy8AL4BhEvVvvlfM14EscnQFpYFBkASjIu+9OScSBLPAgop6ngCdxsK3ZXgEl7feO2NTbSccYsAfUfELb0k6uw32vw42E2ssKKSAPNLUNK8CGSEXTpy0IZESnCjMQ88Cp5MzN3YnovXgTm4SE3VSEKh1D8vzq5zTmcyp18iOJhAkNjcBlAIGiRkCR/oWiZlyTPKnch+FW1qhqt03Bnd9GTpsE9mVNwYLAuei2ggiUI6ZgHHgWe9VqLkoSVRc5sVG2w0EEFOak6GyKUOmq2vqChDohktFO/gksYYDjE7KURMCmDZtS3aYifARWTM5NBGwuoprUgbKZkMFTlUp3W1TJKCFwAgh4r2LXNiu6TveNZtgrW6dPgD4B/geBbJday9uyoShGGEZRL60LGwIxYNUz0z+AY2DGgsA0cOi5/a6BTWCAiJgVxy1tGKkhs+hDIMy2I6R8vgnLAaM7HzK620YS2DUMo7qEfpI/QNznf0FYx/RBEH4AHJAPqMMk/gwAAAAASUVORK5CYII=" style="width: 40px;">
+            <div>
+                <h2>Thêm sản phẩm mới</h2>
+                <p style="margin:0; font-size:14px; font-weight:600; color:#64748b;">
+                    Cửa hàng: <span id="storeNameDisplay" style="color:#0061f2;">Đang tải...</span>
+                </p>
+            </div>
+        </div>
+        <a href="/items/product.html" class="btn-back-custom">
+            <i class="fa-solid fa-arrow-left"></i> Quay lại
+        </a>
+    </div>
+
+    <div class="form-section">
+        <div class="left-form-col">
+            <!-- Hidden input lưu category -->
+            <input type="hidden" id="p-category" value="">
+            <input type="hidden" id="p-category-id" value=""> <!-- Lưu thêm ID để chắc chắn -->
+
+            <!-- THÔNG TIN CƠ BẢN -->
+            <div class="form-card">
+                <div style="font-weight:800; margin-bottom:15px;"><i class="fa-solid fa-circle-info" style="color:#0061f2;"></i> Thông tin cơ bản</div>
+                <div class="form-group">
+                    <label>Mã sản phẩm <span>*(Bắt buộc)</span></label>
+                    <div class="input-group-custom">
+                        <input type="text" id="p-sku" placeholder="Nhập mã hoặc tạo ngẫu nhiên">
+                        <button class="btn-action btn-random" onclick="generateRandomSKU()"><i class="fa-solid fa-magic-wand-sparkles"></i> Ngẫu nhiên</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Tên sản phẩm <span>*(Bắt buộc)</span></label>
+                    <input type="text" id="p-name" class="form-control-full" placeholder="Ví dụ: Áo thun nam Cotton">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="form-group">
+                        <label>Số lượng kho ban đầu</label>
+                        <input type="number" id="p-stock" class="form-control-full" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Danh mục</label>
+                        <div class="input-group-custom">
+                            <div class="custom-dropdown" id="categoryDropdown">
+                                <div class="dropdown-selected" onclick="toggleDropdown()">
+                                    <span id="selectedCatText">Chọn danh mục</span>
+                                    <i class="fa-solid fa-chevron-down"></i>
+                                </div>
+                                <div id="dropdownContent" class="dropdown-content">
+                                    <div class="cat-item" onclick="addNewCategoryRealTime()" style="color:#0061f2; border-bottom:1px solid #eee; font-weight:700; position:sticky; top:0; background:white; z-index:2;">
+                                        <i class="fa-solid fa-circle-plus"></i> Tạo danh mục mới
+                                    </div>
+                                    <div id="categoryList">
+                                        <!-- Danh mục sẽ được nạp tự động từ Firestore -->
+                                        <div style="padding:15px; color:#999; text-align:center;">Đang tải...</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Nút xóa chọn danh mục -->
+                            <button type="button" onclick="clearCategory()" style="background:none; border:none; cursor:pointer; color:#999; padding:0 10px;">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- THIẾT LẬP GIÁ -->
+            <div class="form-card">
+                <div style="font-weight:800; margin-bottom:15px;"><i class="fa-solid fa-tags" style="color:#38a169;"></i> Thiết lập giá sản phẩm</div>
+                <div class="form-group">
+                    <label>Giá vốn (Giá nhập)</label>
+                    <div class="currency-input-wrapper">
+                        <input type="text" id="p-cost" class="form-control-full" oninput="formatCurrency(this)" placeholder="0">
+                        <span class="currency-symbol-inside">vnđ</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Giá bán chính & mức giá khác</label>
+                    <div id="price-container">
+                        <div class="input-group-custom price-row" style="margin-bottom:10px;">
+                            <input type="text" class="price-type" value="Bán lẻ" style="flex:0.4;">
+                            <div class="currency-input-wrapper">
+                                <input type="text" class="price-value" placeholder="0" oninput="formatCurrency(this)">
+                                <span class="currency-symbol-inside">vnđ</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" onclick="addNewPriceRow()" style="width:100%; padding:12px; border:1.5px dashed #cbd5e0; background:#fcfcfd; border-radius:12px; cursor:pointer; font-weight:700; color:#4a5568;">+ Thêm mức giá khác (Sỉ, CTV...)</button>
+                </div>
+            </div>
+
+            <!-- THÔNG TIN BỔ SUNG (ACCORDION) -->
+            <div class="other-section">
+                <div class="other-header" onclick="toggleOtherSection()">
+                    <span><i class="fa-solid fa-plus-square" style="color:#805ad5;"></i> Thông tin bổ sung & Mô tả</span>
+                    <i class="fa-solid fa-chevron-down"></i>
+                </div>
+                <div class="other-content" id="otherContent">
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                        <div class="form-group">
+                            <label>Tồn kho an toàn (Cảnh báo hết hàng)</label>
+                            <input type="number" id="p-min-stock" class="form-control-full" placeholder="0">
+                        </div>
+                            <div class="form-group">
+                                <label>Ngày hết hạn (Nếu có)</label>
+                                <!-- Wrapper tương đối để định vị lịch -->
+                                <div class="custom-date-wrapper" id="datePickerWrapper">
+                                    <!-- Ô Input giả để hiển thị ngày chọn -->
+                                    <div class="date-input-display" onclick="toggleCalendar()">
+                                        <span id="dateText" style="color: #999;">Chọn ngày...</span>
+                                        <i class="fa-regular fa-calendar" style="color: #0061f2;"></i>
+                                    </div>
+                                    
+                                    <!-- Input ẩn để gửi dữ liệu đi (Format chuẩn YYYY-MM-DD cho Firebase) -->
+                                    <input type="hidden" id="p-expiry">
+
+                                    <!-- Bảng lịch Custom -->
+                                    <div class="calendar-dropdown" id="calendarDropdown">
+                                        <div class="cal-header">
+                                            <div class="cal-nav-btn" onclick="changeMonth(-1)"><i class="fa-solid fa-chevron-left"></i></div>
+                                            <div class="cal-title" id="calMonthYear">Tháng 2 2026</div>
+                                            <div class="cal-nav-btn" onclick="changeMonth(1)"><i class="fa-solid fa-chevron-right"></i></div>
+                                        </div>
+                                        <div class="cal-weekdays">
+                                            <div>CN</div><div>T2</div><div>T3</div><div>T4</div><div>T5</div><div>T6</div><div>T7</div>
+                                        </div>
+                                        <div class="cal-days" id="calDaysGrid">
+                                            <!-- JS sẽ render ngày vào đây -->
+                                        </div>
+                                        <div class="cal-footer">
+                                            <span onclick="selectToday()">Hôm nay</span>
+                                            <span onclick="clearDate()" style="color: #ef4444;">Xóa</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                    </div>
+                    <div class="form-group" style="margin-top: 15px;">
+                        <label>Mô tả chi tiết (<span id="current-char">0</span>/150)</label> 
+                        <textarea id="p-desc" class="form-control-full" rows="3" placeholder="Viết vài dòng giới thiệu về sản phẩm..." maxlength="150" oninput="updateCharCount(this)"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CỘT PHẢI: ẢNH & LƯU -->
+        <div class="right-image-col">
+            <div class="form-card">
+                <label style="font-weight: 800; display: block; margin-bottom: 15px;">Hình ảnh sản phẩm</label>
+                <div class="image-upload-box" onclick="document.getElementById('file-input').click()">
+                    <input type="file" id="file-input" hidden accept="image/*" onchange="previewImage(this)">
+                    <div id="uploadPlaceholder">
+                        <i class="fa-solid fa-image" style="font-size: 50px; color: #cbd5e0;"></i>
+                        <p style="color:#94a3b8; font-weight:700; margin-top:10px;">Tải ảnh lên</p>
+                    </div>
+                    <div id="previewContainer" style="display:none; width:100%; height:100%;">
+                        <img id="imagePreview" style="width:100%; height:100%; object-fit:cover;">
+                        <button type="button" class="btn-remove-img" onclick="removeImage(event)">&times;</button>
+                    </div>
+                </div>
+            </div>
+            <button class="btn-save-product" id="btnSaveProduct" onclick="saveProduct()">
+                <i class="fa-solid fa-check-circle"></i> LƯU SẢN PHẨM
+            </button>
+        </div>
+    </div>
+</div>
+</div>
+
+
+
+
+<!-- ###################################################################### -->
+<!-- SCRIPT ĐÃ FIX LỖI RELOAD & DROPDOWN -->
+<!-- ###################################################################### -->
+<script>
+    // 1. TẢI SIDEBAR & PROFILE (Chạy độc lập để hiển thị nhanh)
+    (function() {
+        const userLoggedIn = localStorage.getItem('userLoggedIn');
+        if (userLoggedIn !== 'true') { window.location.replace('/index.html?auth=required'); return; }
+        
+        fetch('/components/Side-Bar.html')
+            .then(res => res.text())
+            .then(data => {
+                const container = document.getElementById('sidebar-container');
+                if (container) {
+                    container.innerHTML = data;
+                    // Cập nhật Profile sau khi Sidebar đã hiện
+                    setTimeout(() => {
+                        const name = localStorage.getItem('userName');
+                        const pic = localStorage.getItem('userPicture');
+                        const email = localStorage.getItem('userEmail');
+                        
+                        const nameEl = document.getElementById('set-name');
+                        if (nameEl) nameEl.textContent = name || "Người dùng";
+                        
+                        const emailEl = document.getElementById('set-email');
+                        if (emailEl) emailEl.textContent = email || "...";
+
+                        const avatarEl = document.getElementById('set-avatar');
+                        if (avatarEl) {
+                            if (pic && pic !== "null") {
+                                avatarEl.style.backgroundImage = `url('${pic}')`;
+                                avatarEl.textContent = ""; 
+                            } else if (name) avatarEl.textContent = name.charAt(0).toUpperCase();
+                        }
+                    }, 100); // Đợi 1 xíu để HTML render xong hẳn
+                    
+                    // Kích hoạt lại script trong sidebar
+                    container.querySelectorAll("script").forEach(oldScript => {
+                        const newScript = document.createElement("script");
+                        Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+                        newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+                        oldScript.parentNode.replaceChild(newScript, oldScript);
+                    });
+                }
+            })
+            .catch(err => console.error("Lỗi Sidebar:", err));
+    })();
+</script>
+
+<script type="module">
+    // Import Firebase
+    import { db } from "../firebase-config.js"; 
+    import { 
+        collection, addDoc, getDoc, doc, query, where, serverTimestamp, 
+        orderBy, onSnapshot 
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    // --- KHAI BÁO BIẾN TOÀN CỤC ---
+    const currentStoreId = localStorage.getItem('current_store_id');
+    const userEmail = localStorage.getItem('userEmail') || "unknown";
+    let currentImageData = "";
+    
+    // --- PHẦN 1: CÁC HÀM UI (GẮN NGAY VÀO WINDOW ĐỂ CLICK ĐƯỢC LIỀN) ---
+
+    // 1. Dropdown Danh mục
+    window.toggleDropdown = (event) => {
+        if(event) event.stopPropagation();
+        const content = document.getElementById('dropdownContent');
+        const isOpen = content.classList.contains('show');
+        closeAllDropdowns(); // Đóng cái khác trước
+        if (!isOpen) content.classList.add('show');
+    };
+
+    // 2. Lịch (Calendar)
+    window.toggleCalendar = (event) => {
+        if(event) event.stopPropagation();
+        const cal = document.getElementById('calendarDropdown');
+        const isOpen = cal.classList.contains('active');
+        closeAllDropdowns();
+        if (!isOpen) {
+            cal.classList.add('active');
+            renderCalendar();
+        }
+    };
+
+    // 3. Hàm đóng tất cả popup
+    function closeAllDropdowns() {
+        document.getElementById('dropdownContent')?.classList.remove('show');
+        document.getElementById('calendarDropdown')?.classList.remove('active');
+    }
+
+    // 4. Click ra ngoài thì đóng
+    window.addEventListener('click', (e) => {
+        if (!e.target.closest('.custom-dropdown') && !e.target.closest('.custom-date-wrapper')) {
+            closeAllDropdowns();
+        }
+    });
+
+    // 5. Accordion (Thông tin bổ sung)
+    window.toggleOtherSection = () => {
+        document.getElementById('otherContent').classList.toggle('active');
+        document.querySelector('.other-header .fa-chevron-down').classList.toggle('fa-rotate-180');
+    };
+
+    // 6. Format tiền tệ
+    window.formatCurrency = (input) => {
+        let v = input.value.replace(/\D/g, "");
+        input.value = v ? Number(v).toLocaleString('vi-VN') : "";
+    };
+
+    // 7. Random SKU
+    window.generateRandomSKU = () => {
+        const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const prefix = letters.charAt(Math.floor(Math.random() * letters.length)) + letters.charAt(Math.floor(Math.random() * letters.length));
+        const number = Math.floor(100000 + Math.random() * 900000);
+        document.getElementById('p-sku').value = prefix + number;
+    };
+
+    // 8. Đếm ký tự
+    window.updateCharCount = (textarea) => {
+        document.getElementById('current-char').innerText = textarea.value.length;
+    };
+
+    // 9. Thêm dòng giá
+    window.addNewPriceRow = () => {
+        const container = document.getElementById('price-container');
+        const div = document.createElement('div');
+        div.className = "input-group-custom price-row";
+        div.style.marginBottom = "10px";
+        div.innerHTML = `
+             <input type="text" class="price-type" value="Giá sỉ" style="flex:0.4;">
+             <div class="currency-input-wrapper">
+                 <input type="text" class="price-value" placeholder="0" oninput="formatCurrency(this)">
+                 <span class="currency-symbol-inside">vnđ</span>
+             </div>
+             <button onclick="this.parentElement.remove()" style="border:none; background:none; color:red; cursor:pointer;"><i class="fa-solid fa-trash"></i></button>
+        `;
+        container.appendChild(div);
+    };
+
+    // --- PHẦN 2: LOGIC DỮ LIỆU (FIREBASE) ---
+
+    // A. Tải thông tin cửa hàng
+    async function loadStoreInfo() {
+        const headerEl = document.getElementById('storeNameDisplay');
+        if (!headerEl) return;
+
+        // Ưu tiên lấy từ LocalStorage để hiện ngay lập tức
+        const cachedName = localStorage.getItem('storeName');
+        if (cachedName && cachedName !== "undefined") {
+            headerEl.innerText = cachedName;
+            headerEl.style.color = "#0061f2";
+        }
+
+        if (!currentStoreId) return;
+
+        try {
+            // Lấy dữ liệu mới nhất từ server
+            let storeRef = doc(db, "warehouse_stores", currentStoreId);
+            let docSnap = await getDoc(storeRef);
+            
+            if (!docSnap.exists()) {
+                // Thử bảng cũ Administrator
+                storeRef = doc(db, "Administrator", currentStoreId);
+                docSnap = await getDoc(storeRef);
+            }
+
+            if (docSnap.exists()) {
+                const realName = docSnap.data().name;
+                headerEl.innerText = realName;
+                localStorage.setItem('storeName', realName); // Cập nhật lại cache
+            }
+        } catch (error) {
+            console.error("Load store info error:", error);
+        }
+    }
+
+    // B. Lắng nghe Danh mục
+    function listenForCategories() {
+        if (!currentStoreId) return;
+        const listDiv = document.getElementById('categoryList');
+
+        const q = query(
+            collection(db, "product_categories"), 
+            where("storeId", "==", currentStoreId),
+            orderBy("createdAt", "desc")
+        );
+
+        onSnapshot(q, (snapshot) => {
+            const cats = [];
+            snapshot.forEach(doc => cats.push({ id: doc.id, ...doc.data() }));
+
+            if (cats.length === 0) {
+                if(listDiv) listDiv.innerHTML = '<div style="padding:15px; color:#999; text-align:center;">Chưa có danh mục nào</div>';
+            } else {
+                if(listDiv) listDiv.innerHTML = cats.map(c => {
+                    const currentSelected = document.getElementById('p-category').value;
+                    const isActive = c.name === currentSelected ? 'active' : '';
+                    return `
+                        <div class="cat-item ${isActive}" onclick="window.selectCategory('${c.name}', '${c.id}')">
+                            <span>${c.name}</span>
+                            ${c.name === currentSelected ? '<i class="fa-solid fa-check" style="color:#0061f2;"></i>' : ''}
+                        </div>`;
+                }).join('');
+            }
+        });
+    }
+
+    // C. Chọn danh mục
+    window.selectCategory = (name, id) => {
+        const textEl = document.getElementById('selectedCatText');
+        if(textEl) {
+            textEl.innerText = name;
+            textEl.style.color = "#333";
+        }
+        document.getElementById('p-category').value = name;
+        document.getElementById('p-category-id').value = id;
+        
+        // Gọi lại để cập nhật dấu tích xanh
+        listenForCategories(); 
+    };
+
+    // D. Tạo danh mục mới
+    window.addNewCategoryRealTime = async () => {
+        const { value: catName } = await Swal.fire({
+            title: 'Tạo danh mục mới',
+            input: 'text',
+            inputPlaceholder: 'Nhập tên danh mục...',
+            showCancelButton: true,
+            confirmButtonText: 'Lưu',
+            cancelButtonText: 'Hủy'
+        });
+
+        if (catName && catName.trim() !== "") {
+            try {
+                const docRef = await addDoc(collection(db, "product_categories"), {
+                    name: catName.trim(),
+                    storeId: currentStoreId,
+                    ownerEmail: userEmail,
+                    createdAt: serverTimestamp()
+                });
+                window.selectCategory(catName.trim(), docRef.id);
+            } catch (e) { Swal.fire("Lỗi", e.message, "error"); }
+        }
+    };
+
+    // E. Xử lý Ảnh
+    window.previewImage = (input) => {
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            const placeholder = document.getElementById('uploadPlaceholder');
+            if(placeholder) placeholder.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = function(e) {
+                const img = new Image();
+                img.src = e.target.result;
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 600; 
+                    const scaleSize = MAX_WIDTH / img.width;
+                    canvas.width = MAX_WIDTH;
+                    canvas.height = img.height * scaleSize;
+                    const ctx = canvas.getContext("2d");
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    
+                    currentImageData = canvas.toDataURL("image/jpeg", 0.8);
+                    
+                    document.getElementById('imagePreview').src = currentImageData;
+                    document.getElementById('previewContainer').style.display = 'block';
+                    document.getElementById('uploadPlaceholder').style.display = 'none';
+                    if(placeholder) placeholder.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Tải ảnh lên';
+                }
+            }
+        }
+    };
+
+    window.removeImage = (e) => {
+        if(e) e.stopPropagation();
+        currentImageData = "";
+        document.getElementById('previewContainer').style.display = 'none';
+        document.getElementById('uploadPlaceholder').style.display = 'flex'; 
+        document.getElementById('file-input').value = "";
+    };
+
+    // --- PHẦN 3: LƯU SẢN PHẨM ---
+    window.saveProduct = async () => {
+        try {
+            const nameEl = document.getElementById('p-name');
+            const skuEl = document.getElementById('p-sku');
+            
+            if (!nameEl || !skuEl) throw new Error("Lỗi HTML: Không tìm thấy ô nhập liệu");
+            
+            const name = nameEl.value.trim();
+            const sku = skuEl.value.trim();
+
+            if (!name || !sku) return Swal.fire('Thiếu thông tin', 'Vui lòng nhập Tên và Mã sản phẩm!', 'warning');
+
+            const btn = document.getElementById('btnSaveProduct');
+            if(btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang lưu...';
+            }
+
+            // Lấy giá bán
+            let priceVal = 0;
+            const priceInput = document.querySelector('.price-value'); 
+            if (priceInput) priceVal = Number(priceInput.value.replace(/\./g, '')) || 0;
+
+            const stock = Number(document.getElementById('p-stock')?.value || 0);
+            const cost = Number(document.getElementById('p-cost')?.value.replace(/\./g, '') || 0);
+            const minStock = Number(document.getElementById('p-min-stock')?.value || 0);
+            const expiryDate = document.getElementById('p-expiry')?.value || "";
+            const description = document.getElementById('p-desc')?.value.trim() || "";
+            const category = document.getElementById('p-category')?.value || "Chưa phân loại";
+            const categoryId = document.getElementById('p-category-id')?.value || "";
+
+            await addDoc(collection(db, "products"), {
+                storeId: currentStoreId,
+                sku: sku,
+                name: name,
+                stock: stock,
+                category: category,
+                categoryId: categoryId,
+                cost: cost,
+                price: priceVal,
+                minStock: minStock,
+                expiryDate: expiryDate,
+                description: description,
+                img: currentImageData,
+                createdAt: serverTimestamp()
+            });
+            
+            Swal.fire({ icon: 'success', title: 'Thành công', text: 'Thêm sản phẩm thành công!' })
+                .then(() => window.location.href = "/items/product.html");
+
+        } catch (e) {
+            console.error(e);
+            Swal.fire("Lỗi Server", e.message, "error");
+            const btn = document.getElementById('btnSaveProduct');
+            if(btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-check-circle"></i> LƯU SẢN PHẨM';
+            }
+        }
+    };
+
+    // --- PHẦN 4: LỊCH (CALENDAR LOGIC) ---
+    let currentCalDate = new Date();
+    window.renderCalendar = () => {
+        const monthNames = ["Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6", "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"];
+        const year = currentCalDate.getFullYear();
+        const month = currentCalDate.getMonth();
+        
+        const label = document.getElementById('calMonthYear');
+        if(label) label.innerText = `${monthNames[month]} ${year}`;
+
+        const daysGrid = document.getElementById('calDaysGrid');
+        if(!daysGrid) return;
+        daysGrid.innerHTML = "";
+        
+        const firstDayIndex = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+        for (let i = 0; i < firstDayIndex; i++) {
+            const div = document.createElement('div'); div.className = "cal-day empty"; daysGrid.appendChild(div);
+        }
+
+        for (let i = 1; i <= daysInMonth; i++) {
+            const div = document.createElement('div');
+            div.className = "cal-day";
+            div.innerText = i;
+            div.onclick = (e) => {
+                e.stopPropagation();
+                const dayStr = i < 10 ? '0' + i : i;
+                const monthStr = (month + 1) < 10 ? '0' + (month + 1) : (month + 1);
+                
+                const textEl = document.getElementById('dateText');
+                if(textEl) {
+                    textEl.innerText = `${dayStr}/${monthStr}/${year}`;
+                    textEl.style.color = "#333";
+                }
+                const inputEl = document.getElementById('p-expiry');
+                if(inputEl) inputEl.value = `${year}-${monthStr}-${dayStr}`;
+
+                closeAllDropdowns();
+            };
+            daysGrid.appendChild(div);
+        }
+    };
+    
+    window.changeMonth = (step) => { 
+        currentCalDate.setMonth(currentCalDate.getMonth() + step); 
+        renderCalendar(); 
+    };
+    window.selectToday = () => { currentCalDate = new Date(); renderCalendar(); };
+    window.clearDate = () => {
+        const textEl = document.getElementById('dateText');
+        if(textEl) { textEl.innerText = "Chọn ngày..."; textEl.style.color = "#999"; }
+        const inputEl = document.getElementById('p-expiry');
+        if(inputEl) inputEl.value = "";
+        closeAllDropdowns();
+    };
+
+    // --- KÍCH HOẠT LẦN ĐẦU ---
+    // Gọi ngay khi file JS chạy
+    loadStoreInfo();
+    listenForCategories();
+
+</script>
+</body>
+</html>

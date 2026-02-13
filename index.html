@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Quản Lý Kho - Đăng Nhập</title>
+    
+    <!-- Font & Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Google Sign-In -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    
+    <style>
+        /* --- GLOBAL STYLES --- */
+        * { font-family: 'Baloo 2', cursive; margin: 0; padding: 0; box-sizing: border-box; }
+        body, html { height: 100%; width: 100%; background-color: #ffffff; display: flex; flex-direction: column; align-items: center; }
+        
+        /* --- NAVBAR --- */
+        .navbar { position: fixed; top: 0; left: 0; width: 100%; height: 75px; background-color: #ffffff; display: flex; align-items: center; justify-content: space-between; padding: 0 50px; border-bottom: 1px solid #f0f0f0; z-index: 1000; }
+        .nav-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .nav-logo i { font-size: 35px; color: #d32f2f; }
+        .nav-title { font-size: 26px; font-weight: 800; color: #1a1a1a; }
+        .btn-signin { text-decoration: none; color: #0056e0; font-weight: 700; font-size: 18px; padding: 8px 18px; border: 2px solid #0056e0; border-radius: 8px; transition: 0.3s; cursor: pointer; background: transparent; }
+        .btn-signin:hover { background-color: #0056e0; color: white; }
+        
+        /* --- WELCOME SECTION --- */
+        .welcome-section { text-align: center; padding: 180px 20px 50px; max-width: 900px; animation: fadeIn 0.8s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .welcome-section h1 { font-size: 55px; font-weight: 800; color: #1a1a1a; margin-bottom: 15px; line-height: 1.2; }
+        .welcome-section p { font-size: 20px; color: #555; margin-bottom: 40px; }
+        .btn-start { display: inline-flex; align-items: center; background-color: #0056e0; color: white; padding: 15px 40px; border-radius: 50px; text-decoration: none; font-weight: 700; font-size: 20px; box-shadow: 0 8px 20px rgba(0, 86, 224, 0.2); transition: 0.3s; cursor: pointer; border:none; gap: 10px; }
+        .btn-start:hover { background-color: #0044b3; transform: translateY(-2px); box-shadow: 0 12px 25px rgba(0, 86, 224, 0.3); }
+        
+        /* --- MODAL (LOGIN) --- */
+        .modal-overlay { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .modal-content { background-color: #fff; padding: 30px; border-radius: 24px; width: 90%; max-width: 400px; text-align: center; position: relative; animation: slideUp 0.3s ease-out; box-shadow: 0 20px 60px rgba(0,0,0,0.1); }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .close-modal { position: absolute; right: 20px; top: 15px; font-size: 25px; cursor: pointer; color: #ccc; transition: 0.2s; }
+        .close-modal:hover { color: #333; }
+        
+        /* Login Elements */
+        .login-header h2 { font-size: 24px; font-weight: 700; color: #333; }
+        .trust-badge { border: 1px solid #eee; border-radius: 50px; padding: 6px 12px; display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: #777; margin: 10px 0 20px; background: #fafafa; }
+        
+        .pass-box { margin: 10px 0; }
+        .pass-box input { width: 100%; padding: 14px; border: 2px solid #eee; border-radius: 12px; font-size: 16px; outline: none; text-align: center; transition: 0.3s; background: #f9f9f9; }
+        .pass-box input:focus { border-color: #0056e0; background: #fff; }
+        .btn-verify { width: 100%; background: #0056e0; color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 700; cursor: pointer; margin-top: 15px; font-size: 16px; transition: 0.2s; }
+        .btn-verify:hover { background: #0044b3; }
+        
+        .login-footer { margin-top: 25px; color: #27ae60; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        
+        /* Login Options (Google/Guest) */
+        .login-buttons { display: none; flex-direction: column; gap: 12px; align-items: center; margin-top: 20px; padding-top: 20px; border-top: 1px dashed #eee; }
+        #googleBtnContainer { width: 100%; display: none; justify-content: center; height: 44px; }
+        .btn-login-guest { width: 100%; padding: 12px; border-radius: 10px; border: none; font-size: 16px; font-weight: 600; display: none; align-items: center; justify-content: center; gap: 12px; cursor: pointer; background-color: #333; color: #fff; transition: 0.2s; }
+        .btn-login-guest:hover { background-color: #000; }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <a href="#" class="nav-logo">
+            <i class="fa-solid fa-warehouse"></i>
+            <span class="nav-title">Warehouse</span>
+        </a>
+        <button class="btn-signin" onclick="openLoginModal()">Đăng nhập</button>
+    </nav>
+    
+    <!-- MAIN HERO SECTION -->
+    <div class="welcome-section">
+        <h1>Hệ thống quản lý kho hàng</h1>
+        <p>Giải pháp tập trung, bảo mật và hiệu quả dành cho doanh nghiệp.</p>
+        <button class="btn-start" onclick="openLoginModal()">
+            Truy cập hệ thống <i class="fa-solid fa-arrow-right"></i>
+        </button>
+    </div>
+
+    <!-- === LOGIN MODAL === -->
+    <div id="loginModal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeLoginModal()">&times;</span>
+            <div class="login-header">
+                <h2 id="modalTitle">Xác thực quyền truy cập</h2>
+                <div class="trust-badge">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <span>Bảo mật nội bộ</span>
+                </div>
+            </div>
+            <div class="pass-box" id="passSection">
+                <input type="password" id="companyPass" placeholder="Nhập mật khẩu công ty..." onkeypress="if(event.key==='Enter') verifyAccess()">
+                <button class="btn-verify" onclick="verifyAccess()">Tiếp tục</button>
+            </div>
+            <div class="login-buttons" id="loginOptions">
+                <div id="googleBtnContainer"></div>
+                <button class="btn-login-guest" id="guestBtn" onclick="loginAsGuest()">
+                    <i class="fa-solid fa-eye"></i> Chế độ Khách (Chỉ Xem)
+                </button>
+            </div>
+            <div class="login-footer">
+                <i class="fa-solid fa-lock"></i> Kết nối được mã hóa SSL
+            </div>
+        </div>
+    </div>
+
+<!-- FIREBASE MODULE ĐỂ LOGOUT -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    
+    const firebaseConfig = {
+        apiKey: "AIzaSyCYOo3FUewsYVIVy-egCKxZfVDUjLmGAQo",
+        authDomain: "warehouse-management-77290.firebaseapp.com",
+        projectId: "warehouse-management-77290",
+        storageBucket: "warehouse-management-77290.firebasestorage.app",
+        messagingSenderId: "881477949386",
+        appId: "1:881477949386:web:7133b60dd2e0bc5d9ca133"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    window.firebaseSignOut = () => signOut(auth);
+</script>
+
+<script>
+    // --- CẤU HÌNH ---
+    const MK_ADMIN = "admin";    
+    const MK_QUAN_LY = "q";      
+    const MK_CHI_XEM = "k";      
+    let isGoogleButtonRendered = false;
+
+    // --- DANH SÁCH ẢNH KHÁCH (Dùng chung cho cả nhập Pass và bấm Nút) ---
+    const GUEST_IMAGES = [
+        "https://i.ibb.co/My2Y95Jg/1013261.png", 
+        "https://i.ibb.co/qYCgD0yv/10132601.png"
+    ];
+
+    function openLoginModal() {
+        document.getElementById("loginModal").style.display = "flex";
+        document.getElementById('passSection').style.display = 'block';
+        document.getElementById('loginOptions').style.display = 'none';
+        document.getElementById('companyPass').value = ''; 
+        setTimeout(() => document.getElementById('companyPass').focus(), 100);
+    }
+
+    function closeLoginModal() {
+        document.getElementById("loginModal").style.display = "none";
+    }
+
+    function verifyAccess() {
+        const input = document.getElementById('companyPass').value.trim();
+        const passSection = document.getElementById('passSection');
+        const loginOptions = document.getElementById('loginOptions');
+        const googleBtn = document.getElementById('googleBtnContainer');
+        const guestBtn = document.getElementById('guestBtn');
+        const title = document.getElementById('modalTitle');
+
+        if (input === MK_ADMIN) {
+            localStorage.clear(); 
+            localStorage.setItem('userLoggedIn', 'true');
+            localStorage.setItem('userRole', 'super_admin');
+            localStorage.setItem('userName', 'Admin Hệ Thống');
+            localStorage.setItem('userEmail', 'Quản trị viên');
+            localStorage.setItem('userPicture', 'https://i.ibb.co/qYFyG92P/admin-logo.png');
+            redirectToStore();
+        }
+        else if (input === MK_QUAN_LY) {
+            passSection.style.display = 'none';
+            loginOptions.style.display = 'flex';
+            googleBtn.style.display = 'flex';
+            guestBtn.style.display = 'none';
+            title.innerText = "Đăng nhập Quản trị viên";
+            renderGoogleButton();
+        } 
+        else if (input === MK_CHI_XEM) {
+            // === KHÁCH NHẬP PASS 'k' ===
+            localStorage.clear(); // Xóa sạch dữ liệu cũ
+            localStorage.setItem('userLoggedIn', 'true');
+            localStorage.setItem('userRole', 'viewer');
+            localStorage.setItem('userName', 'Khách - Client');
+            localStorage.setItem('userEmail', 'Chỉ xem');
+
+            // [RANDOM ẢNH MỚI NGAY TẠI ĐÂY]
+            const randomImg = GUEST_IMAGES[Math.floor(Math.random() * GUEST_IMAGES.length)];
+            localStorage.setItem('userPicture', randomImg);
+
+            redirectToStore();
+        } 
+        else {
+            alert("Mật khẩu không đúng!");
+            document.getElementById('companyPass').value = '';
+        }
+    }
+
+    function loginAsGuest() {
+        // === KHÁCH BẤM NÚT ===
+        localStorage.clear(); // Xóa sạch dữ liệu cũ
+        localStorage.setItem('userLoggedIn', 'true');
+        localStorage.setItem('userRole', 'viewer');
+        localStorage.setItem('userName', 'Khách - Client');
+        localStorage.setItem('userEmail', 'Viewer Mode');
+        
+        // [RANDOM ẢNH MỚI NGAY TẠI ĐÂY]
+        const randomImg = GUEST_IMAGES[Math.floor(Math.random() * GUEST_IMAGES.length)];
+        localStorage.setItem('userPicture', randomImg);
+
+        redirectToStore();
+    }
+
+    function renderGoogleButton() {
+        if (!isGoogleButtonRendered && typeof google !== 'undefined') {
+            google.accounts.id.initialize({
+                client_id: "63515522495-hf82ijg16gsr3bebrfobh0t6avhct9qh.apps.googleusercontent.com",
+                callback: (response) => {
+                    const data = decodeJwtResponse(response.credential);
+                    localStorage.setItem('userLoggedIn', 'true');
+                    localStorage.setItem('userRole', 'admin');
+                    localStorage.setItem('userName', data.name);
+                    localStorage.setItem('userEmail', data.email);
+                    localStorage.setItem('userPicture', data.picture); // Ảnh Google
+                    redirectToStore();
+                }
+            });
+            google.accounts.id.renderButton(
+                document.getElementById("googleBtnContainer"),
+                { theme: "outline", size: "large", width: 340, text: "continue_with" }
+            );
+            isGoogleButtonRendered = true;
+        }
+    }
+
+    function decodeJwtResponse(token) {
+        let base64Url = token.split('.')[1];
+        let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        let jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        return JSON.parse(jsonPayload);
+    }
+
+    function redirectToStore() {
+        closeLoginModal();
+        setTimeout(() => { window.location.href = 'store.html'; }, 300);
+    }
+</script>
+
+</body>
+</html>

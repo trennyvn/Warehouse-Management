@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Kiểm kê kho - Quản lý kho</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/sidebar.css"> 
+
+    <style>
+    /* =========================================
+       1. CẤU HÌNH CHUNG
+       ========================================= */
+    :root {
+        --primary-color: #3498db;
+        --warning-color: #f39c12; /* Màu cam vàng cho chưa phân loại */
+        --danger-color: #e74c3c;
+        --success-color: #2ecc71;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Baloo 2', cursive; font-size: 1em; font-weight: bold; }
+    
+    body { 
+        background: #eef2f7; overflow: hidden; user-select: none; width: 100vw; height: 100vh; display: flex;
+    }
+
+    /* Hiệu ứng nền sóng nhẹ */
+    body::after {
+        content: ""; position: fixed; width: 150vmax; height: 150vmax; top: -25%; left: -25%; z-index: -1;
+        background-image: 
+            radial-gradient(circle at 20% 30%, #dbeafe 0%, transparent 40%),
+            radial-gradient(circle at 80% 70%, #bfdbfe 0%, transparent 40%);
+        filter: blur(80px); animation: waveMovement 25s linear infinite;
+    }
+    @keyframes waveMovement { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    .table-view { display: flex; width: 100%; min-height: 100vh; padding: 20px; gap: 15px; }
+    
+    .main-content {
+        flex-grow: 1; border: 4px solid #fff; box-shadow: 0 10px 25px rgba(181, 181, 236, 0.4);
+        border-radius: 20px; background-color: #F8FAFC; height: calc(100vh - 40px);
+        overflow: hidden; position: relative; display: flex; flex-direction: column;
+    }
+
+    /* =========================================
+       2. HEADER (Đã bỏ Ghi chú, chỉ còn Title & Date)
+       ========================================= */
+    .top-header {
+        display: flex; justify-content: space-between; align-items: center; padding: 15px 25px;
+        background: #fff; border-bottom: 1px solid #f0f0f0; height: 80px; flex-shrink: 0;
+    }
+    .header-title { font-size: 26px; font-weight: 800; color: #2c3e50; display: flex; align-items: center; gap: 12px; }
+    .header-title i { color: var(--primary-color); font-size: 28px; }
+
+    /* =========================================
+       3. BODY LAYOUT
+       ========================================= */
+    .container-flex { display: flex; flex: 1; overflow: hidden; }
+    
+    /* LEFT PANEL */
+    .left-panel { width: 40%; border-right: 1px solid #f0f0f0; padding: 20px; display: flex; flex-direction: column; background: #fff; }
+    
+    /* RIGHT PANEL */
+    .right-panel { width: 60%; background: #fafafa; padding: 25px; position: relative; display: flex; flex-direction: column; }
+
+    /* SEARCH ROW */
+    .search-row { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; }
+    .search-wrapper { position: relative; flex: 1; }
+    .search-wrapper input {
+        width: 100%; padding: 12px 40px 12px 15px; border-radius: 14px;
+        border: 1px solid #e2e8f0; background: #f8fafc; outline: none; font-weight: 600; transition: 0.2s;
+    }
+    .search-wrapper input:focus { background: #fff; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1); }
+    .search-wrapper i { position: absolute; right: 15px; top: 14px; color: #a0aec0; }
+
+    /* =========================================
+   CSS MENU DANH MỤC (GIỐNG HÌNH 2)
+   ========================================= */
+.custom-dropdown { position: relative; width: 170px; }
+
+.dropdown-selected {
+    padding: 12px 15px; border-radius: 14px; font-size: 14px; border: 1px solid #e2e8f0;
+    background: #fff; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+    font-weight: 700; color: #4a5568; transition: 0.2s;
+}
+.dropdown-selected:hover { border-color: #3498db; color: #3498db; }
+
+/* Khung chứa menu dropdown */
+.dropdown-content {
+    display: none; 
+    position: absolute; top: 110%; right: 0; 
+    width: 260px; /* Rộng hơn để chứa nội dung đẹp */
+    background: white; border: 1px solid #f0f0f0; border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1); z-index: 9999; 
+    padding: 10px;
+    animation: fadeIn 0.2s ease;
+}
+.dropdown-content.show { display: block; }
+
+/* Ô tìm kiếm trong menu */
+.dropdown-search {
+    width: 100%; padding: 10px 12px;
+    border: 1px solid #f1f1f1; border-radius: 12px;
+    margin-bottom: 10px; outline: none;
+    font-size: 13px; font-weight: 600; color: #333;
+    background: #fdfdfd;
+}
+.dropdown-search:focus { border-color: #3498db; background: #fff; }
+
+/* Vùng cuộn danh sách (để ô tìm kiếm luôn đứng yên ở trên) */
+.cat-scroll-area {
+    max-height: 250px; 
+    overflow-y: auto; 
+    padding-right: 5px; /* Chừa chỗ cho thanh cuộn */
+}
+/* Custom thanh cuộn nhỏ đẹp */
+.cat-scroll-area::-webkit-scrollbar { width: 4px; }
+.cat-scroll-area::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+
+/* Item danh mục chung */
+.cat-item {
+    padding: 12px 15px; cursor: pointer; border-radius: 12px; 
+    font-size: 14px; display: flex; gap: 10px; align-items: center;
+    margin-bottom: 5px; transition: 0.2s; font-weight: 700; color: #555;
+}
+.cat-item:hover { background: #f8fafc; color: #333; }
+
+/* --- STYLE ĐẶC BIỆT (GIỐNG HÌNH) --- */
+
+/* 1. Tất cả danh mục: Nền Xanh Nhạt, Chữ Xanh Dương */
+.cat-item.all-cat {
+    background-color: #f0f7ff; 
+    color: #007bff;
+}
+.cat-item.all-cat:hover { background-color: #e0f0ff; }
+
+/* 2. Chưa phân loại: Nền Cam Nhạt, Chữ Cam */
+.cat-item.no-cat {
+    background-color: #fff5f5; 
+    color: #e67e22; 
+}
+.cat-item.no-cat:hover { background-color: #ffe8e8; }
+
+    .btn-sort {
+        height: 45px; width: 45px; display: flex; align-items: center; justify-content: center;
+        background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; cursor: pointer;
+        font-size: 18px; color: #718096; transition: 0.2s; flex-shrink: 0;
+    }
+    .btn-sort:hover { border-color: var(--primary-color); color: var(--primary-color); background: #ebf8ff; }
+
+    /* =========================================
+       4. PRODUCT LIST (TRANG TRÍ ĐẸP HƠN)
+       ========================================= */
+    .product-list { overflow-y: auto; flex: 1; padding-right: 5px; }
+    .product-list::-webkit-scrollbar { display: none; }
+    
+    .p-item {
+        display: flex; align-items: center; padding: 12px; border-radius: 16px;
+        cursor: pointer; margin-bottom: 10px; border: 1px solid transparent; transition: all 0.2s ease;
+        background: #fff;
+    }
+    .p-item:hover { transform: translateY(-0px); box-shadow: 0 5px 15px rgba(0,0,0,0.05); border-color: #e2e8f0; }
+    
+    /* Active Item */
+    .p-item.active {
+        background-color: #ebf8ff !important;
+        border: 1px solid #3498db !important;
+        box-shadow: 0 5px 15px rgba(52, 152, 219, 0.15);
+    }
+
+    .p-img-placeholder {
+        width: 50px; height: 50px; background: #edf2f7; border-radius: 14px;
+        display: flex; align-items: center; justify-content: center; margin-right: 15px; color: #cbd5e0;
+    }
+    .p-img { width: 50px; height: 50px; border-radius: 14px; margin-right: 15px; object-fit: cover; border: 1px solid #eee; }
+    
+    .p-info { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+    .p-name { font-weight: 700; color: #2d3748; font-size: 15px; line-height: 1.3; }
+    
+    /* Danh mục thường */
+    .p-cat { font-size: 12px; color: #718096; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; }
+    
+    /* --- [YÊU CẦU] DANH MỤC CHƯA PHÂN LOẠI (CAM VÀNG) --- */
+    .p-cat.uncategorized {
+        color: #d97706; /* Cam đậm */
+        background: #fff7ed; /* Cam nhạt */
+        padding: 2px 8px;
+        border-radius: 6px;
+        width: fit-content;
+        border: 1px solid #ffedd5;
+    }
+    .p-cat.uncategorized i { color: #f59e0b; }
+
+    .p-stock { 
+        font-weight: 800; color: #4a5568; background: #edf2f7; 
+        padding: 4px 10px; border-radius: 10px; font-size: 13px; min-width: 35px; text-align: center;
+    }
+
+    /* --- [QUAN TRỌNG] BADGE CHÊNH LỆCH (VIÊN THUỐC) --- */
+    .stock-change {
+        display: none;
+        min-width: 45px;
+        height: 26px;
+        padding: 0 10px;
+        align-items: center; justify-content: center;
+        border-radius: 20px;
+        font-weight: 800; font-size: 13px; color: #fff;
+        margin-left: 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .stock-change.plus { background: #2ecc71; } /* Xanh lá */
+    .stock-change.minus { background: #e74c3c; } /* Đỏ */
+    
+    @keyframes popIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+    /* =========================================
+       5. RIGHT PANEL (AUDIT CARD)
+       ========================================= */
+    .audit-card {
+        background: #fff; border-radius: 24px; padding: 35px;
+        box-shadow: 0 15px 50px rgba(0,0,0,0.05); border: 1px solid #fff;
+        height: 100%; display: flex; flex-direction: column;
+    }
+
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 30px 0; }
+    
+    .stat-box {
+        padding: 20px; border-radius: 18px; text-align: center;
+        display: flex; flex-direction: column; justify-content: center;
+        transition: 0.3s;
+    }
+    
+    /* Box Tồn Hệ Thống */
+    .stat-box.system { background: #ebf8ff; border: 1px solid #bee3f8; }
+    .stat-box.system .label { color: #3182ce; font-size: 13px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-box.system .value { color: #2b6cb0; font-size: 32px; font-weight: 900; }
+
+    /* Box Chênh Lệch */
+    .stat-box.diff { background: #fff; border: 2px dashed #e2e8f0; }
+    .stat-box.diff .label { color: #718096; font-size: 13px; margin-bottom: 5px; text-transform: uppercase; }
+    .stat-box.diff .value { color: #a0aec0; font-size: 32px; font-weight: 900; }
+    
+    /* Khi có chênh lệch */
+    .stat-box.diff.negative { background: #fff5f5; border-color: #fc8181; border-style: solid; }
+    .stat-box.diff.negative .value, .stat-box.diff.negative .label { color: #c53030; }
+    
+    .stat-box.diff.positive { background: #f0fff4; border-color: #68d391; border-style: solid; }
+    .stat-box.diff.positive .value, .stat-box.diff.positive .label { color: #276749; }
+
+    /* Ô nhập liệu lớn */
+    .input-group { margin-top: auto; margin-bottom: 20px; }
+    .input-label { display: block; font-size: 16px; color: #2d3748; margin-bottom: 12px; }
+    
+    .big-input {
+        width: 100%; height: 80px; border-radius: 20px;
+        border: 2px solid #e2e8f0; background: #fff;
+        font-size: 40px; text-align: center; font-weight: 900; color: #2d3748; outline: none;
+        transition: all 0.3s;
+        box-shadow: inset 0 2px 5px rgba(0,0,0,0.02);
+    }
+    .big-input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.15); transform: translateY(-2px); }
+    .big-input::placeholder { color: #cbd5e0; font-weight: 700; }
+
+    .btn-confirm {
+        width: 100%; padding: 22px; background: var(--primary-color); color: #fff;
+        border: none; border-radius: 18px; font-size: 18px; font-weight: 800;
+        cursor: pointer; text-transform: uppercase; letter-spacing: 1px;
+        box-shadow: 0 10px 20px rgba(52, 152, 219, 0.3); transition: 0.3s;
+    }
+    .btn-confirm:hover { background: #2980b9; transform: translateY(-3px); box-shadow: 0 15px 30px rgba(52, 152, 219, 0.4); }
+
+
+
+
+    /* =========================================
+       CSS CHO DATE & TIME PICKER (GIỐNG EXPORT)
+       ========================================= */
+    .date-container { position: relative; margin-left: auto; }
+    
+    .custom-date-trigger {
+        display: flex; align-items: center; gap: 10px;
+        padding: 10px 25px; background: #f8f9fa;
+        border-radius: 50px; border: 1.5px solid #eee;
+        cursor: pointer; transition: 0.3s;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    }
+    .custom-date-trigger:hover { 
+        background: #fff; border-color: #3498db; 
+        box-shadow: 0 8px 20px rgba(52, 152, 219, 0.1); /* Đổi bóng sang màu xanh của kiểm kê */
+    }
+
+    .my-picker-dropdown {
+        position: absolute; top: calc(100% + 12px); right: 0;
+        width: 320px; background: #fff; border-radius: 35px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        display: none; flex-direction: column; z-index: 10000;
+        padding: 25px; border: 1px solid #f0f0f0;
+    }
+
+    /* Header chọn Tháng/Năm */
+    .picker-header { display: flex; gap: 10px; margin-bottom: 20px; }
+    .custom-select-wrap { position: relative; flex: 1; }
+
+    .select-display {
+        background: #f1f3f5; padding: 12px; border-radius: 18px;
+        font-weight: 800; font-size: 15px; text-align: center; cursor: pointer;
+    }
+
+    .select-options {
+        position: absolute; top: 110%; left: 0; width: 100%;
+        background: #fff; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        max-height: 250px; overflow-y: auto; display: none; z-index: 100;
+        border: 1px solid #eee; padding: 8px;
+    }
+    .select-options div {
+        padding: 12px; text-align: center; font-weight: 700; border-radius: 15px;
+        cursor: pointer; font-size: 14px; margin-bottom: 4px;
+    }
+    .select-options div:hover { background: #eaf6ff; color: #3498db; }
+    .select-options div.active { background: #3498db !important; color: #fff !important; }
+
+    /* Lưới ngày */
+    .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-bottom: 25px; }
+    .day-cell {
+        aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+        cursor: pointer; border-radius: 50%; font-weight: 700; font-size: 14px;
+    }
+    .day-cell:hover:not(.disabled):not(.empty) { background: #eaf6ff; color: #3498db; }
+    .day-cell.active { background: #3498db !important; color: #fff !important; }
+    .day-cell.disabled { color: #eee; cursor: not-allowed; }
+
+    /* KHUNG CHỌN GIỜ (GIỐNG HỆT EXPORT) */
+    .time-container {
+        display: flex; justify-content: center; align-items: center;
+        gap: 15px; padding-top: 20px; border-top: 1.5px solid #f8f9fa;
+    }
+    .time-box {
+        background: #f1f3f5; width: 75px; height: 65px; border-radius: 20px;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .time-box input {
+        width: 100%; border: none; background: transparent; text-align: center;
+        font-size: 30px; font-weight: 900; color: #3498db; outline: none; /* Đổi màu số sang xanh */
+    }
+    input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .time-divider { font-size: 30px; font-weight: 900; color: #333; }
+    
+    /* Water Scrollbar */
+    .water-scrollbar-container {
+        position: absolute; right: 0; top: 0; bottom: 0; width: 25px;
+        background: transparent; border-left: 3px solid #f4f4fc;
+        border-radius: 0 20px 20px 0; overflow: hidden; pointer-events: none;
+    }
+    .water-fill {
+        width: 100%; background: linear-gradient(to bottom, #ffffff, #90cdf4);
+        border-radius: 0 0 10px 0; transition: height 0.1s linear;
+        box-shadow: inset -2px 0 5px rgba(255,255,255,0.3);
+    }
+    
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+    </style>
+</head>
+
+<body>
+    <div class="table-view">
+        <div class="sidebar"></div>
+
+        <div class="main-content">
+            <!-- HEADER: Chỉ còn Title và Date Picker -->
+            <header class="top-header">
+                <div class="header-title">
+                    <i class="fa-solid fa-clipboard-check"></i> Kiểm kê kho
+                </div>
+                
+<div class="date-container">
+                <!-- Nút hiển thị -->
+                <div class="custom-date-trigger" id="dateTrigger">
+                    <i class="fa-solid fa-calendar-check" style="color: #3498db;"></i>
+                    <span id="displayDateTime">Chọn ngày kiểm</span>
+                </div>
+
+                <!-- Dropdown Lịch -->
+                <div class="my-picker-dropdown" id="myPicker">
+                    <div class="picker-header">
+                        <div class="custom-select-wrap">
+                            <div class="select-display" id="monthDisplay">Tháng 1</div>
+                            <div class="select-options" id="monthOptions"></div>
+                        </div>
+                        <div class="custom-select-wrap">
+                            <div class="select-display" id="yearDisplay">2024</div>
+                            <div class="select-options" id="yearOptions"></div>
+                        </div>
+                    </div>
+
+                    <div class="days-grid" id="daysGrid">
+                        <!-- JS sẽ tự đổ ngày vào đây -->
+                    </div>
+
+                    <!-- KHUNG GIỜ TO (GIỐNG EXPORT) -->
+                    <div class="time-container">
+                        <div class="time-box">
+                            <input type="number" id="p_hour" value="00" min="0" max="23">
+                        </div>
+                        <div class="time-divider">:</div>
+                        <div class="time-box">
+                            <input type="number" id="p_minute" value="00" min="0" max="59">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            </header>
+
+            <!-- BODY -->
+            <div class="container-flex">
+                <!-- LEFT PANEL: Product List -->
+                <div class="left-panel">
+                    <div class="search-row">
+                        <div class="search-wrapper">
+                            <input type="text" id="searchInput" placeholder="Tìm tên, SKU..." oninput="filterProducts()">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </div>
+                        <div class="custom-dropdown" id="categoryDropdown">
+                            <div class="dropdown-selected" onclick="toggleDropdown(event)">
+                                <span id="selectedCatText">Tất cả</span>
+                                <i class="fa-solid fa-chevron-down" style="font-size: 11px; color: #a0aec0;"></i>
+                            </div>
+                            <div class="dropdown-content" id="dropdownContent">
+                                <div class="cat-list-container"></div>
+                            </div>
+                        </div>
+                        <button id="btnSort" class="btn-sort" onclick="toggleSortOrder()">
+                            <i class="fa-solid fa-arrow-down-a-z"></i>
+                        </button>
+                    </div>
+
+                    <div class="product-list" id="productList"></div>
+                </div>
+
+                <!-- RIGHT PANEL: Audit Card -->
+                <div class="right-panel" id="auditArea">
+                    <div style="margin: auto; text-align: center; color: #cbd5e0;">
+                        <div style="width: 100px; height: 100px; background: #edf2f7; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                            <i class="fa-solid fa-scale-balanced" style="font-size: 40px; color: #a0aec0;"></i>
+                        </div>
+                        <p style="font-size: 18px; font-weight: 700; color: #718096;">Chọn sản phẩm để bắt đầu kiểm kê</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="water-scrollbar-container">
+                <div class="water-fill" id="waterLevel"></div>
+            </div>
+        </div>
+    </div>
+
+<script type="module">
+    import { db } from "../firebase-config.js";
+    import { collection, addDoc, updateDoc, query, where, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const currentStoreId = localStorage.getItem('current_store_id');
+    let myProducts = [];
+    let currentSort = 'asc';
+    let selectedCategory = 'Tất cả';
+    let selectedDate = new Date();
+    let viewDate = new Date();
+
+    // ============================================
+    // 1. KHỞI TẠO
+    // ============================================
+    (async function init() {
+        if (!localStorage.getItem('userLoggedIn')) return window.location.replace('/index.html');
+        loadSidebar();
+        listenToProducts();
+        initCustomPicker();
+    })();
+
+    function loadSidebar() {
+        fetch('/components/Side-Bar.html').then(res => res.text()).then(data => {
+            document.querySelector('.sidebar').innerHTML = data;
+            const container = document.querySelector('.sidebar');
+            container.querySelectorAll('script').forEach(old => {
+                const n = document.createElement('script');
+                Array.from(old.attributes).forEach(a => n.setAttribute(a.name, a.value));
+                n.textContent = old.textContent;
+                old.replaceWith(n);
+            });
+            window.toggleMenu = (id) => document.getElementById(id)?.classList.toggle('active');
+        });
+    }
+
+    // ============================================
+    // 2. LOGIC SẢN PHẨM & HIỂN THỊ
+    // ============================================
+    function listenToProducts() {
+        const q = query(collection(db, "products"), where("storeId", "==", currentStoreId));
+        onSnapshot(q, (snapshot) => {
+            myProducts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            filterProducts();
+            renderCategoryList();
+        });
+    }
+
+    window.filterProducts = function() {
+        const val = document.getElementById('searchInput').value.toLowerCase();
+        let filtered = myProducts.filter(p => {
+            const matchSearch = p.name.toLowerCase().includes(val) || p.sku.toLowerCase().includes(val);
+            let matchCat = (selectedCategory === 'Tất cả') || 
+                           (selectedCategory === 'Chưa phân loại' && (!p.category || p.category === 'Chưa phân loại')) ||
+                           (p.category === selectedCategory);
+            return matchSearch && matchCat;
+        });
+
+        filtered.sort((a, b) => currentSort === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name));
+        renderProducts(filtered);
+    };
+
+    function renderProducts(data) {
+        const list = document.getElementById('productList');
+        if(!list) return;
+        
+        list.innerHTML = data.map(p => {
+            const safeSku = p.sku.toString().replace(/\s+/g, '-');
+            const imgDisplay = (p.img && p.img.length > 20) 
+                ? `<img src="${p.img}" class="p-img">` 
+                : `<div class="p-img-placeholder"><i class="fa-solid fa-box-open"></i></div>`;
+            
+            // Xử lý hiển thị "Chưa phân loại" -> Màu cam vàng
+            const isUncat = !p.category || p.category === 'Chưa phân loại';
+            const catHtml = isUncat 
+                ? `<span class="p-cat uncategorized"><i class="fa-solid fa-triangle-exclamation"></i> Chưa phân loại</span>`
+                : `<span class="p-cat"><i class="fa-solid fa-folder"></i> ${p.category}</span>`;
+
+            return `
+            <div class="p-item" id="p-${safeSku}" onclick="selectToAudit('${p.sku}')">
+                ${imgDisplay}
+                <div class="p-info">
+                    <p class="p-name">${p.name}</p>
+                    ${catHtml}
+                </div>
+                <div class="p-stock" id="stock-${safeSku}">${p.stock}</div>
+                <!-- Badge hiển thị chênh lệch (Viên thuốc) -->
+                <div class="stock-change" id="change-${safeSku}"></div>
+            </div>`;
+        }).join('');
+    }
+
+    window.toggleSortOrder = function() {
+        const btn = document.getElementById('btnSort');
+        if (currentSort === 'asc') {
+            currentSort = 'desc';
+            btn.innerHTML = '<i class="fa-solid fa-arrow-up-z-a"></i>';
+        } else {
+            currentSort = 'asc';
+            btn.innerHTML = '<i class="fa-solid fa-arrow-down-a-z"></i>';
+        }
+        filterProducts();
+    };
+
+window.selectToAudit = function(sku) {
+    document.querySelectorAll('.p-item').forEach(el => el.classList.remove('active'));
+    const safeSku = sku.toString().replace(/\s+/g, '-');
+    document.getElementById(`p-${safeSku}`).classList.add('active');
+
+    const p = myProducts.find(item => item.sku === sku);
+    if(!p) return;
+
+    const auditArea = document.getElementById('auditArea');
+    auditArea.innerHTML = `
+        <div class="audit-card" style="background:#fff; padding:25px; border-radius:24px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+            <div style="margin-bottom:30px;">
+                <h2 style="font-size:26px; color:#2d3748; line-height:1.2; font-weight:800;">${p.name}</h2>
+                <p style="color:#a0aec0; font-size:14px; margin-top:5px; font-weight:600;">#${p.sku}</p>
+            </div>
+
+            <div class="info-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:20px;">
+                <!-- Box Tồn Kho -->
+                <div class="stat-box system" style="background:#edf2f7; padding:15px; border-radius:12px; text-align:center;">
+                    <span class="label" style="display:block; font-size:12px; color:#718096; font-weight:700;">Tồn hệ thống</span>
+                    <span class="value" style="font-size:20px; font-weight:900; color:#2d3748;">${p.stock}</span>
+                </div>
+                <!-- Box Chênh Lệch -->
+                <div class="stat-box diff" id="diffBox" style="background:#fff5f5; padding:15px; border-radius:12px; text-align:center; border:1px solid #feb2b2;">
+                    <span class="label" style="display:block; font-size:12px; color:#c53030; font-weight:700;">Chênh lệch</span>
+                    <span class="value" id="diffDisplay" style="font-size:20px; font-weight:900; color:#c53030;">0</span>
+                </div>
+            </div>
+
+            <div class="input-group" style="margin-bottom:20px;">
+                <label class="input-label" style="display:block; font-weight:800; color:#333; margin-bottom:8px;">Số lượng thực tế kiểm đếm:</label>
+                <input type="number" id="qtyActual" class="big-input" 
+                       style="width:100%; font-size:32px; padding:12px; border-radius:12px; border:2px solid #4a5568; text-align:center; font-weight:800;"
+                       placeholder="${p.stock}" 
+                       oninput="calculateDiff(this.value, ${p.stock}, '${p.sku}')" autofocus>
+            </div>
+
+            <!-- Ô GHI CHÚ KIỂM KÊ MỚI THÊM -->
+            <div style="margin-bottom:25px; text-align: left;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <label style="font-weight:800; color:#333; font-size:14px;">Ghi chú kiểm kê:</label>
+                    <span id="charCountAudit" style="font-size:12px; color:#999; font-weight:600;">0/150</span>
+                </div>
+                <textarea id="auditNote" maxlength="150" 
+                    oninput="document.getElementById('charCountAudit').innerText = this.value.length + '/150'" 
+                    placeholder="Lý do lệch kho (hàng hỏng, hết hạn, thất thoát...)" 
+                    style="width:100%; height:70px; padding:12px; border-radius:12px; border:1px solid #ddd; font-family:inherit; resize:none; outline:none; font-size:14px; box-sizing: border-box;"></textarea>
+            </div>
+
+            <button class="btn-confirm" onclick="confirmAudit('${p.id}', '${p.sku}', ${p.stock})" 
+                style="width:100%; padding:18px; background:#2d3748; color:#fff; border:none; border-radius:16px; font-weight:800; cursor:pointer; font-size:16px;">
+                XÁC NHẬN CÂN BẰNG KHO
+            </button>
+        </div>
+    `;
+};
+
+    window.calculateDiff = function(val, currentStock, sku) {
+        const actual = parseInt(val);
+        const diffDisplay = document.getElementById('diffDisplay');
+        const diffBox = document.getElementById('diffBox');
+        
+        // Thẻ Badge bên trái
+        const safeSku = sku.toString().replace(/\s+/g, '-');
+        const badge = document.getElementById(`change-${safeSku}`);
+
+        if (isNaN(actual)) {
+            // Reset về trạng thái chờ
+            diffDisplay.innerText = "0";
+            diffBox.className = "stat-box diff";
+            badge.style.display = 'none';
+            return;
+        }
+
+        const diff = actual - currentStock;
+
+        // 1. Cập nhật Box Chênh lệch (Bên phải)
+        if (diff > 0) {
+            diffDisplay.innerText = `+${diff}`;
+            diffBox.className = "stat-box diff positive";
+        } else if (diff < 0) {
+            diffDisplay.innerText = `${diff}`;
+            diffBox.className = "stat-box diff negative";
+        } else {
+            diffDisplay.innerText = "0";
+            diffBox.className = "stat-box diff"; // Khớp
+        }
+
+        // 2. Cập nhật Badge (Bên trái) - Theo yêu cầu của bạn
+        if (diff !== 0) {
+            badge.style.display = 'inline-flex';
+            if (diff > 0) {
+                // Nhập 80, Tồn 50 => +30 (Xanh)
+                badge.innerText = `+${diff}`;
+                badge.className = 'stock-change plus';
+            } else {
+                // Nhập 10, Tồn 50 => -40 (Đỏ)
+                badge.innerText = `${diff}`;
+                badge.className = 'stock-change minus';
+            }
+        } else {
+            badge.style.display = 'none';
+        }
+    };
+
+
+
+    // --- XỬ LÝ LOGIC KIỂM KHO (ĐÃ SỬA LƯU VÀO SUB-COLLECTION) ---
+window.confirmAudit = async function(docId, sku, oldStock) {
+    const qtyInput = document.getElementById('qtyActual');
+    const noteInput = document.getElementById('auditNote'); // <--- LẤY Ô GHI CHÚ
+    const actualStock = parseInt(qtyInput.value);
+    const userNote = noteInput ? noteInput.value.trim() : ""; // <--- GIÁ TRỊ GHI CHÚ
+    
+    const productObj = myProducts.find(p => p.id === docId);
+    const productName = productObj?.name || "Sản phẩm";
+    const productImg = productObj?.img || "";
+
+    if (isNaN(actualStock)) {
+        alert("Vui lòng nhập số lượng thực tế!");
+        return;
+    }
+
+    const diff = actualStock - oldStock; 
+    if (diff === 0) {
+        if(!confirm("Số lượng thực tế khớp hoàn toàn với hệ thống. Vẫn tạo phiếu kiểm kê?")) return;
+    }
+
+    // Nút bấm trạng thái chờ
+    const btn = document.querySelector('.btn-confirm');
+    const oldBtnText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xử lý...';
+
+    try {
+        // A. Cập nhật tồn kho
+        await updateDoc(doc(db, "products", docId), {
+            stock: actualStock,
+            lastAuditDate: selectedDate.getTime()
+        });
+
+        // B. Lưu Log vào Sub-collection "audit_log"
+        const logEntry = {
+            productId: docId,
+            sku: sku || "---",
+            name: productName,
+            img: productImg,
+            
+            qty: diff, 
+            oldStock: oldStock,
+            newStock: actualStock,
+            
+            type: 'kiemke',
+            // Ưu tiên ghi chú của người dùng, nếu trống mới ghi chú hệ thống
+            note: userNote || `Cân bằng kho: ${diff > 0 ? '+' : ''}${diff}`,
+            
+            timestamp: selectedDate.getTime(),
+            userName: localStorage.getItem('userName') || 'Admin',
+            userEmail: localStorage.getItem('userEmail'),
+            
+            supplier: "Kiểm kê kho",
+            customerId: "",
+            totalAmount: 0,
+            debt: 0
+        };
+
+        const logsColRef = collection(db, "warehouse_history_logs", currentStoreId, "audit_log");
+        await addDoc(logsColRef, logEntry);
+
+        alert(`Đã cập nhật kho thành công!\nThực tế: ${actualStock} (Lệch: ${diff > 0 ? '+' : ''}${diff})`);
+        
+        // Reset UI
+        qtyInput.value = '';
+        if(noteInput) noteInput.value = '';
+        document.getElementById('charCountAudit').innerText = "0/150";
+
+        const diffDisplay = document.getElementById('diffDisplay');
+        if(diffDisplay) diffDisplay.innerText = '0';
+        const diffBox = document.getElementById('diffBox');
+        if(diffBox) diffBox.className = "stat-box diff";
+        
+        const safeSku = sku.toString().replace(/\s+/g, '-');
+        const changeLabel = document.getElementById(`change-${safeSku}`);
+        if(changeLabel) changeLabel.style.display = 'none';
+
+    } catch (e) {
+        console.error("Lỗi kiểm kho:", e);
+        alert("Lỗi: " + e.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = oldBtnText;
+    }
+};
+
+   // ============================================
+    // RENDER DANH MỤC (GIỐNG HÌNH 2)
+    // ============================================
+    window.renderCategoryList = function() {
+        const dropdownContent = document.getElementById('dropdownContent');
+        if (!dropdownContent) return;
+
+        // Lấy danh sách danh mục duy nhất
+        const uniqueCats = [...new Set(myProducts.map(p => p.category).filter(c => c && c !== 'Chưa phân loại'))];
+        
+        // Tạo HTML: Ô tìm kiếm -> Các mục đặc biệt -> List danh mục
+        let html = `
+            <!-- Ô tìm kiếm -->
+            <input type="text" class="dropdown-search" placeholder="Tìm kiếm..." oninput="searchInDropdown(this)" onclick="event.stopPropagation()">
+            
+            <div class="cat-scroll-area">
+                <!-- Mục 1: Tất cả (Xanh) -->
+                <div class="cat-item all-cat" onclick="selectCategory('Tất cả')">
+                    <i class="fa-solid fa-layer-group"></i> Tất cả danh mục
+                </div>
+                
+                <!-- Mục 2: Chưa phân loại (Cam) -->
+                <div class="cat-item no-cat" onclick="selectCategory('Chưa phân loại')">
+                    <i class="fa-solid fa-tag"></i> Chưa phân loại
+                </div>
+
+                <!-- Đường kẻ phân cách mờ -->
+                <hr style="margin: 8px 0; border:0; border-top:1px solid #f1f1f1;">
+
+                <!-- Danh sách các danh mục khác -->
+                <div id="dynamicCatList">
+                    ${uniqueCats.map(cat => `
+                        <div class="cat-item" onclick="selectCategory('${cat}')" data-name="${cat}">
+                            <i class="fa-solid fa-folder" style="color:#718096;"></i> ${cat}
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+        
+        dropdownContent.innerHTML = html;
+    };
+
+    // Hàm lọc tìm kiếm trong menu danh mục
+    window.searchInDropdown = function(input) {
+        const filter = input.value.toUpperCase();
+        const list = document.getElementById('dynamicCatList');
+        const items = list.getElementsByClassName('cat-item');
+
+        for (let i = 0; i < items.length; i++) {
+            const txtValue = items[i].getAttribute('data-name') || "";
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                items[i].style.display = "flex";
+            } else {
+                items[i].style.display = "none";
+            }
+        }
+    };
+
+    window.toggleDropdown = (e) => { e.stopPropagation(); document.getElementById('dropdownContent').classList.toggle('show'); };
+    window.selectCategory = (name) => {
+        selectedCategory = name;
+        document.getElementById('selectedCatText').innerText = name;
+        document.getElementById('dropdownContent').classList.remove('show');
+        filterProducts();
+    };
+
+   
+   
+   // ============================================
+    // 5. DATE PICKER LOGIC (CHUẨN GIỐNG EXPORT)
+    // ============================================
+    
+    // Biến toàn cục cho lịch (đặt ở đầu file hoặc trong init)
+    // let selectedDate = new Date(); 
+    // let viewDate = new Date();
+
+    function initCustomPicker() {
+        const trigger = document.getElementById('dateTrigger');
+        const picker = document.getElementById('myPicker');
+        const hInp = document.getElementById('p_hour');
+        const mInp = document.getElementById('p_minute');
+        const yearOptions = document.getElementById('yearOptions');
+        const monthOptions = document.getElementById('monthOptions');
+        const monthDisplay = document.getElementById('monthDisplay');
+        const yearDisplay = document.getElementById('yearDisplay');
+
+        if (!trigger || !picker) return;
+
+        const now = new Date();
+        // Init giờ phút hiện tại
+        if (hInp) hInp.value = String(now.getHours()).padStart(2, '0');
+        if (mInp) mInp.value = String(now.getMinutes()).padStart(2, '0');
+
+        // Render danh sách Năm
+        if (yearOptions) {
+            yearOptions.innerHTML = '';
+            for (let y = now.getFullYear(); y >= now.getFullYear() - 10; y--) {
+                const div = document.createElement('div');
+                div.innerText = y;
+                div.onclick = (e) => {
+                    e.stopPropagation();
+                    viewDate.setFullYear(y);
+                    if (y === now.getFullYear() && viewDate.getMonth() > now.getMonth()) {
+                        viewDate.setMonth(now.getMonth());
+                    }
+                    updateUI();
+                    yearOptions.style.display = 'none';
+                };
+                yearOptions.appendChild(div);
+            }
+        }
+
+        // Sự kiện click
+        trigger.onclick = (e) => {
+            e.stopPropagation();
+            const isHidden = window.getComputedStyle(picker).display === 'none';
+            picker.style.display = isHidden ? 'flex' : 'none';
+            if (isHidden) updateUI();
+        };
+
+        if (monthDisplay) {
+            monthDisplay.onclick = (e) => {
+                e.stopPropagation();
+                if (monthOptions) {
+                    const isShow = monthOptions.style.display === 'block';
+                    if (yearOptions) yearOptions.style.display = 'none';
+                    monthOptions.style.display = isShow ? 'none' : 'block';
+                }
+            };
+        }
+
+        if (yearDisplay) {
+            yearDisplay.onclick = (e) => {
+                e.stopPropagation();
+                if (yearOptions) {
+                    const isShow = yearOptions.style.display === 'block';
+                    if (monthOptions) monthOptions.style.display = 'none';
+                    yearOptions.style.display = isShow ? 'none' : 'block';
+                }
+            };
+        }
+
+        picker.onclick = (e) => e.stopPropagation();
+
+        window.addEventListener('click', () => {
+            picker.style.display = 'none';
+            if (monthOptions) monthOptions.style.display = 'none';
+            if (yearOptions) yearOptions.style.display = 'none';
+        });
+
+        // Xử lý nhập giờ phút
+        if (hInp && mInp) {
+            [hInp, mInp].forEach(inp => {
+                inp.oninput = () => {
+                    if (inp.id === 'p_hour' && inp.value > 23) inp.value = 23;
+                    if (inp.id === 'p_minute' && inp.value > 59) inp.value = 59;
+                    updateDisplayStr();
+                };
+            });
+        }
+
+        updateUI();
+    }
+
+    function updateUI() {
+        const now = new Date();
+        const months = ["Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6", "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"];
+        
+        document.getElementById('monthDisplay').innerText = months[viewDate.getMonth()];
+        document.getElementById('yearDisplay').innerText = viewDate.getFullYear();
+
+        // Đồng bộ ngày tháng
+        const currentH = parseInt(document.getElementById('p_hour').value) || 0;
+        const currentM = parseInt(document.getElementById('p_minute').value) || 0;
+        const currentDay = selectedDate.getDate();
+
+        selectedDate.setFullYear(viewDate.getFullYear());
+        selectedDate.setMonth(viewDate.getMonth());
+
+        if (selectedDate.getMonth() !== viewDate.getMonth()) {
+            selectedDate.setDate(0); 
+        } else {
+            const daysInMonth = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 0).getDate();
+            selectedDate.setDate(Math.min(currentDay, daysInMonth));
+        }
+
+        selectedDate.setHours(currentH);
+        selectedDate.setMinutes(currentM);
+
+        // Render tháng dropdown
+        const monthOptions = document.getElementById('monthOptions');
+        monthOptions.innerHTML = '';
+        const maxMonth = (viewDate.getFullYear() === now.getFullYear()) ? now.getMonth() : 11;
+        
+        for (let i = 0; i <= maxMonth; i++) {
+            const div = document.createElement('div');
+            div.innerText = months[i];
+            if (i === viewDate.getMonth()) div.classList.add('active');
+            div.onclick = (e) => {
+                e.stopPropagation();
+                viewDate.setMonth(i);
+                updateUI();
+                monthOptions.style.display = 'none';
+            };
+            monthOptions.appendChild(div);
+        }
+
+        document.querySelectorAll('#yearOptions div').forEach(div => {
+            div.classList.toggle('active', parseInt(div.innerText) === viewDate.getFullYear());
+        });
+
+        renderCalendarGrid();
+        updateDisplayStr();
+    }
+
+    function renderCalendarGrid() {
+        const grid = document.getElementById('daysGrid');
+        grid.innerHTML = '';
+        const now = new Date();
+        const year = viewDate.getFullYear();
+        const month = viewDate.getMonth();
+        const firstDay = new Date(year, month, 1).getDay();
+        const totalDays = new Date(year, month + 1, 0).getDate();
+
+        for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div class="day-cell empty"></div>`;
+
+        for (let d = 1; d <= totalDays; d++) {
+            const cell = document.createElement('div');
+            cell.className = 'day-cell';
+            cell.innerText = d;
+            
+            // Chặn ngày tương lai
+            const isFuture = (year === now.getFullYear() && month === now.getMonth() && d > now.getDate());
+            
+            if (isFuture) {
+                cell.classList.add('disabled');
+            } else {
+                if (d === selectedDate.getDate() && month === selectedDate.getMonth() && year === selectedDate.getFullYear()) {
+                    cell.classList.add('active');
+                }
+                cell.onclick = (e) => {
+                    e.stopPropagation();
+                    selectedDate.setFullYear(year);
+                    selectedDate.setMonth(month);
+                    selectedDate.setDate(d);
+                    renderCalendarGrid();
+                    updateDisplayStr();
+                };
+            }
+            grid.appendChild(cell);
+        }
+    }
+
+    function updateDisplayStr() {
+        const h = document.getElementById('p_hour').value || 0;
+        const m = document.getElementById('p_minute').value || 0;
+        
+        selectedDate.setHours(h);
+        selectedDate.setMinutes(m);
+
+        const dd = String(selectedDate.getDate()).padStart(2, '0');
+        const mm = String(selectedDate.getMonth() + 1).padStart(2, '0');
+        const yyyy = selectedDate.getFullYear();
+        const hh = String(h).padStart(2, '0');
+        const mn = String(m).padStart(2, '0');
+        
+        document.getElementById('displayDateTime').innerText = `${dd}/${mm}/${yyyy} ${hh}:${mn}`;
+    }
+    
+    // Water Scrollbar
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const listArea = document.getElementById('productList');
+        const waterFill = document.getElementById('waterLevel');
+        if (listArea && waterFill) {
+            const updateWater = () => {
+                const scrolled = listArea.scrollTop;
+                const totalHeight = listArea.scrollHeight - listArea.clientHeight;
+                const scrollPercent = totalHeight > 0 ? (scrolled / totalHeight) : 0;
+                const minHeightPercent = 15;
+                const dynamicHeight = minHeightPercent + (scrollPercent * (100 - minHeightPercent));
+                waterFill.style.height = dynamicHeight + "%";
+            };
+            listArea.addEventListener('scroll', updateWater);
+            updateWater();
+        }
+    });
+
+    
+</script>
+</body>
+</html>

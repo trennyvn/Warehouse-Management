@@ -1,0 +1,2676 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Xuất kho - Quản lý kho</title> <!-- Đổi tiêu đề -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/sidebar.css"> 
+   
+    
+    <style>
+        :root {
+    --primary-color: #e67e22;
+    --bg-light: #fdf2e9;
+    --text-main: #2d3748;
+    --border-radius: 16px;
+}
+
+
+   * {
+            font-size: 1em;
+            font-weight: bold;
+            font-family: 'Baloo 2', cursive;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body { background: #88ffef; overflow: hidden; }
+        /* 1. Sửa lỗi dàn trang để thấy Sidebar */
+
+body {
+    font-family: 'Baloo 2', cursive;
+    margin: 0;
+    min-height: 100vh;
+    width: 100vw;
+    display: flex;
+    overflow: hidden;
+    user-select: none;
+    position: relative;
+    /* Nền màu sáng sang trọng */
+    background: #eef2f7; 
+}
+
+/* Lớp sóng màu uốn lượn phía sau */
+body::after {
+    content: "";
+    position: fixed;
+    width: 150vmax;
+    height: 150vmax;
+    top: -25%;
+    left: -25%;
+    z-index: -1;
+    background-image: 
+        radial-gradient(circle at 20% 30%, #d0bcff 0%, transparent 40%),
+        radial-gradient(circle at 80% 70%, #a1c4fd 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, #c2e9fb 0%, transparent 50%);
+    filter: blur(80px);
+    animation: waveMovement 15s linear infinite;
+}
+
+@keyframes waveMovement {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Giữ lớp ánh sáng tâm điểm của bạn */
+body::before {
+    content: "";
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.6) 0%, transparent 80%);
+    pointer-events: none;
+    z-index: -1;
+}
+
+    
+
+.table-view {
+    display: flex;         /* Sidebar nằm trái, Main content nằm phải */
+    width: 100%;           /* Tràn hết chiều rộng trình duyệt */
+    min-height: 100vh;
+    padding: 20px;
+    gap: 10px;
+}
+
+.table-view > div {
+
+  border-radius: 15px;
+}
+
+.main-content {
+    flex-grow: 1;          /* QUAN TRỌNG: Ép khối này lấy toàn bộ khoảng trống còn lại bên phải */
+    width: auto;           /* Bỏ width cố định nếu có */
+    max-width: none;       /* Bỏ max-width để nó rộng vô hạn sang phải */
+    border: 3px solid #ffffff;
+    box-shadow: -5px 5px 1px #b5b5ec;
+    /* Giữ padding như bạn mong muốn */
+    
+    box-sizing: border-box; /* Đảm bảo padding không làm tăng chiều rộng tổng */
+    background-color: #F8FAFC;
+    height: calc(100vh - 40px); /* Giới hạn chiều cao = chiều cao màn hình trừ đi padding (20px top + 20px bottom) */
+    overflow-y: auto;           /* Hiện thanh cuộn nội bộ khi nội dung dài */
+    overflow-x: hidden;         /* Chặn cuộn ngang không cần thiết */
+    position: relative;
+     
+       overflow: hidden; /* CỰC KỲ QUAN TRỌNG: để thanh cuộn không bị tràn ra ngoài góc bo */
+ 
+     
+}
+
+/* 1. Ẩn thanh cuộn mặc định của trình duyệt */
+.main-content {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+}
+.main-content::-webkit-scrollbar {
+    display: none; /* Chrome, Safari */
+}
+
+/* --- THIẾT KẾ THANH CUỘN NƯỚC MỚI --- */
+
+/* 2. Thiết kế vỏ bình (Track) - Đã sửa để dính sát mép */
+ 
+
+                /* Vỏ bình: Cao full, sát mép phải, bo góc phải, phẳng trái */
+        .water-scrollbar-container {
+            position: absolute;
+            right: 0 !important;
+            top: 0 !important;
+            bottom: 0 !important;
+            width: 25px; /* Làm thanh mảnh hơn cho sang trọng */
+            background: rgba(0, 229, 255, 0.05); /* Nền cực loãng */
+            
+            /* Border: Bo góc trên-phải và dưới-phải theo Main Content */
+     
+            border-left: none; /* PHẲNG LỀ TRÁI */
+            border-left: 3px solid #f4f4fc;
+            border-radius: 0 15px 15px 0;
+            z-index: 10000;
+            overflow: hidden;
+            
+            /* Hướng chảy: Mặc định flex-direction là column (chảy từ trên xuống) */
+            display: flex;
+            flex-direction: column; 
+            pointer-events: none;
+        }
+
+        /* Mực nước: Chảy xuôi (Progress Bar) */
+        .water-fill {
+            width: 100%;
+            height: 10%; /* MẶC ĐỊNH MỚI VÀO CÓ SẴN MỘT MỨC (ví dụ 10%) */
+            min-height: 50px; /* ĐẢM BẢO LUÔN THẤY THANH NÀY, KHÔNG BAO GIỜ BẰNG 0 */
+            background: linear-gradient(to bottom, #ffffff, #b5b5ec);
+            
+            border-radius: 0 0 10px 0;
+            transition: height 0.1s linear;
+            position: relative;
+            box-shadow: inset -2px 0 5px rgba(255,255,255,0.3);
+        }
+
+
+
+
+
+.content-wrapper {
+  padding: 0;
+  background: transparent;
+  min-height: auto;
+}
+
+        
+        /* HEADER */
+        .top-header {
+            display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; border-bottom: 1px solid #f0f2f5; 
+            border-bottom: 1px solid #f0f0f0; gap: 20px; height: 70px;
+        }
+        .header-title { font-size: 25px; font-weight: 700; color: #1a1a1a; }
+        /* Đổi màu icon header sang cam */
+        .header-title i { color: #e67e22; }
+
+        /* DROPDOWN KHÁCH HÀNG */
+        .supplier-container { position: relative; display: flex; align-items: center; gap: 10px; }
+        .supplier-input {
+            border: 1px solid #e0e0e0; padding: 8px 15px; border-radius: 10px;
+            width: 250px; outline: none; font-size: 14px; font-weight: 600;
+        }
+        .supplier-dropdown {
+            position: absolute; top: 110%; left: 0; width: 100%;
+            background: #fff; border: 1px solid #e0e0e0; border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); z-index: 1000; display: none;
+        }
+        /* Đổi màu focus sang cam */
+        .supplier-input:focus, #searchInput:focus {
+            border-color: #e67e22 !important;
+            box-shadow: 0 0 0 3px rgba(230, 126, 34, 0.1);
+            outline: none;
+        }
+
+
+
+        /* Style cho từng mục KHÁCH HÀNG trong danh sách */
+.supplier-item {
+    padding: 12px 15px; /* Làm cho vùng chọn rộng ra giống hình */
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 600;
+    color: #333;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid #f9f9f9; /* Đường kẻ mờ giữa các mục */
+    text-align: left;
+    display: block;
+    width: 100%;
+}
+
+/* Hiệu ứng khi di chuột qua hoặc được chọn - Đổi sang màu cam nhạt */
+.supplier-item:hover {
+    background-color: #fdf2e9; 
+    color: #e67e22;
+}
+
+/* Ẩn thanh cuộn nhưng vẫn cuộn được nếu danh sách quá dài */
+#supplierList {
+    max-height: 250px;
+    overflow-y: auto;
+}
+#supplierList::-webkit-scrollbar {
+    width: 4px;
+}
+#supplierList::-webkit-scrollbar-thumb {
+    background: #eee;
+    border-radius: 10px;
+}
+
+
+        /* NỘI DUNG CHÍNH */
+        .container-flex { display: flex; height: calc(100vh - 70px); }
+        
+        .left-panel { width: 40%; border-right: 1px solid #f0f0f0; padding: 20px; display: flex; flex-direction: column; position: relative; }
+       
+        .right-panel { width: 60vw; background: #fafafa; padding: 20px; position: relative; }
+
+        .panel-label { font-weight: 800; font-size: 18px; color: #111; }
+
+        /* THANH CÔNG CỤ LỌC */
+        .search-row { display: flex; gap: 10px; margin-bottom: 15px; align-items: center; }
+        /* Nút Sắp xếp mới */
+.btn-sort {
+    height: 42px; /* Chiều cao bằng với input */
+    width: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px; /* Bo góc giống hình */
+    cursor: pointer;
+    font-size: 16px;
+    color: #555;
+    transition: all 0.2s;
+}
+
+.btn-sort:hover {
+    background-color: #f7fafc;
+    border-color: #cbd5e0;
+    color: #2b6cb0;
+}
+
+.btn-sort:active {
+    transform: scale(0.95);
+}
+
+/* Icon A-Z và Z-A */
+.btn-sort i {
+    pointer-events: none;
+}
+
+
+        .search-wrapper { position: relative; flex: 1; }
+        .search-wrapper input {
+            width: 100%; padding: 10px 40px 10px 15px; border-radius: 12px;
+            border: 1px solid #eee; background: #fdfdfd; outline: none; font-weight: 500;
+        }
+        .search-wrapper i { position: absolute; right: 15px; top: 12px; color: #bbb; }
+
+/* CUSTOM DROPDOWN DANH MỤC GIỐNG HÌNH */
+.custom-dropdown { position: relative; width: 160px; }
+
+.dropdown-selected {
+    padding: 10px 15px; border-radius: 12px; font-size: 14px; border: 1px solid #eee;
+    background: #fff; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+    font-weight: 700; transition: 0.2s;
+}
+
+.dropdown-content {
+    display: none; position: absolute; top: 105%; right: 0; width: 240px;
+    background: white; border: 1px solid #eef2f7; border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1); z-index: 9999;
+    padding: 10px;
+}
+.dropdown-content.show { display: block; }
+
+/* Ô tìm kiếm nhỏ trong menu */
+.dropdown-search {
+    width: 100%; padding: 10px; border: 1px solid #f0f0f0; border-radius: 10px;
+    margin-bottom: 10px; outline: none; font-size: 13px; font-weight: 600;
+}
+
+
+
+/* Container chứa danh sách */
+.cat-list-container {
+    max-height: 250px;
+    overflow-y: scroll; /* Thay 'auto' bằng 'scroll' để luôn giữ ô bên phải */
+    scrollbar-gutter: stable; /* Giữ chỗ cố định cho thanh cuộn, không đè lên chữ */
+    padding-right: 5px; /* Khoảng cách giữa nội dung và thanh cuộn */
+}
+
+/* Tùy chỉnh thanh cuộn để nó trông như một dải riêng biệt */
+.cat-list-container::-webkit-scrollbar {
+    width: 10px; /* Tăng độ rộng lên một chút cho dễ nhìn */
+}
+
+.cat-list-container::-webkit-scrollbar-track {
+    background: #f1f1f1; /* Màu nền của "ô riêng" bên phải */
+    border-radius: 10px;
+}
+
+.cat-list-container::-webkit-scrollbar-thumb {
+    background: #ccc; /* Màu của thanh kéo */
+    border-radius: 10px;
+    border: 2px solid #f1f1f1; /* Tạo khoảng trống để thanh kéo nằm giữa ô */
+}
+
+.cat-list-container::-webkit-scrollbar-thumb:hover {
+    background: #999; /* Đậm hơn khi di chuột vào */
+}
+
+
+
+
+/* Item danh mục */
+.cat-item {
+    padding: 10px 12px; cursor: pointer; font-size: 14px; font-weight: 700;
+    border-radius: 10px; display: flex; align-items: center; gap: 10px;
+    color: #555; transition: 0.2s; margin-bottom: 2px;
+}
+
+/* Nổi bật "Tất cả danh mục" */
+.cat-item.all-cat {
+    background: #f0f7ff; color: #007bff; margin-bottom: 8px;
+}
+
+/* Sử dụng !important để giải quyết mọi mâu thuẫn ghi đè */
+.cat-item.no-cat, 
+.cat-item.no-cat i,
+.uncategorized-text {
+    color: #f97316 !important; 
+    font-weight: bold !important;
+}
+
+.cat-item.no-cat {
+    background-color: #fff5f5 !important; /* Thêm nền hồng nhạt để nổi bật hẳn lên */
+}
+
+.cat-item:hover:not(.all-cat):not(.no-cat) {
+    background: #f8f9fa; color: #e67e22; /* Hover cam */
+}
+
+
+        /* DANH SÁCH SẢN PHẨM */
+        .product-list {
+            flex-grow: 1;           /* Lấy hết phần diện tích còn lại của panel */
+            overflow-y: auto !important; 
+            overflow-x: hidden;
+            padding-right: 5px;
+
+            /* Ẩn thanh cuộn mặc định */
+            scrollbar-width: none;  /* Firefox */
+            -ms-overflow-style: none; /* IE 10+ */
+        }
+                .product-list::-webkit-scrollbar {
+            display: none;          /* Safari and Chrome */
+        }
+        .p-item {
+            display: flex; align-items: center; padding: 12px; border-radius: 15px;
+            cursor: pointer; margin-bottom: 8px; border: 1px solid transparent; transition: 0.2s;
+        }
+        .p-item:hover { background: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        /* Trạng thái khi sản phẩm được chọn - Đổi sang Cam */
+.p-item.active {
+    background-color: #fdf2e9 !important; /* Màu cam nhạt */
+    border: 1px solid #e67e22 !important; /* Viền cam */
+    border-left: 5px solid #e67e22 !important; /* Vạch đậm bên trái */
+    box-shadow: 0 4px 12px rgba(230, 126, 34, 0.1);
+}
+/* Thêm hiệu ứng cho chữ khi active */
+.p-item.active .p-name {
+    color: #e67e22 !important;
+}
+
+.p-item.active .p-stock {
+    background: #e67e22 !important;
+    color: #fff !important;
+}
+
+        
+        /* IMAGE & PLACEHOLDER */
+        .p-img-placeholder {
+            width: 48px; height: 48px; background-color: #f0f2f5; border-radius: 15px;
+            display: flex; align-items: center; justify-content: center; margin-right: 15px; flex-shrink: 0;
+        }
+        .p-img-placeholder img { width: 26px; height: 26px; opacity: 0.3; }
+        .p-img { width: 48px; height: 48px; border-radius: 14px; margin-right: 15px; object-fit: cover; border: 1px solid #eee; }
+
+        .p-info { flex: 1; }
+        .p-name { font-weight: 700; font-size: 15px; color: #333; }
+        .p-meta { font-size: 12px; color: #999; font-weight: 500; }
+        .p-stock { font-weight: 800; color: #444; background: #f0f0f0; padding: 2px 10px; border-radius: 8px; font-size: 13px; }
+
+        .empty-state {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            text-align: center; color: #999;
+        }
+
+        /* Nút Xác nhận Xuất kho - Màu Cam */
+        .btn-confirm {
+            width: 100%; margin-top: 20px; background: #e67e22; color: #fff; 
+            padding: 15px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-confirm:hover { background: #d35400; transform: translateY(-2px); }
+
+
+        .btn-add-new-supplier:hover {
+    background: #f8f9fa;
+    border-color: #e67e22 !important;
+    color: #e67e22 !important;
+}
+
+.btn-save-modal:hover {
+    background: #e67e22 !important;
+    color: white !important;
+}
+
+
+
+
+/* Container bao quanh input và nút x */
+.supplier-input-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+/* Style cho nút X hình tròn */
+#clearSupplier {
+    position: absolute;
+    right: 10px; /* Cách lề phải 10px giống hình */
+    top: 50%;
+    transform: translateY(-50%) scale(0); /* Mặc định ẩn bằng cách thu nhỏ */
+    
+    color: #666; /* Màu xám trung tính giống hình */
+    font-size: 18px; /* Kích thước vừa vặn */
+    cursor: pointer;
+    z-index: 5;
+    transition: all 0.2s ease; /* Hiệu ứng mượt */
+    opacity: 0;
+}
+
+/* Khi có class 'show', nút sẽ hiện ra */
+#clearSupplier.show {
+    transform: translateY(-50%) scale(1);
+    opacity: 1;
+}
+
+/* Hiệu ứng khi di chuột vào - nút sẽ đậm hơn hoặc đổi màu */
+#clearSupplier:hover {
+    color: #333;
+}
+
+
+
+
+
+/* =========================================
+   1. CĂN GIỮA BỘ LỊCH & MŨI TÊN
+   ========================================= */
+.flatpickr-calendar {
+    left: 50% !important;
+    transform: translateX(200%)!important; /* Đã sửa thành -50% để giữa chuẩn nút bấm */
+    margin-top: -15px !important;
+    border-radius: 12px !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important;
+}
+
+.flatpickr-calendar.arrowTop:before, 
+.flatpickr-calendar.arrowTop:after {
+    left: 50% !important;
+    margin-left: -7px !important;
+}
+
+/* =========================================
+   2. KHUNG GIỜ PHÚT TỰ CHẾ (GIỮ LẠI THEO Ý BẠN)
+   ========================================= */
+/* Khung giờ nằm trong lịch */
+.custom-time-picker {
+    /* Quan trọng: Bỏ position absolute để nó nằm yên dưới đáy lịch */
+    display: flex; 
+    justify-content: flex-start; /* Lệch trái theo ý bạn */
+    align-items: center;
+    gap: 10px;
+    padding: 15px 20px;
+    background: #ffffff;
+    border-top: 1px solid #eee; /* Đường kẻ ngăn cách với ngày */
+    border-radius: 0 0 10px 10px;
+}
+
+.custom-time-picker input {
+    width: 55px;
+    height: 40px;
+    border: none;
+    background: #f1f3f5;
+    font-size: 22px;
+    font-weight: 800;
+    color: #e67e22 !important; /* Đổi màu cam */
+    text-align: center;
+    border-radius: 6px;
+    outline: none;
+}
+
+.custom-time-picker span {
+    font-size: 20px;
+    font-weight: 800;
+    color: #333;
+}
+
+/* =========================================
+   3. THANH CHỌN GIỜ Ở ĐÁY (BOTTOM BAR)
+   ========================================= */
+.my-bottom-time-bar {
+    width: 100%;
+    background: #fff;
+    border-top: 1px solid #f0f0f0;
+    padding: 15px 0;
+    display: flex;
+    justify-content: center;
+    border-radius: 0 0 12px 12px;
+}
+
+.time-inputs-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.time-inputs-wrapper input {
+    width: 60px;
+    height: 40px;
+    border: 1px solid #eee;
+    background: #f8f9fa;
+    text-align: center;
+    font-size: 22px;
+    font-weight: 800;
+    color: #e67e22 !important; /* Đổi màu cam */
+    border-radius: 10px;
+    transition: 0.2s;
+}
+
+.time-inputs-wrapper input:focus {
+    outline: none;
+    border-color: #e67e22;
+    background: #fff;
+    box-shadow: 0 0 8px rgba(230, 126, 34, 0.15);
+}
+
+.time-inputs-wrapper span {
+    font-weight: 800;
+    font-size: 22px;
+    margin: 0 8px;
+    color: #333;
+}
+
+/* =========================================
+   4. HEADER TỰ CHẾ (BỘ CHỌN THÁNG/NĂM)
+   ========================================= */
+.flatpickr-months { display: none !important; } /* Ẩn header mặc định */
+
+.my-custom-header {
+    display: flex;
+    justify-content: center; /* Căn giữa toàn bộ bộ chọn theo chiều ngang */
+    align-items: center;
+    padding: 10px;
+    gap: 15px;
+    background: #fff;
+    border-bottom: 1px solid #f0f0f0;
+    width: 100%;
+}
+
+.selector-container { position: relative; flex: 1; }
+
+.selector-display {
+    padding: 8px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 17.5px;
+    cursor: pointer;
+    color: #2D3748;
+    border: 1.5px solid #eee;
+    display: flex;
+    justify-content: center; /* Căn giữa toàn bộ bộ chọn theo chiều ngang */
+    align-items: center;
+    gap: 10px;
+    transition: all 0.35s ease;
+}
+/* 2. Hiệu ứng Hover cho bộ chọn */
+.selector-display:hover {
+    background: #e67e22;    /* Đổi nền tối hơn một chút khi hover */
+    box-shadow: inset 0 0 1.25px 2.5px #ffffff;
+    color: #ffffff;         /* Đổi màu chữ sang trắng cho nổi bật */
+}
+
+.selector-options {
+    position: absolute;
+    top: 110%;
+    left: 0;
+    right: 0;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    display: none;
+    z-index: 9999;
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 4px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+.selector-options.show { display: block; }
+
+/* Icon mũi tên và hiệu ứng xoay */
+.selector-display i {
+    font-size: 15px;   
+    transition: transform 0.3s ease; /* Mượt mà khi xoay */
+}
+.selector-container:has(.selector-options.show) .selector-display i {
+    transform: rotate(180deg);
+}
+
+.month-item, .year-item {
+    padding: 7.5px;
+    font-weight: 650;
+    color: #2D3748;
+    cursor: pointer;
+    border-radius: 6px;
+}
+
+.month-item:hover, .year-item:hover, .active {
+    background: #fdf2e9;
+    color: #e67e22;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+
+
+
+/* Khung chứa giờ nằm trong lịch */
+#myTimeBody.custom-time-picker {
+    position: relative !important; /* Đổi thành relative để dùng được transform */
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    padding: 15px 0;
+    width: 100%;
+    border-top: 1px solid #eee;
+    background: #fff;
+
+
+}
+
+/* Ô nhập giờ phút to rõ của bạn */
+#myTimeBody.custom-time-picker input {
+    width: 60px;
+    height: 45px;
+    background: #f1f3f5;
+    font-size: 24px;
+    font-weight: 900;
+    color: #e67e22 !important;
+    border: none;
+    border-radius: 8px;
+    text-align: center;
+    outline: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Hiệu ứng mượt mà hơn */
+}
+
+#myTimeBody.custom-time-picker span {
+    font-weight: 900;
+    font-size: 22px;
+    color: #333;
+}
+
+
+/* Khung hiển thị tổng thể (Hình viên thuốc) */
+#displayDate {
+    display: inline-flex !important; /* Dùng flex để các thành phần nằm cùng hàng */
+    align-items: center !important;  /* Căn giữa icon và chữ theo chiều dọc */
+    justify-content: center !important;
+    gap: 12.5px;                      /* Khoảng cách giữa icon và chữ */
+    padding: 10px 25px;             /* Khoảng trống bên trong khung */
+    background: #f8f9fa;            /* Màu nền xám nhạt */
+    border-radius: 50px;            /* Bo tròn hai đầu thành hình viên thuốc */
+    border: 1.25px solid #e9ecef;      /* Viền mảnh */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    margin: 15px 0;                 /* Khoảng cách với các thành phần khác */
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); /* Hiệu ứng mượt mà hơn */
+    box-shadow: 0 2px 2.5px rgba(124, 124, 124, 0.5);
+}
+/* 2. Hiệu ứng Hover khi di chuột vào */
+#displayDate:hover {
+    background: #f7fafc;         /* Đổi nền nhẹ giống dropdown của bạn */
+    border: 1.25px solid #dde1e4;       /* Viền đậm hơn một chút */
+    transform: translateY(-5px); /* Nhích lên cao hơn một chút so với dropdown để tạo điểm nhấn */
+    box-shadow: 0 7.5px 2.5px 0px #dde1e4; /* Đổ bóng sâu hơn để thấy độ nổi */
+}
+
+
+/* Icon lịch nằm TRONG khung */
+#displayDate i, 
+#displayDate svg {
+    font-size: 24px !important;     /* Kích thước icon to rõ */
+    color: #e67e22 !important;      /* Màu cam đồng bộ */
+    margin: 0 !important;           /* Xóa bỏ mọi margin gây lệch vị trí */
+}
+/* 4. Hiệu ứng hover riêng cho Icon và Chữ bên trong */
+#displayDate:hover i {
+    color: #d35400; /* Cam đậm hơn một chút khi hover */
+    transform: scale(1.1);
+    transition: transform 0.3s ease;
+}
+
+/* Chữ ngày tháng năm */
+#displayDate span {
+    font-size: 22px !important;     /* Chữ to ngang tầm icon */
+    font-weight: 800 !important;    /* Làm chữ cực đậm */
+    color: #333 !important;
+    line-height: 1;
+}
+#displayDate:hover span {
+    color: #2d3748; /* Chữ đậm hơn để tăng độ đọc */
+}
+
+
+
+
+
+/* =========================================
+   CUSTOM PICKER - CHUẨN - BO TRÒN - KHÔNG LỖI
+   ========================================= */
+.date-container { position: relative; font-family: 'Baloo 2', cursive; padding: 0px 25px; }
+
+.custom-date-trigger {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 25px; background: #f8f9fa;
+    border-radius: 50px; border: 1.5px solid #eee;
+    cursor: pointer; transition: 0.3s;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+}
+.custom-date-trigger:hover { 
+    background: #fff; border-color: #e67e22; 
+    box-shadow: 0 8px 20px rgba(230, 126, 34, 0.1);
+}
+
+.my-picker-dropdown {
+    position: absolute; top: calc(100% + 12px); right: 0;
+    width: 320px; background: #fff; border-radius: 35px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    display: none; flex-direction: column; z-index: 10000;
+    padding: 25px; border: 1px solid #f0f0f0;
+}
+
+.picker-header { display: flex; gap: 10px; margin-bottom: 20px; }
+.custom-select-wrap { position: relative; flex: 1; }
+
+.select-display {
+    background: #f1f3f5; padding: 12px; border-radius: 18px;
+    font-weight: 800; font-size: 15px; text-align: center; cursor: pointer;
+    transition: 0.2s ease-in-out;
+}
+.select-display:hover {
+    background: #e67e22;
+    color: #ffffff;
+}
+.select-display::-webkit-scrollbar {display:none;}
+
+.select-options {
+    position: absolute; top: 110%; left: 0; width: 100%;
+    background: #fff; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    max-height: 250px; overflow-y: auto; display: none; z-index: 100;
+    border: 1px solid #eee; padding: 8px;
+}
+.select-options div {
+    padding: 12px; text-align: center; font-weight: 700; border-radius: 15px;
+    cursor: pointer; font-size: 14px; margin-bottom: 4px;
+}
+.select-options div:hover { background: #fdf2e9; color: #e67e22; }
+.select-options div.active { background: #e67e22 !important; color: #fff !important; }
+
+.days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-bottom: 25px; }
+.day-cell {
+    aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; border-radius: 50%; font-weight: 700; font-size: 14px;
+}
+.day-cell:hover:not(.disabled):not(.empty) { background: #fdf2e9; color: #e67e22; }
+.day-cell.disabled {
+    color: #ccc !important;
+    background: #f9f9f9 !important;
+    cursor: not-allowed !important;
+    pointer-events: none; /* Không cho click */
+}
+
+
+
+.day-cell.active {
+    background-color: #e67e22; /* Màu xanh lá hoặc màu chủ đạo của bạn */
+    color: white;
+    border-radius: 50%; /* Hoặc bo góc tùy ý */
+}
+
+.time-container {
+    display: flex; justify-content: center; align-items: center;
+    gap: 15px; padding-top: 20px; border-top: 1.5px solid #f8f9fa;
+}
+.time-box {
+    background: #f1f3f5; width: 75px; height: 65px; border-radius: 20px;
+    display: flex; align-items: center; justify-content: center;
+}
+.time-box input {
+    width: 100%; border: none; background: transparent; text-align: center;
+    font-size: 30px; font-weight: 900; color: #e67e22; outline: none;
+}
+input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.time-divider { font-size: 30px; font-weight: 900; color: #333; }
+
+
+
+
+
+.btn-reset-date {
+    background: #f8f9fa; border: 1px solid #ddd; color: #666;
+    width: 32px; height: 32px; border-radius: 8px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; transition: 0.2s;
+}
+.btn-reset-date:hover { background: #e74c3c; color: white; border-color: #e74c3c; }
+
+
+
+/* Toast thông báo */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+}
+.my-toast {
+    background: #333;
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: slideIn 0.3s ease-out;
+}
+.my-toast.error { background: #e74c3c; }
+.my-toast.success { background: #2ecc71; }
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+/* Nút Reset thời gian */
+.date-container { display: flex; align-items: center; gap: 8px; }
+.btn-reset-date {
+    background: #f8f9fa;
+    border: 1px solid #ddd;
+    color: #666;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+.btn-reset-date:hover {
+    background: #e74c3c;
+    color: white;
+    border-color: #e74c3c;
+}
+
+
+
+
+/* Container bên phải */
+#importArea {
+    padding: 20px;
+    background: #fdfdfd;
+}
+
+/* Thẻ Card chính */
+.import-card {
+    background: #ffffff;
+    border-radius: 24px; /* Bo cong cực mạnh */
+    padding: 30px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.03); /* Đổ bóng nhẹ nhàng */
+    border: 1px solid #f1f1f1;
+    height: auto;
+}
+
+/* Badge Hạn sử dụng */
+.expiry-tag {
+    color: #e74c3c;
+    font-weight: 700;
+    font-size: 15px;
+    margin-top: 8px;
+    display: block;
+}
+
+/* Các ô thông tin xám nhẹ */
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.info-box {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 12px;
+}
+
+.info-box .label {
+    display: block;
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #999;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.info-box .value {
+    font-weight: 800;
+    color: #333;
+    font-size: 16px;
+}
+
+/* Ô nhập số lượng to rõ */
+.qty-input-container {
+    margin-top: 25px;
+}
+
+.qty-input-container label {
+    font-weight: 700;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.big-input {
+    width: 100%;
+    height: 80px;
+    border-radius: 16px;
+    border: 2px solid #e67e22; /* Viền cam */
+    font-size: 36px;
+    text-align: center;
+    font-weight: 800;
+    color: #333;
+    outline: none;
+    transition: all 0.3s;
+}
+
+.big-input:focus {
+    box-shadow: 0 0 15px rgba(230, 126, 34, 0.2);
+}
+
+/* Nút xác nhận cam mướt */
+.btn-confirm-big {
+    width: 100%;
+    padding: 20px;
+    background: #e67e22;
+    color: white;
+    border: none;
+    border-radius: 16px;
+    font-size: 18px;
+    font-weight: 800;
+    margin-top: 20px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+
+.stock-change {
+    display: none; /* Mặc định ẩn */
+    
+    /* --- CẤU HÌNH KÍCH THƯỚC ĐỘNG --- */
+    width: auto;             /* Tự động rộng theo nội dung */
+    min-width: 24px;         /* Nhỏ nhất là 24px (cho số có 1 chữ số) */
+    height: 24px;            /* Chiều cao cố định */
+    padding: 0 8px;          /* Tạo khoảng thở 2 bên để số không sát viền */
+    
+    /* --- CĂN GIỮA NỘI DUNG --- */
+    /* Dùng Flexbox thay vì line-height để căn giữa chuẩn hơn khi width thay đổi */
+    align-items: center;     
+    justify-content: center; 
+    
+    background: #e74c3c;     /* Màu đỏ (hoặc xanh tùy logic import/export) */
+    
+    /* --- KIỂU DÁNG --- */
+    border-radius: 20px;     /* Bo tròn kiểu viên thuốc (Pill shape) */
+    outline: 2px solid #e74c3c; /* Viền ngoài cùng màu */
+    
+    /* --- FONT CHỮ --- */
+    font-weight: 800;
+    font-size: 13px;
+    color: #ffffff;
+    white-space: nowrap;     /* Quan trọng: Giữ số trên 1 dòng, không bị rớt dòng */
+    
+    /* --- VỊ TRÍ --- */
+    margin-left: 8px;
+    
+    /* --- HIỆU ỨNG --- */
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Hiệu ứng nảy nhẹ khi hiện số */
+@keyframes popIn {
+    from { transform: scale(0); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+
+
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateX(-5px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+
+
+
+
+/* =========================================
+   CUSTOM MODAL (Popup Xác nhận & Thông báo)
+   ========================================= */
+.custom-modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); /* Làm mờ nền sau */
+    z-index: 20000; display: none;
+    align-items: center; justify-content: center;
+}
+
+.custom-modal-box {
+    background: #fff; padding: 30px; border-radius: 24px;
+    width: 420px; text-align: center;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    animation: popUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    border: 1px solid #f0f0f0;
+}
+
+/* Icon tròn to */
+.modal-icon-box {
+    width: 80px; height: 80px; margin: -50px auto 20px auto; /* Nổi lên trên 1 chút */
+    background: #fff; 
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+.modal-icon-box i { font-size: 38px; color: #e67e22; }
+
+/* Typo */
+.modal-title { font-size: 24px; font-weight: 800; color: #2d3748; margin-bottom: 10px; }
+.modal-desc { font-size: 16px; color: #4a5568; font-weight: 500; margin-bottom: 30px; line-height: 1.6; }
+
+/* Buttons */
+.modal-actions { display: flex; gap: 15px; justify-content: center; }
+
+.btn-modal {
+    padding: 14px 25px; border-radius: 14px; border: none;
+    font-weight: 700; cursor: pointer; font-size: 16px; transition: 0.2s; flex: 1;
+}
+
+.btn-modal.cancel { background: #edf2f7; color: #4a5568; }
+.btn-modal.cancel:hover { background: #e2e8f0; color: #2d3748; }
+
+.btn-modal.confirm { background: #e67e22; color: #fff; box-shadow: 0 5px 15px rgba(230, 126, 34, 0.3); }
+.btn-modal.confirm:hover { background: #d35400; transform: translateY(-2px); }
+
+/* Animation Modal hiện ra */
+@keyframes popUp {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+/* Style riêng cho modal thành công */
+.success-mode .modal-icon-box { border: 4px solid #c6f6d5; }
+.success-mode i { color: #2f855a; } 
+.success-text span { color: #e53e3e; font-weight: 800; } /* Màu đỏ cho số tiền nợ trong thông báo */
+
+
+
+
+/* --- SỬA LỖI GIAO DIỆN TÌM KHÁCH HÀNG --- */
+
+/* 1. Khung bao quanh Text và Ô nhập (căn giữa dọc) */
+.client-container {
+    display: flex;
+    align-items: center; /* Căn giữa dòng chữ 'Chọn khách hàng' với ô input */
+    gap: 10px; /* Khoảng cách giữa chữ và ô input */
+}
+
+/* 2. Khung bao quanh ô input để ghim nút X vào trong */
+.client-input-wrapper {
+    position: relative; /* Quan trọng: làm điểm tựa cho nút X */
+    width: 250px; /* Định rộng cho ô nhập */
+}
+
+/* 3. Chỉnh lại ô Input */
+#clientInput {
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 8px 35px 8px 15px; /* Padding phải 35px để chữ không đè lên nút X */
+    font-size: 15px;
+    outline: none;
+    box-sizing: border-box; /* Giữ kích thước không bị phình to */
+    text-align: center !important; /* Canh trái cho dễ nhìn hơn canh giữa */
+}
+
+/* 4. Định vị nút X nằm đè lên ô input */
+#clearClient {
+    position: absolute; /* Tuyệt đối so với cha (.client-input-wrapper) */
+    right: 15px; /* Cách mép phải 10px */
+    top: 50%;
+    transform: translateY(-50%); /* Căn giữa theo chiều dọc */
+    color: #999;
+    cursor: pointer;
+    font-size: 25px;
+    z-index: 5;
+    transition: color 0.3s;
+}
+
+#clearClient:hover {
+    color: #e74c3c; /* Đổi màu đỏ khi di chuột vào */
+}
+
+/* 5. Dropdown list (Đã sửa ở bước trước - giữ nguyên để đảm bảo không vỡ) */
+.client-dropdown {
+    position: absolute;
+    top: calc(100% + 5px); /* Cách đáy ô input 5px */
+    left: 0;
+    width: 100%;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    z-index: 1000;
+    display: none;
+}
+
+/* Nút thêm mới bên dưới */
+.btn-add-new-client {
+    text-align: center;
+    padding: 8px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 14px;
+    color: #e67e22;
+    font-weight: 700;
+    border-radius: 8px;
+    transition: 0.2s;
+}
+.btn-add-new-client:hover {
+    background: #fdf2e9;
+}
+
+
+    </style>
+</head>
+
+
+<body>
+    
+ <div class="table-view">
+    <div class="sidebar"></div>
+
+    <div class="main-content">
+        
+        <header class="top-header">
+            <div class="header-title"><i class="fa-solid fa-file-export" style="padding-right:10px"></i> Xuất kho</div>
+            
+            <div style="width:1.25px; height:50px; background:#eee; margin: 0 10px;"></div>
+
+            <div class="client-container">
+                <span style="font-size: 17.5px; font-weight: 700;">Chọn khách hàng</span>
+                <div class="client-input-wrapper">
+                    <input type="text" id="clientInput" 
+                           oninput="handleSearch()" 
+                           onclick="toggleClientDropdown(event)"
+                           placeholder="Nhập tên khách hàng" 
+                           style="cursor: text; text-align: center; width: 200px; border: 1px solid #ddd; font-size: 15px; border-radius: 10px; padding: 8px 12px;"
+                           autocomplete="off">
+                    <i class="fa-solid fa-circle-xmark" id="clearClient" onclick="clearSearch(event)"></i>
+
+                    <div class="client-dropdown" id="clientDropdown">
+                        <div style="padding: 10px; text-align: center; color: #666; font-weight: 700; font-size: 13px; border-bottom: 1px solid #eee;">
+                            Tên khách hàng
+                        </div>
+                        <div id="clientList"></div>
+                        <div style="padding: 10px; border-top: 1px solid #eee;">
+                            <div class="btn-add-new-client">
+                                <a href="/items/contact/client.html" style="text-decoration: none; color: inherit;">
+                                    <i class="fa-solid fa-circle-plus"></i>
+                                    <span>Khách hàng mới</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="date-container" style="margin-left: auto;">
+                <div class="custom-date-trigger" id="dateTrigger">
+                    <i class="fa-solid fa-calendar-check"></i>
+                    <span id="displayDateTime">Chọn ngày xuất</span>
+                </div>
+                    <!-- Thêm nút Reset -->
+    <button class="btn-reset-date" onclick="resetToNow(event)" title="Về hiện tại">
+        <i class="fa-solid fa-rotate-left"></i>
+    </button>
+
+                    <div class="my-picker-dropdown" id="myPicker">
+        <div class="picker-header">
+            <div class="custom-select-wrap">
+                <div class="select-display" id="monthDisplay">Tháng 1</div>
+                <div class="select-options" id="monthOptions"></div>
+            </div>
+            <div class="custom-select-wrap">
+                <div class="select-display" id="yearDisplay">2024</div>
+                <div class="select-options" id="yearOptions"></div>
+            </div>
+        </div>
+
+        <div class="days-grid" id="daysGrid">
+            <!-- JS sẽ tự đổ ngày vào đây -->
+        </div>
+
+        <div class="time-container">
+            <div class="time-box">
+                <input type="number" id="p_hour" value="00" min="0" max="23">
+            </div>
+            <div class="time-divider">:</div>
+            <div class="time-box">
+                <input type="number" id="p_minute" value="00" min="0" max="59">
+            </div>
+        </div>
+    </div>
+                </div>
+        </header>
+
+        <div class="container-flex">
+            
+            <div class="left-panel">
+                <!-- Thanh công cụ: Tìm kiếm & Chọn danh mục -->
+                <div class="search-row">
+                    <div class="search-wrapper">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="searchInput" placeholder="Tìm kiếm tên, SKU..." oninput="filterProducts()" autocomplete="off">
+                    </div>
+
+                    <div class="custom-dropdown" id="catDropdown" onclick="toggleCatDropdown(event)">
+                        <div class="dropdown-selected">
+                            <span id="selectedCatText">Tất cả danh mục</span>
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                        <!-- Menu xổ xuống -->
+                        <div class="dropdown-content" id="dropdownContent">
+                            <input type="text" class="dropdown-search" placeholder="Tìm nhanh danh mục..." onclick="event.stopPropagation()">
+                            <div class="cat-list-container">
+                                <!-- Danh mục sẽ được JS đổ vào đây -->
+                            </div>
+                        </div>
+                    </div>
+
+                        <button id="btnSort" class="btn-sort" onclick="toggleSortOrder()" title="Sắp xếp tên sản phẩm">
+        <i class="fa-solid fa-arrow-down-a-z"></i>
+    </button>
+
+                </div>
+
+                <!-- Khu vực hiển thị danh sách sản phẩm -->
+                <div class="product-list" id="productList">
+                    <!-- JS sẽ load sản phẩm vào đây -->
+                    <div style="text-align:center; padding-top: 50px; color:#aaa;">
+                        <i class="fa-solid fa-spinner fa-spin" style="font-size: 24px;"></i><br>Đang tải dữ liệu...
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-panel" id="importArea">
+                <span class="panel-label" style="display: inline-flex; align-items: center;">
+                    <span style="position: relative; display: inline-block; width: 24px; height: 24px; margin-right: 10px;">
+                        <i class="fa-solid fa-truck-ramp-box" style="color: #f39c12; font-size: 20px;"></i>
+                        <i class="fa-solid fa-arrow-right-from-bracket" style="color: #e67e22; background-color: white; border-radius: 50%; font-size: 12px; position: absolute; bottom: 0px; right: 0px;"></i>
+                    </span>
+                    Xuất kho
+                </span>
+                <div class="empty-state">
+                    <i class="fa-solid fa-hand-point-left" style="font-size: 40px; color: #f9d342; margin-bottom: 15px; display: block;"></i>
+                    <p style="font-weight: 700; font-size: 16px;">Bấm chọn sản phẩm bên trái để xuất</p>
+                </div>
+            </div>
+        </div>
+        
+
+            <!-- THANH CUỘN NƯỚC (Nằm sát mép phải của Main Content) -->
+            <div class="water-scrollbar-container">
+                <div class="water-fill" id="waterLevel"></div>
+            </div>
+
+        </div> <!-- Kết thúc main-content -->
+    </div> <!-- Kết thúc table-view -->
+
+    <!-- MODAL XÁC NHẬN NỢ -->
+<div class="custom-modal-overlay" id="debtModal">
+    <div class="custom-modal-box">
+        <div class="modal-icon-box">
+            <i class="fa-solid fa-circle-question" style="color:#e67e22"></i>
+        </div>
+        <div class="modal-title">Xác nhận ghi nợ?</div>
+        
+        <div class="modal-desc" id="debtModalContent">
+            <!-- Nội dung sẽ được điền bằng JS -->
+            Khách: <b>Anh A</b><br>
+            Số tiền nợ: <span style="font-size:22px; color:#e74c3c; font-weight:900">500.000₫</span>
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn-modal cancel" onclick="closeModal('debtModal')">Hủy bỏ</button>
+            <button class="btn-modal confirm" id="btnConfirmDebt">Đồng ý Ghi nợ</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL THÔNG BÁO THÀNH CÔNG -->
+<div class="custom-modal-overlay" id="successModal">
+    <div class="custom-modal-box success-mode">
+        <div class="modal-icon-box">
+            <i class="fa-solid fa-check"></i>
+        </div>
+        <div class="modal-title" style="color:#2f855a">Thành công!</div>
+        <div class="modal-desc success-text" id="successMessage">
+            <!-- Nội dung sẽ được điền bằng JS -->
+        </div>
+        <!-- Không cần nút, nó sẽ tự tắt và load lại trang -->
+    </div>
+</div>
+
+
+
+<script type="module">
+    // ============================================================
+    // 1. IMPORT FIREBASE & CẤU HÌNH
+    // ============================================================
+    import { db } from "../firebase-config.js";
+    import { 
+    collection, addDoc, getDocs, getDoc, updateDoc, query, where, doc, 
+    orderBy, onSnapshot, serverTimestamp, 
+    arrayUnion, setDoc // THÊM 2 CÁI NÀY
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    // --- BIẾN TOÀN CỤC ---
+
+
+
+// Chèn CSS động cho Avatar
+// ============================================================
+// 0. CHÈN CSS CHO ICON KHÁCH HÀNG (AVATAR)
+// ============================================================
+(function injectAvatarStyles() {
+    const style = document.createElement('style');
+    style.innerHTML = `
+        /* Icon trong danh sách dropdown */
+        .client-avatar {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-weight: bold; font-size: 14px;
+            margin-right: 10px;
+            text-transform: uppercase;
+            flex-shrink: 0;
+        }
+        .supplier-item {
+            display: flex !important;
+            align-items: center;
+            padding: 8px 10px;
+            cursor: pointer;
+        }
+        .supplier-item:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* Wrapper bọc input để chứa icon */
+        .input-icon-wrapper {
+            position: relative;
+            display: block;
+            width: 100%;
+        }
+        
+        /* Icon hiển thị đè lên input sau khi chọn */
+        #selectedClientIcon {
+            position: absolute;
+            left: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            display: none; /* Mặc định ẩn */
+            align-items: center; justify-content: center;
+            color: #fff; font-weight: bold; font-size: 13px;
+            z-index: 5;
+            pointer-events: none;
+            text-transform: uppercase;
+        }
+        
+        /* Khi input có icon thì đẩy text sang phải */
+        #clientInput.has-avatar {
+            padding-left: 40px !important;
+        }
+    `;
+    document.head.appendChild(style);
+})();
+
+// Hàm tạo màu ngẫu nhiên cố định theo tên
+function stringToColor(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const c = (hash & 0x00FFFFFF).toString(16).toUpperCase();
+    return '#' + "00000".substring(0, 6 - c.length) + c;
+}
+
+
+    const currentStoreId = localStorage.getItem('current_store_id');
+    let myProducts = [];
+    let customers = []; // Danh sách khách hàng
+    let currentSort = 'asc';
+    let selectedCategory = 'Tất cả';
+    let selectedClientObj = null; // Đối tượng khách hàng đang chọn
+    let clients = []; // Thay cho customers
+  
+
+ 
+    // ============================================================
+    // 2. KHỞI TẠO & KIỂM TRA QUYỀN
+    // ============================================================
+// ============================================================
+    // 2. KHỞI TẠO & KIỂM TRA QUYỀN (ĐÃ SỬA)
+    // ============================================================
+    (async function init() {
+        const userLoggedIn = localStorage.getItem('userLoggedIn');
+        const userRole = localStorage.getItem('userRole');
+
+        if (userLoggedIn !== 'true' || !currentStoreId) {
+            window.location.replace('/index.html?auth=required');
+            return;
+        }
+
+        // Ẩn chức năng Admin nếu là Viewer
+        if (userRole === 'viewer') {
+            const style = document.createElement('style');
+            style.innerHTML = `.admin-only, .btn-confirm, .btn-trash-general { display: none !important; }`;
+            document.head.appendChild(style);
+        }
+
+        loadSidebar();
+        listenToProducts();
+        listenToClients();
+        
+        // Đợi 1 chút để đảm bảo HTML render xong mới gắn sự kiện Lịch
+        setTimeout(() => {
+            initCustomPicker(); 
+        }, 500);
+    })();
+
+    function loadSidebar() {
+        fetch('/components/Side-Bar.html')
+            .then(res => res.text())
+            .then(data => {
+                const container = document.querySelector('.sidebar');
+                if (!container) return;
+                container.innerHTML = data;
+                // Chạy lại script trong sidebar
+                container.querySelectorAll('script').forEach(oldScript => {
+                    const newScript = document.createElement('script');
+                    Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+                    newScript.textContent = oldScript.textContent;
+                    oldScript.replaceWith(newScript);
+                });
+                window.toggleMenu = function (id) {
+                    const el = document.getElementById(id);
+                    if (el) el.classList.toggle('active');
+                };
+            })
+            .catch(err => console.error('Lỗi tải Sidebar:', err));
+    }
+     
+
+        // HÀM XỬ LÝ BẬT TẮT MENU DANH MỤC (Thêm mới)
+    window.toggleCatDropdown = function(e) {
+        if (e) e.stopPropagation();
+        const content = document.getElementById('dropdownContent');
+        if (content) {
+            content.classList.toggle('show');
+        }
+    };
+
+    // Đóng menu danh mục khi click ra ngoài (Bổ sung vào listener click existing hoặc thêm mới)
+    window.addEventListener('click', function(e) {
+        // Đóng dropdown khách hàng
+        const clientDrop = document.getElementById('clientDropdown');
+        if(clientDrop) clientDrop.style.display = 'none';
+        
+        // Đóng dropdown bộ lọc ngày
+        if(document.getElementById('myPicker')) document.getElementById('myPicker').style.display = 'none';
+
+        // Đóng dropdown Danh Mục (Vừa thêm)
+        const catDrop = document.getElementById('dropdownContent');
+        if (catDrop && catDrop.classList.contains('show')) {
+            // Kiểm tra nếu click không nằm trong dropdown thì mới đóng
+            if (!e.target.closest('.custom-dropdown')) {
+                catDrop.classList.remove('show');
+            }
+        }
+    });
+
+
+
+
+  
+
+// ============================================================
+// HÀM UPDATE UI ĐÃ CHỈNH SỬA (REALTIME UPDATE)
+// ============================================================
+// ============================================================
+// HỆ THỐNG LỊCH & THỜI GIAN (ĐÃ SỬA LỖI)
+// ============================================================
+let selectedDate = new Date(); 
+let viewDate = new Date();     
+
+function showToast(msg, type = 'success') {
+    const container = document.getElementById('toastContainer');
+    if(!container) return;
+    const toast = document.createElement('div');
+    toast.className = `my-toast ${type}`;
+    const icon = type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation';
+    toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${msg}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 500);
+    }, 3000);
+}
+
+window.resetToNow = function(e) {
+    if(e) e.stopPropagation();
+    const now = new Date();
+    selectedDate = new Date(now);
+    viewDate = new Date(now);
+    
+    // Cập nhật lại input giờ/phút
+    const hInp = document.getElementById('p_hour');
+    const mInp = document.getElementById('p_minute');
+    if(hInp) hInp.value = String(now.getHours()).padStart(2, '0');
+    if(mInp) mInp.value = String(now.getMinutes()).padStart(2, '0');
+    
+    updateUI();
+    showToast("Đã đưa thời gian về hiện tại", "success");
+};
+
+function initCustomPicker() {
+    const trigger = document.getElementById('dateTrigger');
+    const picker = document.getElementById('myPicker');
+    const hInp = document.getElementById('p_hour');
+    const mInp = document.getElementById('p_minute');
+    const yearOptions = document.getElementById('yearOptions');
+    const monthOptions = document.getElementById('monthOptions');
+
+    if (!trigger || !picker) return;
+
+    const now = new Date();
+    if (hInp) hInp.value = String(now.getHours()).padStart(2, '0');
+    if (mInp) mInp.value = String(now.getMinutes()).padStart(2, '0');
+
+    // Giới hạn năm: Chỉ cho lùi 2 năm (2026, 2025, 2024)
+    if (yearOptions) {
+        yearOptions.innerHTML = '';
+        for (let y = now.getFullYear(); y >= now.getFullYear() - 2; y--) {
+            const div = document.createElement('div');
+            div.innerText = y;
+            div.onclick = (e) => {
+                e.stopPropagation();
+                viewDate.setFullYear(y);
+                updateUI();
+                yearOptions.style.display = 'none';
+            };
+            yearOptions.appendChild(div);
+        }
+    }
+
+    trigger.onclick = (e) => {
+        e.stopPropagation();
+        const isHidden = window.getComputedStyle(picker).display === 'none';
+        picker.style.display = isHidden ? 'flex' : 'none';
+        if (isHidden) updateUI();
+    };
+
+    window.addEventListener('click', () => {
+        picker.style.display = 'none';
+        if (monthOptions) monthOptions.style.display = 'none';
+        if (yearOptions) yearOptions.style.display = 'none';
+    });
+
+    if (hInp && mInp) {
+        [hInp, mInp].forEach(inp => {
+            inp.oninput = () => {
+                if (inp.id === 'p_hour' && inp.value > 23) inp.value = 23;
+                if (inp.id === 'p_minute' && inp.value > 59) inp.value = 59;
+                updateDisplayStr();
+            };
+        });
+    }
+    updateUI();
+}
+
+function updateUI() {
+    const months = ["Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6", "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"];
+    document.getElementById('monthDisplay').innerText = months[viewDate.getMonth()];
+    document.getElementById('yearDisplay').innerText = viewDate.getFullYear();
+
+    const monthOptions = document.getElementById('monthOptions');
+    monthOptions.innerHTML = '';
+    for (let i = 0; i < 12; i++) {
+        const div = document.createElement('div');
+        div.innerText = months[i];
+        if (i === viewDate.getMonth()) div.classList.add('active');
+        div.onclick = (e) => {
+            e.stopPropagation();
+            viewDate.setMonth(i);
+            updateUI();
+            monthOptions.style.display = 'none';
+        };
+        monthOptions.appendChild(div);
+    }
+
+    renderCalendarGrid();
+    updateDisplayStr();
+}
+
+function renderCalendarGrid() {
+    const grid = document.getElementById('daysGrid');
+    if(!grid) return;
+    grid.innerHTML = '';
+    
+    const now = new Date();
+    const nineMonthsAgo = new Date();
+    nineMonthsAgo.setMonth(now.getMonth() - 9);
+
+    const year = viewDate.getFullYear();
+    const month = viewDate.getMonth();
+    const firstDay = new Date(year, month, 1).getDay();
+    const totalDays = new Date(year, month + 1, 0).getDate();
+
+    // Ô trống
+    for (let i = 0; i < firstDay; i++) {
+        const emptyCell = document.createElement('div');
+        emptyCell.className = 'day-cell empty';
+        grid.appendChild(emptyCell);
+    }
+
+    // Ô ngày
+    for (let d = 1; d <= totalDays; d++) {
+        const cell = document.createElement('div');
+        cell.className = 'day-cell';
+        cell.innerText = d;
+
+        const cellDate = new Date(year, month, d);
+        
+        // Điều kiện chặn: Tương lai HOẶC quá 9 tháng quá khứ
+        const isFuture = cellDate > now;
+        const isTooOld = cellDate < nineMonthsAgo;
+
+        if (isFuture || isTooOld) {
+            cell.classList.add('disabled');
+            if (isTooOld) cell.title = "Không được chọn ngày cũ hơn 9 tháng";
+        } else {
+            // Kiểm tra Active
+            if (d === selectedDate.getDate() && month === selectedDate.getMonth() && year === selectedDate.getFullYear()) {
+                cell.classList.add('active');
+            }
+            
+            cell.onclick = (e) => {
+                e.stopPropagation();
+                selectedDate.setFullYear(year);
+                selectedDate.setMonth(month);
+                selectedDate.setDate(d);
+                renderCalendarGrid();
+                updateDisplayStr();
+            };
+        }
+        grid.appendChild(cell);
+    }
+}
+
+function updateDisplayStr() {
+    const h = document.getElementById('p_hour').value || 0;
+    const m = document.getElementById('p_minute').value || 0;
+    selectedDate.setHours(h);
+    selectedDate.setMinutes(m);
+    
+    const dd = String(selectedDate.getDate()).padStart(2, '0');
+    const mm = String(selectedDate.getMonth() + 1).padStart(2, '0');
+    const yyyy = selectedDate.getFullYear();
+    const hh = String(h).padStart(2, '0');
+    const mn = String(m).padStart(2, '0');
+    document.getElementById('displayDateTime').innerText = `${dd}/${mm}/${yyyy} ${hh}:${mn}`;
+}
+
+    // ============================================================
+    // 4. LẮNG NGHE DỮ LIỆU REALTIME
+    // ============================================================
+    function listenToProducts() {
+        const q = query(collection(db, "products"), where("storeId", "==", currentStoreId));
+        onSnapshot(q, (snapshot) => {
+            myProducts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            filterProducts();
+            renderCategoryList();
+        });
+    }
+
+    // ============================================================
+    // 5. QUẢN LÝ HIỂN THỊ SẢN PHẨM
+    // ============================================================
+    window.renderProducts = function(data = myProducts) {
+        const list = document.getElementById('productList');
+        if (!list) return;
+        if (data.length === 0) {
+            list.innerHTML = `<div style="text-align:center; padding:20px; color:#999;">Không tìm thấy sản phẩm</div>`;
+            return;
+        }
+        list.innerHTML = data.map(p => {
+            const safeSku = p.sku.toString().replace(/\s+/g, '-');
+            const isUncat = !p.category || p.category === 'Chưa phân loại' || p.category === '';
+            const imgDisplay = (p.img && p.img.length > 20) ? 
+                `<img src="${p.img}" class="p-img">` : 
+                `<div class="p-img-placeholder"><i class="fa-solid fa-box-open"></i></div>`;
+            
+            return `
+            <div class="p-item" id="p-${p.id}" onclick="selectToExport('${p.id}')">
+                ${imgDisplay}
+                <div class="p-info">
+                    <p class="p-name">${p.name}</p>
+                    <small class="${isUncat ? 'uncategorized-text' : 'p-meta'}">${isUncat ? 'Chưa phân loại' : p.category}</small>
+                </div>
+                <div class="p-stock" id="stock-${p.id}">${p.stock}</div>
+                <div class="stock-change" id="change-${safeSku}"></div>
+            </div>`;
+        }).join('');
+    }
+
+
+
+    // Vẽ danh sách
+// ============================================================
+    // QUẢN LÝ KHÁCH HÀNG (CÓ SORT A-Z & AVATAR)
+    // ============================================================
+    
+// ============================================================
+    // QUẢN LÝ KHÁCH HÀNG (ĐÃ SỬA: LỌC THEO STORE ID)
+    // ============================================================
+    
+    // 1. Lắng nghe và Sắp xếp A-Z
+    function listenToClients() {
+        const currentStoreId = localStorage.getItem('current_store_id');
+        if (!currentStoreId) return;
+
+        // --- SỬA LỖI Ở ĐÂY: Thêm where để lọc theo cửa hàng ---
+        const q = query(
+            collection(db, "customers"), 
+            where("storeId", "==", currentStoreId)
+        );
+        
+        onSnapshot(q, (snapshot) => {
+            let tempClients = snapshot.docs.map(doc => ({ 
+                id: doc.id, 
+                ...doc.data() 
+            }));
+
+            // --- SẮP XẾP A-Z (Tiếng Việt) ---
+            tempClients.sort((a, b) => {
+                const nameA = a.name ? a.name.toLowerCase() : "";
+                const nameB = b.name ? b.name.toLowerCase() : "";
+                return nameA.localeCompare(nameB, 'vi'); 
+            });
+
+            // Gán vào biến toàn cục clients (đảm bảo biến này đã khai báo ở trên cùng file)
+            clients = tempClients;
+            renderClientDropdown();
+        });
+    }
+
+    // 2. Vẽ Dropdown (Có Avatar tròn + Tên)
+    window.renderClientDropdown = function() {
+        const listContainer = document.getElementById('clientList');
+        if (!listContainer) return;
+
+        if (!clients || clients.length === 0) {
+            listContainer.innerHTML = `
+                <div style="padding:20px; text-align:center; color:#999;">
+                   Chưa có dữ liệu khách hàng
+                </div>`;
+            return;
+        }
+
+        listContainer.innerHTML = clients.map(c => {
+            // Logic tạo Avatar (Lấy ký tự đầu)
+            const nameDisplay = c.name || "Khách lẻ";
+            const firstLetter = nameDisplay.charAt(0).toUpperCase();
+            
+            // Hàm stringToColor cần phải có trong file utils hoặc định nghĩa thêm
+            const bgColor = (typeof stringToColor === 'function') ? stringToColor(nameDisplay) : '#ccc';
+
+            return `
+            <div class="supplier-item" onclick="selectClient('${c.id}')" data-name="${nameDisplay}">
+                <div class="client-avatar" style="background-color: ${bgColor}; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; margin-right: 10px;">
+                    ${firstLetter}
+                </div>
+                <div style="font-weight:700; color:#333; font-size: 14px;">
+                    ${nameDisplay}
+                    <div style="font-weight:400; color:#666; font-size: 12px;">${c.phone || ''}</div>
+                </div>
+            </div>
+            `;
+        }).join('');
+    };
+
+    // 3. Chọn khách hàng -> Hiện Icon lên Input
+    window.selectClient = function(id) {
+        const cust = clients.find(c => c.id === id);
+        if (cust) {
+            const input = document.getElementById('clientInput');
+            
+            // --- XỬ LÝ CSS ICON INPUT ---
+            // Kiểm tra xem input đã được bọc div chưa, nếu chưa thì tạo
+            let wrapper = input.parentElement;
+            if (!wrapper.classList.contains('input-icon-wrapper')) {
+                // Tạo wrapper mới nếu chưa có
+                wrapper = document.createElement('div');
+                wrapper.className = 'input-icon-wrapper';
+                wrapper.style.position = 'relative';
+                wrapper.style.display = 'flex';
+                wrapper.style.alignItems = 'center';
+                
+                input.parentNode.insertBefore(wrapper, input);
+                wrapper.appendChild(input);
+            }
+
+            let iconEl = document.getElementById('selectedClientIcon');
+            if (!iconEl) {
+                iconEl = document.createElement('div');
+                iconEl.id = 'selectedClientIcon';
+                // Style cơ bản cho icon tròn nhỏ trong input
+                iconEl.style.position = 'absolute';
+                iconEl.style.left = '10px';
+                iconEl.style.width = '24px';
+                iconEl.style.height = '24px';
+                iconEl.style.borderRadius = '50%';
+                iconEl.style.display = 'none';
+                iconEl.style.alignItems = 'center';
+                iconEl.style.justifyContent = 'center';
+                iconEl.style.color = 'white';
+                iconEl.style.fontSize = '12px';
+                iconEl.style.fontWeight = 'bold';
+                iconEl.style.zIndex = '10';
+                wrapper.appendChild(iconEl);
+            }
+
+            // --- CẬP NHẬT DỮ LIỆU ---
+            input.value = cust.name;
+            // Gán biến toàn cục selectedClientObj (đảm bảo đã khai báo)
+            if (typeof selectedClientObj !== 'undefined') {
+                selectedClientObj = cust;
+            } else {
+                window.selectedClientObj = cust;
+            }
+            
+            // --- HIỂN THỊ ICON ---
+            const nameDisplay = cust.name || "Unknown";
+            const firstLetter = nameDisplay.charAt(0).toUpperCase();
+            const bgColor = (typeof stringToColor === 'function') ? stringToColor(nameDisplay) : '#ccc';
+            
+            iconEl.innerText = firstLetter;
+            iconEl.style.backgroundColor = bgColor;
+            iconEl.style.display = 'flex'; // Hiện icon
+            
+            input.style.paddingLeft = '40px'; // Đẩy text sang phải để tránh đè icon
+
+            // Cập nhật UI khác (nếu có nút xóa)
+            if (typeof updateClearButton === 'function') updateClearButton();
+            
+            const dropdown = document.getElementById('clientDropdown');
+            if(dropdown) dropdown.style.display = 'none';
+        }
+    };
+
+    // 4. Tìm kiếm (Giữ nguyên logic, thêm ẩn hiện icon)
+    window.handleSearch = function() {
+        updateClearButton();
+        
+        // Khi bắt đầu gõ tìm kiếm -> Ẩn icon đã chọn đi để nhìn rõ chữ
+        const iconEl = document.getElementById('selectedClientIcon');
+        const input = document.getElementById('clientInput');
+        if (iconEl) iconEl.style.display = 'none';
+        if (input) input.classList.remove('has-avatar');
+
+        const dropdown = document.getElementById('clientDropdown');
+        if(dropdown) dropdown.style.display = 'block';
+
+        const filter = input.value.toUpperCase(); 
+        const items = document.querySelectorAll('#clientList .supplier-item');
+
+        items.forEach(item => {
+            const txtValue = item.getAttribute('data-name'); 
+            if (txtValue && txtValue.toUpperCase().indexOf(filter) > -1) {
+                item.style.display = "flex"; // "flex" để giữ layout icon ngang với tên
+            } else {
+                item.style.display = "none";
+            }
+        });
+    };
+
+    // 5. Nút xóa (Clear) -> Reset toàn bộ
+    window.clearSearch = function(e) {
+        if (e) e.stopPropagation();
+        
+        const input = document.getElementById('clientInput');
+        input.value = "";
+        selectedClientObj = null;
+        updateClearButton();
+        
+        // Ẩn icon avatar
+        const iconEl = document.getElementById('selectedClientIcon');
+        if (iconEl) iconEl.style.display = 'none';
+        if (input) input.classList.remove('has-avatar');
+        
+        // Reset danh sách hiển thị
+        const items = document.querySelectorAll('#clientList .supplier-item');
+        items.forEach(el => el.style.display = "flex");
+        
+        document.getElementById('clientDropdown').style.display = 'none';
+    };
+
+    window.toggleClientDropdown = function(e) {
+        if (e) e.stopPropagation();
+        const dropdown = document.getElementById('clientDropdown');
+        const input = document.getElementById('clientInput');
+
+        if(input.value === "") {
+             const items = document.querySelectorAll('#clientList .supplier-item');
+             items.forEach(el => el.style.display = "flex");
+        }
+        
+        const isShow = dropdown.style.display === 'block';
+        dropdown.style.display = isShow ? 'none' : 'block';
+    };
+
+   
+
+    window.updateClearButton = function() {
+        const clearBtn = document.getElementById('clearClient');
+        const input = document.getElementById('clientInput');
+        if (clearBtn && input) {
+            clearBtn.style.opacity = input.value ? '1' : '0';
+            clearBtn.style.pointerEvents = input.value ? 'auto' : 'none';
+        }
+    };
+
+
+
+// ============================================
+    // RENDER DANH MỤC (SỬA LẠI ĐỂ CÓ TÌM KIẾM)
+    // ============================================
+    window.renderCategoryList = function() {
+        // 1. Thay đổi: Chọn 'dropdownContent' thay vì 'cat-list-container'
+        // Để chúng ta có thể chèn ô Input lên trên cùng, bên ngoài vùng cuộn
+        const dropdownContent = document.getElementById('dropdownContent');
+        if (!dropdownContent) return;
+
+        const uniqueCats = [...new Set(myProducts.map(p => p.category).filter(c => c && c !== 'Chưa phân loại'))];
+        
+        let html = `
+            <!-- 2. Thêm ô tìm kiếm vào đây -->
+            <input type="text" class="dropdown-search" placeholder="Tìm kiếm..." 
+                   oninput="searchInDropdown(this)" onclick="event.stopPropagation()">
+
+            <!-- 3. Tạo vùng cuộn riêng cho danh sách -->
+            <div class="cat-list-container" style="max-height: 250px; overflow-y: auto;">
+                <div class="cat-item all-cat" onclick="selectCategory('Tất cả')">
+                    <i class="fa-solid fa-layer-group"></i> Tất cả danh mục
+                </div>
+                <div class="cat-item no-cat" onclick="selectCategory('Chưa phân loại')">
+                    <i class="fa-solid fa-tag"></i> Chưa phân loại
+                </div>
+                <hr style="margin: 5px 0; border:0; border-top:1px solid #eee;">
+                
+                <!-- 4. Thêm ID dynamicCatList để hàm search biết chỗ lọc -->
+                <div id="dynamicCatList">
+                    ${uniqueCats.map(cat => `
+                        <!-- 5. QUAN TRỌNG: Thêm data-name để tìm kiếm -->
+                        <div class="cat-item" onclick="selectCategory('${cat}')" data-name="${cat}">
+                            <i class="fa-solid fa-folder" style="color:#718096;"></i> ${cat}
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+        dropdownContent.innerHTML = html;
+    };
+
+    // ============================================
+    // HÀM XỬ LÝ TÌM KIẾM TRONG MENU
+    // ============================================
+    window.searchInDropdown = function(input) {
+        const filter = input.value.toUpperCase();
+        const list = document.getElementById('dynamicCatList'); // Tìm đúng cái ID đã tạo ở trên
+        if (!list) return;
+
+        const items = list.getElementsByClassName('cat-item');
+
+        for (let i = 0; i < items.length; i++) {
+            // Lấy tên từ data-name
+            const txtValue = items[i].getAttribute('data-name') || "";
+            
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                items[i].style.display = "flex"; // Hiện
+            } else {
+                items[i].style.display = "none"; // Ẩn
+            }
+        }
+    };
+
+    window.selectCategory = (name) => {
+        selectedCategory = name;
+        document.getElementById('selectedCatText').innerText = name;
+        document.getElementById('dropdownContent').classList.remove('show');
+        filterProducts();
+    };
+
+
+// ============================================================
+    // HÀM LỌC SẢN PHẨM (ĐÃ SỬA LỖI)
+    // ============================================================
+    window.filterProducts = function() {
+        // 1. Lấy giá trị ô tìm kiếm
+        const searchInput = document.getElementById('searchInput');
+        const val = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+        // 2. Bắt đầu lọc từ danh sách gốc myProducts
+        let filtered = myProducts.filter(p => {
+            // --- A. Logic tìm kiếm (Tên hoặc SKU) ---
+            // Chuyển đổi an toàn sang chuỗi để tránh lỗi nếu sku là số hoặc null
+            const safeName = (p.name || '').toLowerCase();
+            const safeSku = (p.sku || '').toString().toLowerCase();
+            
+            const matchSearch = safeName.includes(val) || safeSku.includes(val);
+
+            // --- B. Logic danh mục ---
+            let matchCat = false;
+            
+            if (selectedCategory === 'Tất cả') {
+                matchCat = true; // Lấy hết
+            } else if (selectedCategory === 'Chưa phân loại') {
+                // Lấy những sp không có category hoặc category rỗng hoặc ghi rõ là 'Chưa phân loại'
+                matchCat = (!p.category || p.category === '' || p.category === 'Chưa phân loại');
+            } else {
+                // Lấy đúng tên danh mục đang chọn
+                matchCat = (p.category === selectedCategory);
+            }
+
+            // KẾT QUẢ: Phải thỏa mãn CẢ HAI điều kiện
+            return matchSearch && matchCat;
+        });
+
+        // 3. Sắp xếp kết quả (A-Z hoặc Z-A)
+        filtered.sort((a, b) => {
+            const nameA = a.name ? a.name.toLowerCase() : "";
+            const nameB = b.name ? b.name.toLowerCase() : "";
+            
+            if (currentSort === 'asc') {
+                return nameA.localeCompare(nameB);
+            } else {
+                return nameB.localeCompare(nameA);
+            }
+        });
+
+        // 4. Vẽ lại danh sách đã lọc
+        renderProducts(filtered);
+    };
+
+
+    // ============================================================
+    // LOGIC SẮP XẾP SẢN PHẨM (A-Z <-> Z-A)
+    // ============================================================
+    
+    // Đảm bảo biến này đã khai báo ở đầu file: let currentSort = 'asc';
+
+    window.toggleSortOrder = function() {
+        const btn = document.getElementById('btnSort');
+        
+        // 1. Đảo chiều sắp xếp
+        if (currentSort === 'asc') {
+            currentSort = 'desc'; // Đổi sang Z-A
+            // Đổi icon thành Z-A (mũi tên lên)
+            btn.innerHTML = '<i class="fa-solid fa-arrow-up-z-a"></i>';
+            btn.style.color = '#e53e3e'; // (Tuỳ chọn) Đổi màu đỏ khi ngược
+        } else {
+            currentSort = 'asc'; // Đổi về A-Z
+            // Đổi icon thành A-Z (mũi tên xuống)
+            btn.innerHTML = '<i class="fa-solid fa-arrow-down-a-z"></i>';
+            btn.style.color = '#555'; // Màu mặc định
+        }
+
+        // 2. Gọi lại hàm filterProducts để sắp xếp lại danh sách hiển thị
+        filterProducts();
+    };
+
+
+    // ============================================================
+    // 6. QUẢN LÝ KHÁCH HÀNG (CUSTOMER) - ĐÃ CẬP NHẬT
+    // ============================================================
+    window.renderCustomerDropdown = function() {
+        const listContainer = document.getElementById('customerList'); // Đổi ID từ supplierList sang customerList
+        if (!listContainer) return;
+
+        if (customers.length === 0) {
+            listContainer.innerHTML = '<div style="padding:10px; text-align:center; color:#999;">Chưa có khách hàng</div>';
+            return;
+        }
+
+        listContainer.innerHTML = customers.map(c => `
+            <div class="supplier-item" onclick="selectCustomer('${c.id}')" data-name="${c.name}">
+                <div style="font-weight:700; color:#333;">${c.name}</div>
+                <div style="font-size:12px; color:#555;">${c.phone || ''}</div>
+                ${c.address ? `<div style="font-size:11px; color:#aaa;">${c.address}</div>` : ''}
+            </div>
+        `).join('');
+    };
+
+    window.selectCustomer = function(id) {
+        const cust = customers.find(c => c.id === id);
+        const input = document.getElementById('customerInput'); // Đổi ID
+        const dropdown = document.getElementById('customerDropdown'); // Đổi ID
+
+        if (input && cust) {
+            input.value = cust.name;
+            selectedClientObj = cust; // Lưu object khách hàng
+            updateClearButton();
+            if(dropdown) dropdown.style.display = 'none';
+        }
+    };
+
+ 
+
+
+    // Ẩn/Hiện Dropdown khi focus
+    const custInp = document.getElementById('customerInput');
+    if (custInp) {
+        custInp.addEventListener('focus', () => {
+             const dropdown = document.getElementById('customerDropdown');
+             if(dropdown) dropdown.style.display = 'block';
+        });
+    }
+    
+    // Đóng dropdown khi click ra ngoài
+    window.addEventListener('click', function(e) {
+        const container = document.querySelector('.input-group'); 
+        if (container && !container.contains(e.target)) {
+            const dropdown = document.getElementById('customerDropdown');
+            if(dropdown) dropdown.style.display = 'none';
+        }
+    });
+
+   window.selectToExport = function(productId) {
+    document.querySelectorAll('.p-item').forEach(el => el.classList.remove('active'));
+    const selectedElem = document.getElementById(`p-${productId}`);
+    if (selectedElem) selectedElem.classList.add('active');
+
+    const p = myProducts.find(item => item.id === productId);
+    if (!p) return;
+
+    const displayPrice = p.price || (p.prices && p.prices.length > 0 ? p.prices[0].value : 0);
+    const importArea = document.getElementById('importArea');
+
+    importArea.innerHTML = `
+        <div class="import-card" style="background:#fff; padding:25px; border-radius:24px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+            <div style="margin-bottom: 25px;">
+                <h2 style="margin:0; font-size:28px; color:#333; font-weight:800;">${p.name}</h2>
+                <div style="display:flex; justify-content:space-between; margin-top:8px;">
+                    <span style="font-size:14px; font-weight:600; color:#e74c3c;">
+                        <i class="fa-solid fa-clock-rotate-left"></i> HSD: ${p.expiryDate || 'N/A'}
+                    </span>
+                    <span style="font-size:14px; font-weight:600; color:#555;">
+                        <i class="fa-solid fa-box"></i> Kho còn: <b id="current-stock-val">${p.stock}</b>
+                    </span>
+                </div>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-box">
+                    <span class="label">Mã SKU</span>
+                    <span class="value">${p.sku || 'Chưa có'}</span>
+                </div>
+                <div class="info-box">
+                    <span class="label">Danh Mục</span>
+                    <span class="value">${p.category || 'Chưa phân loại'}</span>
+                </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:25px;">
+                <div style="background:#fdf2e9; padding:15px; border-radius:12px; border:1px solid #e67e22;">
+                    <span style="display:block; font-size:12px; color:#e67e22; font-weight:700;">Tổng thành tiền</span>
+                    <span id="totalDisplay" style="font-size:22px; font-weight:900; color:#e67e22;">0₫</span>
+                </div>
+                <div style="background:#ebfbee; padding:15px; border-radius:12px; border:1px solid #b2f2bb;">
+                    <span style="display:block; font-size:12px; color:#2f9e44; font-weight:700;">Đơn giá xuất</span>
+                    <span style="font-size:22px; font-weight:900; color:#2f9e44;" id="displayPriceData" data-price="${displayPrice}">
+                       ${Number(displayPrice).toLocaleString()}₫
+                    </span>
+                </div>
+            </div>
+
+            <div class="qty-input-container">
+                <label style="font-weight:800;">Số lượng xuất:</label>
+                <input type="number" id="qtyExport" class="big-input" 
+                       oninput="updatePreviewQty(this.value, '${p.sku}'); calculateTotal()" 
+                       placeholder="0" autofocus>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-top:20px;">
+                 <div>
+                    <label style="font-size:13px; font-weight:700;">Phí thêm (+)</label>
+                    <input type="number" id="extraFee" placeholder="0" oninput="calculateTotal()" style="width:100%; padding:10px; border-radius:10px; border:1px solid #ddd; font-weight:700;">
+                 </div>
+                 <div>
+                    <label style="font-size:13px; font-weight:700;">Giảm giá (-)</label>
+                    <input type="number" id="discount" placeholder="0" oninput="calculateTotal()" style="width:100%; padding:10px; border-radius:10px; border:1px solid #ddd; font-weight:700;">
+                 </div>
+            </div>
+
+            <!-- Ô GHI CHÚ XUẤT KHO MỚI THÊM -->
+            <div style="margin-top:20px; text-align: left;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <label style="font-weight:800; color:#333; font-size:14px;">Ghi chú xuất kho:</label>
+                    <span id="charCountExport" style="font-size:12px; color:#999; font-weight:600;">0/150</span>
+                </div>
+                <textarea id="exportNote" maxlength="150" 
+                    oninput="document.getElementById('charCountExport').innerText = this.value.length + '/150'" 
+                    placeholder="Lý do xuất, khách hàng đặc biệt..." 
+                    style="width:100%; height:65px; padding:12px; border-radius:12px; border:1px solid #ddd; font-family:inherit; resize:none; outline:none; font-size:14px; box-sizing: border-box;"></textarea>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-top:20px;">
+                <div id="paymentStatusBtn" onclick="togglePaymentStatus()" data-status="paid" style="padding:12px; border-radius:12px; text-align:center; font-weight:800; cursor:pointer; background:#2ecc71; color:#fff;">
+                    <i class="fa-solid fa-check"></i> Đã thanh toán
+                </div>
+                <input type="number" id="amountPaid" placeholder="Tiền khách đưa" oninput="checkPaymentInput(this.value)" style="padding:10px; border-radius:10px; border:2px solid #ddd; font-weight:800; text-align:center; font-size:16px;">
+            </div>
+
+            <button class="btn-confirm-big" onclick="confirmExport('${p.sku || ''}', '${p.id}')" style="margin-top:20px; width:100%; padding:18px; border-radius:16px; border:none; background:#3498db; color:#fff; font-size:18px; font-weight:800; cursor:pointer;">
+                XÁC NHẬN XUẤT KHO
+            </button>
+        </div>
+    `;
+    calculateTotal();
+};
+
+    window.calculateTotal = function() {
+        const unitPrice = parseFloat(document.getElementById('displayPriceData')?.dataset.price) || 0;
+        const qty = parseFloat(document.getElementById('qtyExport')?.value) || 0;
+        const extraFee = parseFloat(document.getElementById('extraFee')?.value) || 0;
+        const discount = parseFloat(document.getElementById('discount')?.value) || 0;
+        
+        let total = (qty * unitPrice) + extraFee - discount;
+        if (total < 0) total = 0;
+
+        document.getElementById('totalDisplay').innerText = total.toLocaleString() + '₫';
+
+        if (document.getElementById('paymentStatusBtn').dataset.status === 'paid') {
+            document.getElementById('amountPaid').value = total;
+        }
+    };
+
+    window.togglePaymentStatus = function() {
+        const btn = document.getElementById('paymentStatusBtn');
+        const inputAmount = document.getElementById('amountPaid');
+        const isPaid = btn.getAttribute('data-status') === 'paid';
+
+        if (isPaid) {
+            btn.setAttribute('data-status', 'unpaid');
+            btn.style.background = '#e74c3c';
+            btn.innerHTML = '<i class="fa-solid fa-xmark"></i> Chưa thanh toán';
+            inputAmount.value = 0;
+        } else {
+            btn.setAttribute('data-status', 'paid');
+            btn.style.background = '#2ecc71';
+            btn.innerHTML = '<i class="fa-solid fa-check"></i> Đã thanh toán';
+            calculateTotal();
+        }
+    };
+
+    window.checkPaymentInput = (val) => {
+        const btn = document.getElementById('paymentStatusBtn');
+        if (parseFloat(val) > 0 && btn.getAttribute('data-status') !== 'paid') {
+            btn.setAttribute('data-status', 'paid');
+            btn.style.background = '#2ecc71';
+            btn.innerHTML = '<i class="fa-solid fa-check"></i> Đã thanh toán';
+        }
+    };
+
+window.updatePreviewQty = function(val, sku) {
+        if (!sku) return;
+        const safeSku = sku.toString().replace(/\s+/g, '-');
+        
+        // Ẩn tất cả trước
+        document.querySelectorAll('.stock-change').forEach(el => el.style.display = 'none');
+        
+        const changeEl = document.getElementById(`change-${safeSku}`);
+        
+        if (changeEl && val > 0) {
+            // Sửa thành inline-flex để hợp với CSS viên thuốc
+            changeEl.style.display = 'inline-flex'; 
+            changeEl.innerHTML = `- ${val}`;
+        }
+    };
+
+    // ============================================================
+    // 7. HÀM TIỆN ÍCH MODAL (KHÔNG DÙNG POPUP GOOGLE)
+    // ============================================================
+    
+    // Mở Modal
+    window.openModal = function(id) {
+        const m = document.getElementById(id);
+        if(m) {
+            m.style.display = 'flex';
+            m.style.alignItems = 'center';
+            m.style.justifyContent = 'center';
+        }
+    };
+
+    // Đóng Modal
+    window.closeModal = function(id) {
+        const m = document.getElementById(id);
+        if(m) m.style.display = 'none';
+    };
+
+    // Hàm hiển thị thông báo lỗi/cảnh báo bằng Box (thay thế alert)
+    window.showWarningBox = function(title, message) {
+        // Tận dụng hộp modal thành công nhưng đổi màu sang cam/đỏ
+        const box = document.querySelector('#successModal .custom-modal-box');
+        const icon = document.querySelector('#successModal .modal-icon-box');
+        const iconI = document.querySelector('#successModal .modal-icon-box i');
+        const titleEl = document.querySelector('#successModal .modal-title');
+        const descEl = document.getElementById('successMessage');
+
+        // Style chế độ cảnh báo
+        if(box) box.style.borderColor = "#e67e22";
+        if(icon) icon.style.border = "4px solid #fce8cc";
+        if(iconI) { iconI.className = "fa-solid fa-triangle-exclamation"; iconI.style.color = "#e67e22"; }
+        
+        if(titleEl) { titleEl.innerText = title; titleEl.style.color = "#d35400"; }
+        if(descEl) descEl.innerHTML = message;
+
+        // Mở box
+        openModal('successModal');
+        
+        // Tự đóng sau 2 giây (để người dùng kịp đọc)
+        setTimeout(() => {
+            closeModal('successModal');
+            // Reset lại style mặc định sau khi đóng (để lần sau hiện success màu xanh)
+            setTimeout(() => {
+                if(iconI) iconI.className = "fa-solid fa-check"; 
+                if(titleEl) titleEl.style.color = "#2f855a";
+            }, 500);
+        }, 2500);
+    };
+
+    // ============================================================
+    // 8. LOGIC XÁC NHẬN & XUẤT KHO (FINAL)
+    // ============================================================
+    let pendingData = null; // Biến lưu tạm dữ liệu để chờ bấm nút Đồng Ý
+
+    // HÀM 1: Bấm nút "XÁC NHẬN XUẤT KHO"
+// --- THAY THẾ HÀM confirmExport CŨ ---
+window.confirmExport = function(sku, docId) {
+    // 1. Lấy dữ liệu từ giao diện
+    const note = document.getElementById('exportNote') ? document.getElementById('exportNote').value.trim() : "";
+    const now = new Date();
+    const nineMonthsAgo = new Date();
+    nineMonthsAgo.setMonth(now.getMonth() - 9);
+
+    if (selectedDate < nineMonthsAgo) {
+        showToast("⚠️ Ngày chọn quá cũ (giới hạn 9 tháng). Không thể nhập!", "error");
+        return;
+    }
+    const p = myProducts.find(item => item.id === docId);
+    if (!p) return;
+
+    const qtyInput = document.getElementById('qtyExport');
+    const extraFeeInput = document.getElementById('extraFee');
+    const discountInput = document.getElementById('discount');
+    const amountPaidInput = document.getElementById('amountPaid');
+
+    // Parse số
+    const qty = parseInt(qtyInput.value) || 0;
+    const extraFee = parseFloat(extraFeeInput.value) || 0;
+    const discount = parseFloat(discountInput.value) || 0;
+    const amountPaid = amountPaidInput.value === "" ? 0 : parseFloat(amountPaidInput.value);
+
+    // 2. Validate
+    if (qty <= 0) {
+        showToast("Số lượng xuất phải lớn hơn 0!", "error");
+        return;
+    }
+    if (qty > p.stock) {
+        showToast(`Không đủ hàng! Kho chỉ còn ${p.stock}`, "error");
+        return;
+    }
+
+    // 3. Tính toán tài chính
+    const unitPrice = (p.prices && p.prices.length > 0) ? parseFloat(p.prices[0].value) : (parseFloat(p.price) || 0);
+    
+    // TỔNG TIỀN = (SL * Đơn giá) + Phí thêm - Giảm giá
+    const totalAmount = (qty * unitPrice) + extraFee - discount;
+    
+    let debt = totalAmount - amountPaid;
+    const custNameInput = document.getElementById('clientInput').value.trim() || "Khách lẻ";
+
+    // 4. Lưu vào biến tạm (QUAN TRỌNG: Thêm extraFee và discount vào đây)
+    pendingData = {
+        docId, sku, p, qty,
+        oldStock: p.stock,
+        newStock: p.stock - qty,
+        custName: custNameInput,
+        totalAmount, amountPaid, debt, unitPrice,
+        extraFee, // <--- MỚI: Lưu phí
+        discount,  // <--- MỚI: Lưu giảm giá
+        note: note // Lưu vào biến tạm
+    };
+
+    // 5. XỬ LÝ QUY TRÌNH HỎI (Giữ nguyên logic cũ)
+    if (debt > 0) {
+        if (!selectedClientObj) {
+            const modalTitle = document.querySelector('#debtModal .modal-title');
+            const modalDesc = document.getElementById('debtModalContent');
+            const btnConfirm = document.getElementById('btnConfirmDebt');
+            const btnCancel = document.querySelector('#debtModal .cancel');
+
+            modalTitle.innerText = "⛔ KHÔNG ĐƯỢC GHI NỢ";
+            modalTitle.style.color = "#c0392b";
+            
+            modalDesc.innerHTML = `
+                Bạn đang chọn khách: <b>${custNameInput}</b> (Khách lẻ)<br>
+                Số tiền thiếu: <span style="color:#e74c3c; font-weight:800">${debt.toLocaleString()}₫</span>
+                <hr style="margin:10px 0; border:0; border-top:1px dashed #eee">
+                <p style="font-size:13px">Hệ thống yêu cầu phải <b>Chọn khách hàng</b> từ danh sách (có hồ sơ) mới được phép ghi nợ.</p>
+            `;
+            btnConfirm.style.display = 'none'; 
+            btnCancel.innerText = "Đã hiểu, quay lại";
+            openModal('debtModal');
+            return;
+        }
+
+        const modalTitle = document.querySelector('#debtModal .modal-title');
+        const modalDesc = document.getElementById('debtModalContent');
+        const btnConfirm = document.getElementById('btnConfirmDebt');
+        const btnCancel = document.querySelector('#debtModal .cancel');
+
+        modalTitle.innerText = "Xác nhận ghi nợ?";
+        modalTitle.style.color = "#2d3748";
+        
+        modalDesc.innerHTML = `
+            Khách hàng: <b>${selectedClientObj.name}</b><br>
+            Tổng đơn: <b>${totalAmount.toLocaleString()}₫</b><br>
+            Khách đưa: <b>${amountPaid.toLocaleString()}₫</b><br>
+            <div style="background:#fff5f5; border:1px dashed #fc8181; padding:10px; margin-top:10px; border-radius:8px; color:#c53030">
+                Ghi nợ vào hồ sơ: <span style="font-size:20px; font-weight:900">${debt.toLocaleString()}₫</span>
+            </div>
+        `;
+        btnConfirm.style.display = 'inline-block';
+        btnCancel.innerText = "Hủy bỏ";
+
+        btnConfirm.onclick = function() {
+            closeModal('debtModal');
+            executeExport();
+        };
+        openModal('debtModal');
+    } else {
+        executeExport();
+    }
+};
+
+// --- THAY THẾ HÀM executeExport CŨ (ĐÃ SỬA LỖI ĐẦY BỘ NHỚ 1MB) ---
+window.executeExport = async function() {
+    if (!pendingData) return;
+
+        // KIỂM TRA 9 THÁNG TRƯỚC KHI LƯU
+    const now = new Date();
+    const nineMonthsAgo = new Date();
+    nineMonthsAgo.setMonth(now.getMonth() - 9);
+
+    if (selectedDate < nineMonthsAgo) {
+        showToast("⚠️ Ngày xuất quá 9 tháng không được phép ghi nhận!", "error");
+        return;
+    }
+
+    
+    // Destructure dữ liệu từ pendingData
+    const { docId, sku, p, qty, oldStock, newStock, custName, totalAmount, amountPaid, debt, unitPrice, extraFee, discount } = pendingData;
+    
+    try {
+        // A. Trừ kho (Giữ nguyên)
+        await updateDoc(doc(db, "products", docId), { 
+            stock: newStock 
+        });
+
+        // B. Ghi nợ (Giữ nguyên)
+        if (selectedClientObj && debt !== 0) {
+            const currentDebt = parseFloat(selectedClientObj.debt) || 0;
+            await updateDoc(doc(db, "customers", selectedClientObj.id), { 
+                debt: currentDebt + debt 
+            });
+        }
+
+        // C. LƯU LỊCH SỬ (THAY ĐỔI TẠI ĐÂY)
+        const logEntry = {
+            customerId: selectedClientObj ? selectedClientObj.id : "", // ID khách hàng
+            supplier: custName, // Tên khách hàng (lưu cứng để hiển thị lịch sử)
+            productId: docId,
+            sku: sku || "---",
+            name: p.name,
+            img: p.img || "", // Thêm ảnh cho đồng bộ với bên Import (nếu có)
+            
+            qty: qty,
+            oldStock: oldStock,
+            newStock: newStock,
+            
+            type: 'xuat',
+            timestamp: selectedDate.getTime(),
+            
+            userName: localStorage.getItem('userName') || 'Admin',
+            userEmail: localStorage.getItem('userEmail') || '',
+            
+            note: pendingData.note,
+            totalAmount: totalAmount,
+            paidAmount: amountPaid,
+            debt: debt,
+            price: unitPrice,
+            cost: p.cost || 0,
+            
+            extraFee: extraFee || 0,   
+            discount: discount || 0    
+        };
+
+        // --- SỬA ĐỔI QUAN TRỌNG: Dùng addDoc vào collection con thay vì arrayUnion ---
+        // Cấu trúc: warehouse_history_logs -> {Store_ID} -> export_log -> {Log_ID}
+        const logsColRef = collection(db, "warehouse_history_logs", currentStoreId, "export_log");
+        await addDoc(logsColRef, logEntry);
+
+        // D. Hiện thông báo (Giữ nguyên)
+        const box = document.querySelector('#successModal .custom-modal-box');
+        const iconI = document.querySelector('#successModal .modal-icon-box i');
+        const titleEl = document.querySelector('#successModal .modal-title');
+        
+        if(box) box.style.borderColor = "#f0f0f0";
+        if(iconI) { iconI.className = "fa-solid fa-check"; iconI.style.color = "#2f855a"; }
+        if(titleEl) { titleEl.innerText = "Xuất kho thành công!"; titleEl.style.color = "#2f855a"; }
+
+        let msg = `Đã xuất <b>${qty}</b> sản phẩm.`;
+        if (debt > 0) msg += `<br>Ghi nợ: <span style="color:#e74c3c; font-weight:800">${debt.toLocaleString()}₫</span>`;
+        else if (debt < 0) msg += `<br>Trả khách: <b>${Math.abs(debt).toLocaleString()}₫</b>`;
+        else msg += `<br><span style="color:#2ecc71; font-weight:bold">Đã thanh toán đủ</span>`;
+        
+        document.getElementById('successMessage').innerHTML = msg;
+        openModal('successModal');
+
+        setTimeout(() => {
+            closeModal('successModal');
+            resetUI();
+        }, 1200);
+
+    } catch (e) {
+        console.error("Lỗi Xuất Kho:", e);
+        showWarningBox("Lỗi Hệ Thống", e.message);
+    }
+};
+
+    // HÀM LÀM SẠCH GIAO DIỆN (Thay cho reload trang)
+    window.resetUI = function() {
+        // 1. Trả màn hình bên phải về trạng thái chờ
+        const importArea = document.getElementById('importArea');
+        importArea.innerHTML = `
+            <span class="panel-label" style="display: inline-flex; align-items: center;">
+                <span style="position: relative; display: inline-block; width: 24px; height: 24px; margin-right: 10px;">
+                    <i class="fa-solid fa-truck-ramp-box" style="color: #f39c12; font-size: 20px;"></i>
+                    <i class="fa-solid fa-arrow-right-from-bracket" style="color: #e67e22; background-color: white; border-radius: 50%; font-size: 12px; position: absolute; bottom: 0px; right: 0px;"></i>
+                </span>
+                Xuất kho
+            </span>
+            <div class="empty-state">
+                <i class="fa-solid fa-circle-check" style="font-size: 40px; color: #2ecc71; margin-bottom: 15px; display: block;"></i>
+                <p style="font-weight: 700; font-size: 16px; color:#2ecc71">Xuất thành công!</p>
+                <p style="font-size: 13px; color:#999; margin-top:5px;">Chọn sản phẩm tiếp theo để xuất</p>
+            </div>
+        `;
+
+        // 2. Bỏ chọn (highlight) ở danh sách sản phẩm bên trái
+        document.querySelectorAll('.p-item.active').forEach(el => el.classList.remove('active'));
+
+        // 3. Xóa tìm kiếm sản phẩm (để hiện lại toàn bộ list)
+        document.getElementById('searchInput').value = '';
+        filterProducts(); // Load lại list đầy đủ
+
+        // 4. Reset ô chọn khách hàng (Về trống để tránh nhầm đơn sau)
+        // Nếu bạn muốn giữ lại khách hàng để bán tiếp thì xóa dòng bên dưới đi
+        document.getElementById('clientInput').value = "";
+        selectedClientObj = null;
+        updateClearButton();
+
+        // Lưu ý: Số lượng tồn kho bên trái sẽ tự nhảy nhờ hàm onSnapshot realtime rồi, không cần sửa gì thêm.
+    };
+    
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const listArea = document.getElementById('productList');
+        const waterFill = document.getElementById('waterLevel');
+        if (listArea && waterFill) {
+            const updateWater = () => {
+                const scrolled = listArea.scrollTop;
+                const totalHeight = listArea.scrollHeight - listArea.clientHeight;
+                const scrollPercent = totalHeight > 0 ? (scrolled / totalHeight) : 0;
+                const minHeightPercent = 15;
+                const dynamicHeight = minHeightPercent + (scrollPercent * (100 - minHeightPercent));
+                waterFill.style.height = dynamicHeight + "%";
+            };
+            listArea.addEventListener('scroll', updateWater);
+            updateWater();
+        }
+    });
+</script>
+</body>
+</html>
