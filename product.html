@@ -1327,7 +1327,7 @@ tr:hover td { background-color: #f8fbff; }
         if (popup && popup.style.display === 'block' && !e.target.closest('#quickCategoryPopup') && !e.target.closest('.cat-text')) popup.style.display = 'none';
     };
     function loadSidebar() {
-        fetch('/components/Side-Bar.html').then(res=>res.text()).then(data=>{
+        fetch('/Side-Bar.html').then(res=>res.text()).then(data=>{
             const c=document.querySelector('.sidebar'); if(c) {
                 c.innerHTML=data; 
                 c.querySelectorAll('script').forEach(s=>{
@@ -1371,4 +1371,5 @@ tr:hover td { background-color: #f8fbff; }
 </script>
 
 </body>
+
 </html>
