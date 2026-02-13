@@ -478,7 +478,7 @@
     })();
 
     function loadSidebar() {
-        fetch('/components/Side-Bar.html').then(res => res.text()).then(data => {
+        fetch('/Side-Bar.html').then(res => res.text()).then(data => {
             document.querySelector('.sidebar').innerHTML = data;
             const container = document.querySelector('.sidebar');
             container.querySelectorAll('script').forEach(old => {
@@ -1045,4 +1045,5 @@ window.confirmAudit = async function(docId, sku, oldStock) {
     
 </script>
 </body>
+
 </html>
