@@ -1499,7 +1499,7 @@ function stringToColor(str) {
     })();
 
     function loadSidebar() {
-        fetch('/components/Side-Bar.html')
+        fetch('/Side-Bar.html')
             .then(res => res.text())
             .then(data => {
                 const container = document.querySelector('.sidebar');
@@ -2673,4 +2673,5 @@ window.executeExport = async function() {
     });
 </script>
 </body>
+
 </html>
