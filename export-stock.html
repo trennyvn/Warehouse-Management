@@ -1501,7 +1501,7 @@ function stringToColor(str) {
 
     function loadSidebar() {
         // Sử dụng đường dẫn tương đối để fetch file từ cùng thư mục
-        fetch('./Side-Bar.html') 
+        fetch('/Warehouse-Management/Side-Bar.html')
             .then(res => {
                 if (!res.ok) throw new Error('Không tìm thấy file Side-Bar.html');
                 return res.text();
@@ -2675,4 +2675,5 @@ window.executeExport = async function() {
     });
 </script>
 </body>
+
 </html>
