@@ -425,12 +425,12 @@ body::before {
         }
 
         /* Nút Xác nhận Xuất kho - Màu Cam */
-        .btn-confirm {
+        .btn-irm {
             width: 100%; margin-top: 20px; background: #e67e22; color: #fff; 
             padding: 15px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer;
             transition: 0.2s;
         }
-        .btn-confirm:hover { background: #d35400; transform: translateY(-2px); }
+        .btn-irm:hover { background: #d35400; transform: translateY(-2px); }
 
 
         .btn-add-new-supplier:hover {
@@ -988,7 +988,7 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-app
 }
 
 /* Nút xác nhận cam mướt */
-.btn-confirm-big {
+.btn-irm-big {
     width: 100%;
     padding: 20px;
     background: #e67e22;
@@ -1432,7 +1432,7 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-app
     // ============================================================
     // 1. IMPORT FIREBASE & CẤU HÌNH
     // ============================================================
-    import { db } from "firebase-config.js";
+    import { db } from "./firebase-config.js";
     import { 
     collection, addDoc, getDocs, getDoc, updateDoc, query, where, doc, 
     orderBy, onSnapshot, serverTimestamp, 
@@ -2708,6 +2708,7 @@ window.executeExport = async function() {
 </body>
 
 </html>
+
 
 
 
