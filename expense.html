@@ -1237,7 +1237,7 @@
 (function() {
     const sidebarContainer = document.querySelector('.sidebar');
     if (!sidebarContainer) return;
-    fetch('/components/Side-Bar.html')
+    fetch('/Side-Bar.html')
         .then(res => res.text())
         .then(html => {
             sidebarContainer.innerHTML = html;
@@ -2214,4 +2214,5 @@
 </script>
 
 </body>
+
 </html>
