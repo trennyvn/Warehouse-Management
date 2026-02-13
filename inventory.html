@@ -332,7 +332,7 @@ td.formula-active:nth-child(8) {
     function loadSidebar() {
         const sidebarContainer = document.getElementById('sidebar-container');
         if (!sidebarContainer) return;
-        fetch('/Side-Bar.html')
+        fetch('/components/Side-Bar.html')
             .then(res => res.text())
             .then(html => {
                 sidebarContainer.innerHTML = html;
@@ -824,5 +824,4 @@ td.formula-active:nth-child(8) {
 
 
 </body>
-
 </html>

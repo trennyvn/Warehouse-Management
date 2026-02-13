@@ -37,7 +37,7 @@
         </div>
         <div class="report-menu">
           
-            <a href="/items/report/inventory.html" class="report-link"><i class="fa-solid fa-boxes-stacked"></i> Hàng tồn kho</a>
+            <a href="/inventory.html" class="report-link"><i class="fa-solid fa-boxes-stacked"></i> Hàng tồn kho</a>
           
             
         </div>
@@ -46,30 +46,30 @@
     <hr>
     
     <!-- Sản phẩm (Giữ nguyên) -->
-    <div class="nav-item" onclick="window.location.href='/items/product.html'">
+    <div class="nav-item" onclick="window.location.href='/product.html'">
         <div class="nav-icon-wrapper"><i class="fa-solid fa-box-archive" ></i></div> <span>Sản phẩm</span>
     </div>
 
     <!-- 4 MỤC KHO HÀNG (CÓ ID ĐỂ JS ĐIỀU KHIỂN) -->
-    <div class="nav-item" id="nav-import" data-href="/items/import-stock.html" data-name="Nhập kho">
+    <div class="nav-item" id="nav-import" data-href="/import-stock.html" data-name="Nhập kho">
         <div class="nav-icon-wrapper"><i class="fa-solid fa-box-archive"></i></div> <span>Nhập kho</span>
     </div>
-    <div class="nav-item" id="nav-export" data-href="/items/export-stock.html" data-name="Xuất kho">
+    <div class="nav-item" id="nav-export" data-href="/export-stock.html" data-name="Xuất kho">
         <div class="nav-icon-wrapper"><i class="fa-solid fa-box-archive"></i></div> <span>Xuất kho</span>
     </div>
-    <div class="nav-item" id="nav-audit" data-href="/items/audit-stock.html" data-name="Kiểm kê kho">
+    <div class="nav-item" id="nav-audit" data-href="/audit-stock.html" data-name="Kiểm kê kho">
         <div class="nav-icon-wrapper"><i class="fa-solid fa-arrows-rotate"></i></div> <span>Kiểm kê kho</span>
     </div>
-    <div class="nav-item" id="nav-transfer" data-href="/items/transfer-stock.html" data-name="Chuyển kho">
+    <div class="nav-item" id="nav-transfer" data-href="/transfer-stock.html" data-name="Chuyển kho">
         <div class="nav-icon-wrapper"><i class="fa-solid fa-right-left"></i></div> <span>Chuyển kho</span>
     </div>
 
     <hr>
     
-    <a href="/items/history.html" style="text-decoration: none;">
+    <a href="/history.html" style="text-decoration: none;">
         <div class="nav-item"><div class="nav-icon-wrapper"><i class="fa-solid fa-history"></i></div> <span>Lịch sử</span></div>
     </a>
-    <a href="/items/expense.html" style="text-decoration: none;">
+    <a href="/expense.html" style="text-decoration: none;">
         <div class="nav-item"><div class="nav-icon-wrapper"><i class="fa-solid fa-money-bill-wave"></i></div> <span>Chi phí</span></div>
     </a>
 
@@ -81,15 +81,15 @@
             <span>Liên hệ</span> <i class="fa fa-chevron-down arrow"></i>
         </div>
         <div class="sub-menu">
-            <a href="/items/contact/client.html" class="sub-item"><i class="fa-solid fa-user-tag" style="padding-right: 5px;"></i> Khách hàng</a>
-            <a href="/items/contact/supplier.html" class="sub-item"><i class="fa-solid fa-truck-field" style="padding-right: 5px;"></i> Nhà cung cấp</a>
-            <a href="/items/contact/personnel.html" class="sub-item"><i class="fa-solid fa-user-tie" style="padding-right: 5px;"></i> Nhân viên</a>
+            <a href="/client.html" class="sub-item"><i class="fa-solid fa-user-tag" style="padding-right: 5px;"></i> Khách hàng</a>
+            <a href="/supplier.html" class="sub-item"><i class="fa-solid fa-truck-field" style="padding-right: 5px;"></i> Nhà cung cấp</a>
+            <a href="/personnel.html" class="sub-item"><i class="fa-solid fa-user-tie" style="padding-right: 5px;"></i> Nhân viên</a>
         </div>
     </div>
 
     <div class="sidebar-footer">
         <div class="user-popover" id="userPopover">
-            <a href="/components/setting.html" class="popover-item"><i class="fa-solid fa-gear"></i> Cài đặt</a>
+            <a href="/setting.html" class="popover-item"><i class="fa-solid fa-gear"></i> Cài đặt</a>
             <div class="popover-divider"></div>
             <button id="btnLogout" class="popover-item logout-red"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</button>
         </div>
@@ -205,7 +205,7 @@
 
         if (!storeId || !email) {
             // Nếu không có thông tin và đang ở trang cấm thì mới đuổi đi
-            if (isRestrictedPath) window.location.replace('/items/product.html');
+            if (isRestrictedPath) window.location.replace('/product.html');
             // Nếu ở trang Report, vẫn cho hiện nút nhưng ở trạng thái khóa (có thể click để báo lỗi)
             updateUI(false);
             return;
@@ -226,7 +226,7 @@
             updateUI(hasAccess);
 
             if (!hasAccess && isRestrictedPath) {
-                window.location.replace('/items/product.html');
+                window.location.replace('/product.html');
             }
         }, (err) => {
             console.error("Firebase Sidebar Error:", err);
