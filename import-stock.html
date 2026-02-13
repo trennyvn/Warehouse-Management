@@ -1307,7 +1307,7 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-app
     // ============================================================
     // 1. IMPORT FIREBASE & CẤU HÌNH (ĐÃ THÊM setDoc, arrayUnion)
     // ============================================================
-    import { db } from "../firebase-config.js";
+    import { db } from "./firebase-config.js";
     import { 
         collection, addDoc, getDocs, getDoc, updateDoc, query, where, doc, 
         orderBy, onSnapshot, serverTimestamp, setDoc,  
@@ -2014,3 +2014,4 @@ window.confirmImport = async function(sku, docId) {
 </body>
 
 </html>
+
