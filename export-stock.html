@@ -1432,7 +1432,7 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-app
     // ============================================================
     // 1. IMPORT FIREBASE & CẤU HÌNH
     // ============================================================
-    import { db } from "../firebase-config.js";
+    import { db } from "firebase-config.js";
     import { 
     collection, addDoc, getDocs, getDoc, updateDoc, query, where, doc, 
     orderBy, onSnapshot, serverTimestamp, 
@@ -2708,6 +2708,7 @@ window.executeExport = async function() {
 </body>
 
 </html>
+
 
 
 
