@@ -571,7 +571,7 @@ listenPermissions();
     if (userLoggedIn !== 'true') window.location.replace('/index.html?auth=required'); 
     
     // Load Sidebar
-    fetch('/components/Side-Bar.html')
+    fetch('/Side-Bar.html')
         .then(res => res.text())
         .then(data => {
             const container = document.getElementById('sidebar-container');
@@ -1030,4 +1030,5 @@ try {
 </script>
 
 </body>
+
 </html>
