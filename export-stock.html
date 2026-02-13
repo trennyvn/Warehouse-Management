@@ -1499,28 +1499,30 @@ function stringToColor(str) {
         }, 500);
     })();
 
-    function loadSidebar() {
-        console.log("Bắt đầu tải Sidebar...");
-        
-        // Thử dùng đường dẫn không có / ở đầu
-        fetch('/Warehouse-Management/Side-Bar.html')
-            .then(res => {
-                console.log("Trạng thái phản hồi:", res.status);
-                if (!res.ok) throw new Error('Không tìm thấy file Side-Bar.html. Kiểm tra lại hoa thường!');
-                return res.text();
-            })
-            .then(data => {
-                const container = document.querySelector('.sidebar');
-                if (container) {
-                    container.innerHTML = data;
-                    console.log("Đã chèn Sidebar thành công!");
-                } else {
-                    console.error("LỖI: Không tìm thấy thẻ <div class='sidebar'> trong HTML!");
-                }
-            })
-            .catch(err => {
-                console.error("Lỗi Fetch:", err.message);
-            });
+    async function loadSidebar() {
+        console.log("Đang thử tải sidebar...");
+        try {
+            // Thử dùng đường dẫn tương đối trực tiếp
+            const response = await fetch('Side-Bar.html');
+            
+            console.log("URL đang fetch:", response.url); // Xem link thật sự nó đang tìm
+            
+            if (!response.ok) {
+                throw new Error(`Lỗi HTTP! Trạng thái: ${response.status}`);
+            }
+    
+            const data = await response.text();
+            const container = document.querySelector('.sidebar');
+            
+            if (container) {
+                container.innerHTML = data;
+                console.log("Sidebar đã được chèn!");
+            } else {
+                console.error("Không tìm thấy thẻ <div class='sidebar'> trong trang này!");
+            }
+        } catch (error) {
+            console.error("Lỗi Fetch:", error);
+        }
     }
      
 
@@ -2678,5 +2680,6 @@ window.executeExport = async function() {
 </body>
 
 </html>
+
 
 
