@@ -1310,7 +1310,7 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-app
     })();
 
     function loadSidebar() {
-        fetch('/components/Side-Bar.html')
+        fetch('/Side-Bar.html')
             .then(res => res.text())
             .then(data => {
                 const container = document.querySelector('.sidebar');
@@ -1986,4 +1986,5 @@ window.confirmImport = async function(sku, docId) {
 </script>
 
 </body>
+
 </html>
