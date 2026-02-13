@@ -1100,7 +1100,7 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-app
 
     <div class="table-view">
         <!-- SIDEBAR -->
-        <div class="sidebar"></div>
+        <div class="sidebar" id="sidebar-container"></div>
 
         <div class="main-content" id="mainLayout">
             <!-- HEADER -->
@@ -1254,7 +1254,55 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-app
 <div id="toastContainer" class="toast-container"></div>
 
 
-<script src="../store-core.js"></script> <!-- Đảm bảo file này được load -->
+
+<!-- ###################################################################### -->
+<!-- SCRIPT ĐÃ FIX LỖI RELOAD & DROPDOWN -->
+<!-- ###################################################################### -->
+<script>
+    // 1. TẢI SIDEBAR & PROFILE (Chạy độc lập để hiển thị nhanh)
+    (function() {
+        const userLoggedIn = localStorage.getItem('userLoggedIn');
+        if (userLoggedIn !== 'true') { window.location.replace('/index.html?auth=required'); return; }
+        
+        fetch('/Warehouse-Management/Side-Bar.html')
+            .then(res => res.text())
+            .then(data => {
+                const container = document.getElementById('sidebar-container');
+                if (container) {
+                    container.innerHTML = data;
+                    // Cập nhật Profile sau khi Sidebar đã hiện
+                    setTimeout(() => {
+                        const name = localStorage.getItem('userName');
+                        const pic = localStorage.getItem('userPicture');
+                        const email = localStorage.getItem('userEmail');
+                        
+                        const nameEl = document.getElementById('set-name');
+                        if (nameEl) nameEl.textContent = name || "Người dùng";
+                        
+                        const emailEl = document.getElementById('set-email');
+                        if (emailEl) emailEl.textContent = email || "...";
+
+                        const avatarEl = document.getElementById('set-avatar');
+                        if (avatarEl) {
+                            if (pic && pic !== "null") {
+                                avatarEl.style.backgroundImage = `url('${pic}')`;
+                                avatarEl.textContent = ""; 
+                            } else if (name) avatarEl.textContent = name.charAt(0).toUpperCase();
+                        }
+                    }, 100); // Đợi 1 xíu để HTML render xong hẳn
+                    
+                    // Kích hoạt lại script trong sidebar
+                    container.querySelectorAll("script").forEach(oldScript => {
+                        const newScript = document.createElement("script");
+                        Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+                        newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+                        oldScript.parentNode.replaceChild(newScript, oldScript);
+                    });
+                }
+            })
+            .catch(err => console.error("Lỗi Sidebar:", err));
+    })();
+</script>
 <script type="module">
     // ============================================================
     // 1. IMPORT FIREBASE & CẤU HÌNH (ĐÃ THÊM setDoc, arrayUnion)
@@ -1308,28 +1356,6 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-app
         listenToSuppliers(); // Nghe dữ liệu Nhà cung cấp
         setTimeout(() => initCustomPicker(), 500); // Khởi động bộ chọn ngày
     })();
-
-    function loadSidebar() {
-        fetch('/Warehouse-Management/Side-Bar.html')
-            .then(res => res.text())
-            .then(data => {
-                const container = document.querySelector('.sidebar');
-                if (container) {
-                    container.innerHTML = data;
-                    container.querySelectorAll('script').forEach(oldScript => {
-                        const newScript = document.createElement('script');
-                        Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
-                        newScript.textContent = oldScript.textContent;
-                        oldScript.replaceWith(newScript);
-                    });
-                    window.toggleMenu = function (id) {
-                        const el = document.getElementById(id);
-                        if (el) el.classList.toggle('active');
-                    };
-                }
-            })
-            .catch(err => console.error('Lỗi tải Sidebar:', err));
-    }
 
     // ============================================================
     // 3. LOGIC SẢN PHẨM & BỘ LỌC
@@ -1986,4 +2012,5 @@ window.confirmImport = async function(sku, docId) {
 </script>
 
 </body>
+
 </html>
