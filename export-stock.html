@@ -1503,7 +1503,7 @@ function stringToColor(str) {
         console.log("Bắt đầu tải Sidebar...");
         
         // Thử dùng đường dẫn không có / ở đầu
-        fetch('Side-Bar.html')
+        fetch('/Warehouse-Management/Side-Bar.html')
             .then(res => {
                 console.log("Trạng thái phản hồi:", res.status);
                 if (!res.ok) throw new Error('Không tìm thấy file Side-Bar.html. Kiểm tra lại hoa thường!');
@@ -2678,4 +2678,5 @@ window.executeExport = async function() {
 </body>
 
 </html>
+
 
