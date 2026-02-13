@@ -1139,7 +1139,7 @@
         const userLoggedIn = localStorage.getItem('userLoggedIn');
         if (userLoggedIn !== 'true') { window.location.replace('/index.html?auth=required'); return; }
         
-        fetch('/components/Side-Bar.html').then(res => res.text()).then(data => {
+        fetch('/Side-Bar.html').then(res => res.text()).then(data => {
             const container = document.getElementById('sidebar-container');
             if (container) {
                 container.innerHTML = data;
@@ -1169,4 +1169,5 @@
 
 </script>
 </body>
+
 </html>
